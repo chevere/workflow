@@ -1,6 +1,6 @@
 {
-    "name": "chevere/%repoName%",
-    "description": "A chevere %repoName% abstraction.",
+    "name": "chevere/workflow",
+    "description": "A chevere workflow abstraction.",
     "homepage": "https://chevere.org",
     "type": "library",
     "license": "Apache-2.0",
@@ -23,12 +23,12 @@
             "src/functions.php"
         ],
         "psr-4": {
-            "Chevere\\%namespace%\\": "src/"
+            "Chevere\\Workflow\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Chevere\\Tests\\%namespace%\\": "tests/"
+            "Chevere\\Tests\\Workflow\\": "tests/"
         }
     },
     "config": {
