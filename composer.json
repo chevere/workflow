@@ -1,0 +1,44 @@
+{
+    "name": "chevere/%repoName%",
+    "description": "A chevere %repoName% abstraction.",
+    "homepage": "https://chevere.org",
+    "type": "library",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Rodolfo Berrios",
+            "email": "rodolfo@chevere.org",
+            "homepage": "https://chevere.org"
+        }
+    ],
+    "require": {
+        "chevere/chevere": "^0.1.x-dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "symplify/easy-coding-standard": "^9.4"
+    },
+    "autoload": {
+        "files": [
+            "src/functions.php"
+        ],
+        "psr-4": {
+            "Chevere\\%namespace%\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Chevere\\Tests\\%namespace%\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "update-cs": "curl --create-dirs -O --output-dir .ecs https://raw.githubusercontent.com/chevere/code-style/main/.ecs/ecs-chevere.php"
+    },
+    "scripts-descriptions": {
+        "update-cs": "Update Chevere code style definition"
+    }
+}

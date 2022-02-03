@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         colors="true"
+         verbose="true"
+         cacheResultFile=".phpunit.cache/test-results"
+         failOnRisky="true"
+         failOnWarning="true"
+         testdox="true"
+         executionOrder="default">
+    <testsuites>
+        <testsuite name="Chevere Test suite">
+            <directory suffix="Test.php">tests/</directory>
+        </testsuite>
+    </testsuites>
+    <logging>
+        <junit outputFile="build/logs/junit.xml"/>
+    </logging>
+    <coverage cacheDirectory=".phpunit.cache/code-coverage"
+              processUncoveredFiles="true"
+              ignoreDeprecatedCodeUnits="true">
+        <include>
+            <directory suffix=".php">src/</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">src/**/Exceptions/</directory>
+        </exclude>
+        <report>
+            <clover outputFile="build/logs/clover.xml"/>
+            <html outputDirectory="build/logs/html" lowUpperBound="50" highLowerBound="90"/>
+        </report>
+    </coverage>
+</phpunit>
