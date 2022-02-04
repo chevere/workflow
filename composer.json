@@ -1,6 +1,6 @@
 {
     "name": "chevere/workflow",
-    "description": "A chevere workflow abstraction.",
+    "description": "A chevere workflow component.",
     "homepage": "https://chevere.org",
     "type": "library",
     "license": "Apache-2.0",
@@ -12,7 +12,7 @@
         }
     ],
     "require": {
-        "chevere/chevere": "^0.1.x-dev"
+        "chevere/chevere": "^0.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
