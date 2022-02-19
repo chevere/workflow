@@ -89,20 +89,18 @@ final class JobsDependencies implements JobsDependenciesInterface
         return $array;
     }
 
-    public function getStack(): array
+    public function getGraph(): array
     {
         $return = [];
         $toIndex = 0;
-        $resolved = new Vector();
+        $previous = null;
         foreach ($this->getSortAsc() as $job => $dependencies) {
-            if (!$resolved->contains(...$dependencies->toArray()) && isset($return[$toIndex])) {
+            if ($previous && $dependencies->contains($previous)) {
                 $toIndex++;
             }
             $return[$toIndex][] = $job;
-            $resolved->push($job);
+            $previous = $job;
         }
-
-        // vdd($return);
         
         return $return;
     }

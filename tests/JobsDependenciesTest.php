@@ -24,42 +24,54 @@ final class JobsDependenciesTest extends TestCase
     {
         $dependencies = new JobsDependencies();
         $expected = [];
-        // $this->assertSame($expected, $dependencies->getStack());
+        $this->assertSame($expected, $dependencies->getGraph());
         $dependencies = $dependencies->withPut('j0', 'j1');
         $expected = [
             0 => ['j1'],
             1 => ['j0'],
         ];
-        $this->assertSame($expected, $dependencies->getStack());
-        // $dependencies = $dependencies->withPut('j0', 'j1');
-        // $this->assertSame($expected, $dependencies->getStack());
-        // $dependencies = $dependencies->withPut('j0', 'j2');
-        // $expected = [
-        //     0 => ['j1', 'j2'],
-        //     1 => ['j0'],
-        // ];
-        // $this->assertSame($expected, $dependencies->getStack());
-        // $dependencies = $dependencies->withPut('j1');
-        // $dependencies = $dependencies->withPut('j2');
-        // $expected = [
-        //     0 => ['j1', 'j2'],
-        //     1 => ['j0']
-        // ];
-        // $this->assertSame($expected, $dependencies->getStack());
-        // $dependencies = $dependencies->withPut('j2', 'j0');
-        // $expected = [
-        //     0 => ['j1'],
-        //     1 => ['j0'],
-        //     2 => ['j2']
-        // ];
-        // $this->assertSame($expected, $dependencies->getStack());
-        // $dependencies = $dependencies->withPut('j1', 'j0');
-        // $expected = [
-        //     0 => ['j0'],
-        //     1 => ['j1', 'j2'],
-        // ];
-        // // vdd($dependencies, $dependencies->getStack());
-        // $this->assertSame($expected, $dependencies->getStack());
+        $this->assertSame($expected, $dependencies->getGraph());
+        $dependencies = $dependencies->withPut('j0', 'j1');
+        $this->assertSame($expected, $dependencies->getGraph());
+        $dependencies = $dependencies->withPut('j0', 'j2');
+        $expected = [
+            0 => ['j1', 'j2'],
+            1 => ['j0'],
+        ];
+        $this->assertSame($expected, $dependencies->getGraph());
+        $dependencies = $dependencies->withPut('j1');
+        $dependencies = $dependencies->withPut('j2');
+        $expected = [
+            0 => ['j1', 'j2'],
+            1 => ['j0']
+        ];
+        $this->assertSame($expected, $dependencies->getGraph());
+        $dependencies = $dependencies->withPut('j2', 'j0');
+        $expected = [
+            0 => ['j1'],
+            1 => ['j0'],
+            2 => ['j2']
+        ];
+        $this->assertSame($expected, $dependencies->getGraph());
+        $dependencies = $dependencies->withPut('j1', 'j0');
+        $expected = [
+            0 => ['j0'],
+            1 => ['j1', 'j2'],
+        ];
+        $this->assertSame($expected, $dependencies->getGraph());
+        $dependencies = $dependencies->withPut('j0', 'j1');
+        $expected = [
+            0 => ['j1'],
+            1 => ['j0'],
+            2 => ['j2'],
+        ];
+        $this->assertSame($expected, $dependencies->getGraph());
+        $dependencies = $dependencies->withPut('j0', 'j2');
+        $expected = [
+            0 => ['j1', 'j2'],
+            1 => ['j0'],
+        ];
+        $this->assertSame($expected, $dependencies->getGraph());
     }
 
     public function testWithPutSelf(): void
