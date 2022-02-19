@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\Workflow;
+namespace Chevere\Tests;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
@@ -22,8 +22,8 @@ use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Response\Response;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
-use Chevere\Workflow\Step;
-use Chevere\Workflow\Steps;
+use Chevere\Workflow\Job;
+use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
 use Chevere\Workflow\WorkflowRun;
 use PHPUnit\Framework\TestCase;
@@ -32,9 +32,9 @@ final class WorkflowRunTest extends TestCase
 {
     public function testConstruct(): void
     {
-        $workflow = (new Workflow(new Steps()))
-            ->withAddedStep(
-                steps: new Step(
+        $workflow = (new Workflow(new Jobs()))
+            ->withAddedJob(
+                jobs: new Job(
                     WorkflowRunTestStep1::class,
                     foo: '${foo}',
                 )
@@ -55,13 +55,13 @@ final class WorkflowRunTest extends TestCase
 
     public function testWithStepResponse(): void
     {
-        $workflow = (new Workflow(new Steps()))
-            ->withAddedStep(
-                step0: new Step(
+        $workflow = (new Workflow(new Jobs()))
+            ->withAddedJob(
+                step0: new Job(
                     WorkflowRunTestStep1::class,
                     foo: '${foo}'
                 ),
-                step1: new Step(
+                step1: new Job(
                     WorkflowRunTestStep2::class,
                     foo: '${baz}',
                     bar: '${bar}'
@@ -74,7 +74,7 @@ final class WorkflowRunTest extends TestCase
         ];
         $workflowRun = (new WorkflowRun($workflow, ...$arguments));
         $workflowRunWithStepResponse = $workflowRun
-            ->withStepResponse('step0', new Response());
+            ->withJobResponse('step0', new Response());
         $this->assertNotSame($workflowRun, $workflowRunWithStepResponse);
         $this->assertTrue($workflow->vars()->has('${foo}'));
         $this->assertTrue($workflow->vars()->has('${baz}'));
@@ -82,14 +82,14 @@ final class WorkflowRunTest extends TestCase
         $this->assertSame([], $workflowRunWithStepResponse->get('step0')->data());
         $this->expectException(ArgumentCountError::class);
         $workflowRunWithStepResponse
-            ->withStepResponse('step0', new Response(extra: 'not-allowed'));
+            ->withJobResponse('step0', new Response(extra: 'not-allowed'));
     }
 
     public function testWithAddedNotFound(): void
     {
-        $workflow = (new Workflow(new Steps()))
-            ->withAddedStep(
-                step0: new Step(
+        $workflow = (new Workflow(new Jobs()))
+            ->withAddedJob(
+                step0: new Job(
                     WorkflowRunTestStep1::class,
                     foo: '${foo}'
                 )
@@ -99,7 +99,7 @@ final class WorkflowRunTest extends TestCase
         ];
         $this->expectException(OutOfBoundsException::class);
         (new WorkflowRun($workflow, ...$arguments))
-            ->withStepResponse(
+            ->withJobResponse(
                 'not-found',
                 new Response()
             );
@@ -107,17 +107,17 @@ final class WorkflowRunTest extends TestCase
 
     public function testWithAddedMissingArguments(): void
     {
-        $workflow = (new Workflow(new Steps()))
-            ->withAddedStep(
-                step0: new Step(WorkflowRunTestStep0::class),
-                step1: new Step(
+        $workflow = (new Workflow(new Jobs()))
+            ->withAddedJob(
+                step0: new Job(WorkflowRunTestStep0::class),
+                step1: new Job(
                     WorkflowRunTestStep1::class,
                     foo: '${foo}'
                 )
             );
         $this->expectException(ArgumentCountError::class);
         (new WorkflowRun($workflow))
-            ->withStepResponse(
+            ->withJobResponse(
                 'step0',
                 new Response()
             );

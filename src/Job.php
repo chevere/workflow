@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of Chevere
+ * This file is part of Chevere.
  *
  * (c) Rodolfo Berrios <rodolfo@chevere.org>
  *
@@ -21,11 +21,11 @@ use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\UnexpectedValueException;
-use Chevere\Workflow\Interfaces\StepInterface;
+use Chevere\Workflow\Interfaces\JobInterface;
 use ReflectionClass;
 use ReflectionException;
 
-final class Step implements StepInterface
+final class Job implements JobInterface
 {
     private array $arguments;
 
@@ -57,7 +57,7 @@ final class Step implements StepInterface
         }
     }
 
-    public function withArguments(mixed ...$namedArguments): StepInterface
+    public function withArguments(mixed ...$namedArguments): JobInterface
     {
         $new = clone $this;
         $new->setArguments(...$namedArguments);
@@ -82,7 +82,6 @@ final class Step implements StepInterface
         $store = [];
         $missing = [];
         foreach ($this->parameters->getIterator() as $name => $parameter) {
-            $parameter->description();
             $argument = $namedArguments[$name] ?? null;
             if ($argument !== null) {
                 $store[$name] = $argument;

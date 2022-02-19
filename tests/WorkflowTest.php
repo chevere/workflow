@@ -11,20 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\Workflow;
+namespace Chevere\Tests;
 
-use Chevere\Tests\Workflow\_resources\src\WorkflowTestStep0;
-use Chevere\Tests\Workflow\_resources\src\WorkflowTestStep1;
-use Chevere\Tests\Workflow\_resources\src\WorkflowTestStep2;
-use Chevere\Tests\Workflow\_resources\src\WorkflowTestStep2Conflict;
-use Chevere\Tests\Workflow\_resources\src\WorkflowTestStepDeps0;
-use Chevere\Tests\Workflow\_resources\src\WorkflowTestStepDeps1;
+use Chevere\Tests\_resources\src\WorkflowTestStep0;
+use Chevere\Tests\_resources\src\WorkflowTestStep1;
+use Chevere\Tests\_resources\src\WorkflowTestStep2;
+use Chevere\Tests\_resources\src\WorkflowTestStep2Conflict;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use Chevere\Workflow\Step;
-use Chevere\Workflow\Steps;
+use Chevere\Workflow\Job;
+use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
 
@@ -32,7 +30,7 @@ final class WorkflowTest extends TestCase
 {
     public function testConstructEmpty(): void
     {
-        $workflow = new Workflow(new Steps());
+        $workflow = new Workflow(new Jobs());
         $this->assertCount(0, $workflow);
         $this->expectException(OutOfBoundsException::class);
         $workflow->getVar('not-found');
@@ -40,54 +38,54 @@ final class WorkflowTest extends TestCase
 
     public function testConstruct(): void
     {
-        $step = new Step(WorkflowTestStep0::class);
-        $steps = new Steps(step: $step);
+        $step = new Job(WorkflowTestStep0::class);
+        $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
         $this->assertCount(1, $workflow);
-        $this->assertTrue($workflow->steps()->has('step'));
-        $this->assertSame(['step'], $workflow->steps()->keys());
+        $this->assertTrue($workflow->jobs()->has('step'));
+        $this->assertSame(['step'], $workflow->jobs()->keys());
     }
 
     public function testWithAdded(): void
     {
-        $step = new Step(WorkflowTestStep0::class);
-        $steps = new Steps(step: $step);
+        $step = new Job(WorkflowTestStep0::class);
+        $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
-        $workflowWithAddedStep = $workflow->withAddedStep(step2: $step);
+        $workflowWithAddedStep = $workflow->withAddedJob(step2: $step);
         $this->assertNotSame($workflow, $workflowWithAddedStep);
         $this->assertCount(2, $workflowWithAddedStep);
-        $this->assertTrue($workflowWithAddedStep->steps()->has('step'));
-        $this->assertTrue($workflowWithAddedStep->steps()->has('step2'));
-        $this->assertSame(['step', 'step2'], $workflowWithAddedStep->steps()->keys());
+        $this->assertTrue($workflowWithAddedStep->jobs()->has('step'));
+        $this->assertTrue($workflowWithAddedStep->jobs()->has('step2'));
+        $this->assertSame(['step', 'step2'], $workflowWithAddedStep->jobs()->keys());
         $this->expectException(OverflowException::class);
-        $workflowWithAddedStep->withAddedStep(step: $step);
+        $workflowWithAddedStep->withAddedJob(step: $step);
     }
 
     public function testWithAddedBeforeAndAfter(): void
     {
-        $workflow = (new Workflow(new Steps()));
+        $workflow = (new Workflow(new Jobs()));
         $workflowWithAddedSteps = $workflow
-            ->withAddedStep(step: new Step(WorkflowTestStep0::class))
-            ->withAddedStepBefore(
+            ->withAddedJob(step: new Job(WorkflowTestStep0::class))
+            ->withAddedJobBefore(
                 'step',
-                stepBefore: new Step(WorkflowTestStep0::class)
+                stepBefore: new Job(WorkflowTestStep0::class)
             );
         $this->assertNotSame($workflow, $workflowWithAddedSteps);
-        $this->assertSame(['stepBefore', 'step'], $workflowWithAddedSteps->steps()->keys());
+        $this->assertSame(['stepBefore', 'step'], $workflowWithAddedSteps->jobs()->keys());
         $workflowWithAddedSteps = $workflowWithAddedSteps
-            ->withAddedStepAfter(
+            ->withAddedJobAfter(
                 'stepBefore',
-                stepAfter: new Step(WorkflowTestStep0::class)
+                stepAfter: new Job(WorkflowTestStep0::class)
             );
         $this->assertNotSame($workflow, $workflowWithAddedSteps);
         $this->assertSame([
             'stepBefore',
             'stepAfter',
             'step',
-        ], $workflowWithAddedSteps->steps()->keys());
+        ], $workflowWithAddedSteps->jobs()->keys());
         $this->expectException(BadMethodCallException::class);
-        $workflowWithAddedSteps->withAddedStep(
-            step3: new Step(
+        $workflowWithAddedSteps->withAddedJob(
+            step3: new Job(
                 WorkflowTestStep1::class,
                 missing: '${not-found:reference}'
             )
@@ -96,45 +94,45 @@ final class WorkflowTest extends TestCase
 
     public function testWithAddedBeforeOutOfBounds(): void
     {
-        $workflow = (new Workflow(new Steps()))
-            ->withAddedStep(
-                found: new Step(WorkflowTestStep0::class)
+        $workflow = (new Workflow(new Jobs()))
+            ->withAddedJob(
+                found: new Job(WorkflowTestStep0::class)
             );
         $this->expectException(OutOfBoundsException::class);
-        $workflow->withAddedStepBefore(
+        $workflow->withAddedJobBefore(
             'not-found',
-            test: new Step(WorkflowTestStep0::class)
+            test: new Job(WorkflowTestStep0::class)
         );
     }
 
     public function testWithAddedAfterOutOfBounds(): void
     {
-        $step = new Step(WorkflowTestStep0::class);
-        $workflow = (new Workflow(new Steps(step: $step)))
-            ->withAddedStep(found: $step);
+        $step = new Job(WorkflowTestStep0::class);
+        $workflow = (new Workflow(new Jobs(step: $step)))
+            ->withAddedJob(found: $step);
         $this->expectException(OutOfBoundsException::class);
-        $workflow->withAddedStepAfter(
+        $workflow->withAddedJobAfter(
             'not-found',
-            test: new Step(WorkflowTestStep0::class)
+            test: new Job(WorkflowTestStep0::class)
         );
     }
 
     public function testWithAddedStepWithArguments(): void
     {
-        $step = new Step(
+        $step = new Job(
             WorkflowTestStep1::class,
             foo: 'foo'
         );
-        $workflow = (new Workflow(new Steps(step: $step)))
-            ->withAddedStep(name: $step);
-        $this->assertSame($step, $workflow->steps()->get('name'));
+        $workflow = (new Workflow(new Jobs(step: $step)))
+            ->withAddedJob(name: $step);
+        $this->assertSame($step, $workflow->jobs()->get('name'));
     }
 
     public function testWithReferencedParameters(): void
     {
         $workflow = new Workflow(
-            new Steps(
-                step1: new Step(
+            new Jobs(
+                step1: new Job(
                     WorkflowTestStep1::class,
                     foo: '${foo}'
                 )
@@ -144,8 +142,8 @@ final class WorkflowTest extends TestCase
         $this->assertTrue($workflow->parameters()->has('foo'));
         $this->assertSame(['foo'], $workflow->getVar('${foo}'));
         $workflow = $workflow
-            ->withAddedStep(
-                step2: new Step(
+            ->withAddedJob(
+                step2: new Job(
                     WorkflowTestStep2::class,
                     foo: '${step1:bar}',
                     bar: '${foo}'
@@ -157,27 +155,11 @@ final class WorkflowTest extends TestCase
         $this->assertSame(['foo'], $workflow->getVar('${foo}'));
         $this->assertSame(['step1', 'bar'], $workflow->getVar('${step1:bar}'));
         $this->expectException(InvalidArgumentException::class);
-        $workflow->withAddedStep(
-            step: new Step(
+        $workflow->withAddedJob(
+            step: new Job(
                 WorkflowTestStep1::class,
                 foo: '${not:found}'
             )
-        );
-    }
-
-    public function testConflictingTypeDependentActions(): void
-    {
-        $workflow = new Workflow(
-            new Steps(
-                step0: new Step(WorkflowTestStepDeps0::class)
-            )
-        );
-        foreach ((new WorkflowTestStepDeps0())->dependencies()->getIterator() as $key => $className) {
-            $this->assertSame($className, $workflow->steps()->dependencies()->key($key));
-        }
-        $this->expectException(OverflowException::class);
-        $workflow->withAddedStep(
-            step1: new Step(WorkflowTestStepDeps1::class)
         );
     }
 
@@ -185,12 +167,12 @@ final class WorkflowTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         new Workflow(
-            new Steps(
-                step1: new Step(
+            new Jobs(
+                step1: new Job(
                     WorkflowTestStep1::class,
                     foo: '${foo}'
                 ),
-                step2: new Step(
+                step2: new Job(
                     WorkflowTestStep2Conflict::class,
                     baz: '${foo}',
                     bar: 'test'
@@ -203,12 +185,12 @@ final class WorkflowTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         new Workflow(
-            new Steps(
-                step1: new Step(
+            new Jobs(
+                step1: new Job(
                     WorkflowTestStep1::class,
                     foo: '${foo}'
                 ),
-                step2: new Step(
+                step2: new Job(
                     WorkflowTestStep2::class,
                     foo: '${step1:missing}',
                     bar: '${foo}'
@@ -221,12 +203,12 @@ final class WorkflowTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         new Workflow(
-            new Steps(
-                step1: new Step(
+            new Jobs(
+                step1: new Job(
                     WorkflowTestStep1::class,
                     foo: '${foo}'
                 ),
-                step2: new Step(
+                step2: new Job(
                     WorkflowTestStep2Conflict::class,
                     baz: '${step1:bar}',
                     bar: '${foo}'

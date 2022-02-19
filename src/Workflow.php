@@ -22,8 +22,8 @@ use Chevere\Parameter\Parameters;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
-use Chevere\Workflow\Interfaces\StepInterface;
-use Chevere\Workflow\Interfaces\StepsInterface;
+use Chevere\Workflow\Interfaces\JobInterface;
+use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Ds\Map as DsMap;
 use function Safe\preg_match;
@@ -39,23 +39,23 @@ final class Workflow implements WorkflowInterface
 
     private DsMap $provided;
 
-    public function __construct(private StepsInterface $steps)
+    public function __construct(private JobsInterface $jobs)
     {
         $this->parameters = new Parameters();
         $this->vars = new Map();
         $this->expected = new DsMap();
         $this->provided = new DsMap();
-        $this->putAdded(...iterator_to_array($steps->getIterator()));
+        $this->putAdded(...iterator_to_array($jobs->getIterator()));
     }
 
-    public function steps(): StepsInterface
+    public function jobs(): JobsInterface
     {
-        return $this->steps;
+        return $this->jobs;
     }
 
     public function count(): int
     {
-        return $this->steps->count();
+        return $this->jobs->count();
     }
 
     public function vars(): Map
@@ -63,34 +63,34 @@ final class Workflow implements WorkflowInterface
         return $this->vars;
     }
 
-    public function withAddedStep(StepInterface ...$steps): WorkflowInterface
+    public function withAddedJob(JobInterface ...$jobs): WorkflowInterface
     {
         $new = clone $this;
-        $new->steps = $new->steps->withAdded(...$steps);
-        $new->putAdded(...$steps);
+        $new->jobs = $new->jobs->withAdded(...$jobs);
+        $new->putAdded(...$jobs);
 
         return $new;
     }
 
-    public function withAddedStepBefore(string $before, StepInterface ...$steps): WorkflowInterface
+    public function withAddedJobBefore(string $before, JobInterface ...$jobs): WorkflowInterface
     {
         $new = clone $this;
-        $new->steps = $new->steps->withAddedBefore($before, ...$steps);
-        foreach ($steps as $name => $step) {
+        $new->jobs = $new->jobs->withAddedBefore($before, ...$jobs);
+        foreach ($jobs as $name => $job) {
             $name = strval($name);
-            $new->setParameters($name, $step);
+            $new->setParameters($name, $job);
         }
 
         return $new;
     }
 
-    public function withAddedStepAfter(string $after, StepInterface ...$steps): WorkflowInterface
+    public function withAddedJobAfter(string $after, JobInterface ...$jobs): WorkflowInterface
     {
         $new = clone $this;
-        $new->steps = $new->steps->withAddedAfter($after, ...$steps);
-        foreach ($steps as $name => $step) {
+        $new->jobs = $new->jobs->withAddedAfter($after, ...$jobs);
+        foreach ($jobs as $name => $job) {
             $name = strval($name);
-            $new->setParameters($name, $step);
+            $new->setParameters($name, $job);
         }
 
         return $new;
@@ -124,10 +124,10 @@ final class Workflow implements WorkflowInterface
         }
     }
 
-    public function getProvided(string $step): ParametersInterface
+    public function getProvided(string $job): ParametersInterface
     {
         try {
-            return $this->provided->get($step);
+            return $this->provided->get($job);
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
@@ -135,21 +135,21 @@ final class Workflow implements WorkflowInterface
             throw new TypeError(previous: $e);
         } catch (\OutOfBoundsException $e) {
             throw new OutOfBoundsException(
-                (new Message('Step %step% not found'))
-                    ->code('%step%', $step)
+                (new Message('Job %job% not found'))
+                    ->code('%job%', $job)
             );
         }
         // @codeCoverageIgnoreEnd
     }
 
-    private function setParameters(string $name, StepInterface $step): void
+    private function setParameters(string $name, JobInterface $job): void
     {
-        $action = $step->action();
+        $action = $job->action();
         /** @var ActionInterface $action */
         $action = new $action();
         $parameters = $action->parameters();
         $this->provided->put($name, $action->responseParameters());
-        foreach ($step->arguments() as $argument => $reference) {
+        foreach ($job->arguments() as $argument => $reference) {
             $parameter = $parameters->get($argument);
 
             try {
@@ -159,15 +159,15 @@ final class Workflow implements WorkflowInterface
                         $this->vars = $this->vars->withPut($reference, [$matches[1]]);
                     }
                     $this->putParameter($matches[1], $parameter);
-                } elseif (preg_match(self::REGEX_STEP_REFERENCE, (string) $reference, $matches) !== 0) {
+                } elseif (preg_match(self::REGEX_JOB_REFERENCE, (string) $reference, $matches) !== 0) {
                     /** @var array $matches */
-                    $previousStep = (string) $matches[1];
+                    $previousJob = (string) $matches[1];
                     $previousResponseKey = (string) $matches[2];
-                    $this->assertPreviousReference($parameter, $previousStep, $previousResponseKey);
-                    $expected = $this->expected->get($previousStep, []);
+                    $this->assertPreviousReference($parameter, $previousJob, $previousResponseKey);
+                    $expected = $this->expected->get($previousJob, []);
                     $expected[] = $previousResponseKey;
-                    $this->expected->put($previousStep, $expected);
-                    $this->vars = $this->vars->withPut($reference, [$previousStep, $previousResponseKey]);
+                    $this->expected->put($previousJob, $expected);
+                    $this->vars = $this->vars->withPut($reference, [$previousJob, $previousResponseKey]);
                 }
             } catch (Throwable $e) {
                 throw new InvalidArgumentException(
@@ -211,24 +211,24 @@ final class Workflow implements WorkflowInterface
             ]);
     }
 
-    private function assertPreviousReference(ParameterInterface $parameter, string $previousStep, string $responseKey): void
+    private function assertPreviousReference(ParameterInterface $parameter, string $previousJob, string $responseKey): void
     {
-        $reference = '${' . "${previousStep}:${responseKey}" . '}';
-        if (!$this->steps()->has($previousStep)) {
+        $reference = '${' . "${previousJob}:${responseKey}" . '}';
+        if (!$this->jobs()->has($previousJob)) {
             throw new OutOfBoundsException(
-                (new Message("Reference %reference% not found, step %previous% doesn't exists"))
+                (new Message("Reference %reference% not found, job %previous% doesn't exists"))
                     ->code('%reference%', $reference)
-                    ->strong('%previous%', $previousStep)
+                    ->strong('%previous%', $previousJob)
             );
         }
         /** @var ParametersInterface $responseParameters */
-        $responseParameters = $this->provided->get($previousStep);
+        $responseParameters = $this->provided->get($previousJob);
         if (!$responseParameters->has($responseKey)) {
             throw new OutOfBoundsException(
                 (new Message('Reference %reference% not found, response parameter %parameter% is not declared by %previous%'))
                     ->code('%reference%', $reference)
                     ->strong('%parameter%', $responseKey)
-                    ->strong('%previous%', $previousStep)
+                    ->strong('%previous%', $previousJob)
             );
         }
         $this->assertMatchesExistingParameter(
@@ -238,11 +238,11 @@ final class Workflow implements WorkflowInterface
         );
     }
 
-    private function putAdded(StepInterface ...$steps): void
+    private function putAdded(JobInterface ...$jobs): void
     {
-        foreach ($steps as $name => $step) {
+        foreach ($jobs as $name => $job) {
             $name = strval($name);
-            $this->setParameters($name, $step);
+            $this->setParameters($name, $job);
         }
     }
 }

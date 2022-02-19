@@ -27,7 +27,7 @@ use Ramsey\Uuid\Uuid;
 
 final class WorkflowRun implements WorkflowRunInterface
 {
-    private Map $steps;
+    private Map $jobs;
 
     private string $uuid;
 
@@ -37,12 +37,12 @@ final class WorkflowRun implements WorkflowRunInterface
     {
         $this->uuid = Uuid::uuid4()->toString();
         $this->arguments = new Arguments($workflow->parameters(), ...$namedArguments);
-        $this->steps = new Map();
+        $this->jobs = new Map();
     }
 
     public function __clone()
     {
-        $this->steps = deepCopy($this->steps);
+        $this->jobs = deepCopy($this->jobs);
     }
 
     public function uuid(): string
@@ -60,23 +60,23 @@ final class WorkflowRun implements WorkflowRunInterface
         return $this->arguments;
     }
 
-    public function withStepResponse(string $step, ResponseInterface $response): WorkflowRunInterface
+    public function withJobResponse(string $job, ResponseInterface $response): WorkflowRunInterface
     {
         $new = clone $this;
-        $new->workflow->steps()->get($step);
+        $new->workflow->jobs()->get($job);
         $tryArguments = new Arguments(
-            $new->workflow->getProvided($step),
+            $new->workflow->getProvided($job),
             ...$response->data()
         );
         $tryArguments->parameters();
-        $new->steps->put($step, $response);
+        $new->jobs->put($job, $response);
 
         return $new;
     }
 
     public function has(string $name): bool
     {
-        return $this->steps->hasKey($name);
+        return $this->jobs->hasKey($name);
     }
 
     /**
@@ -86,7 +86,7 @@ final class WorkflowRun implements WorkflowRunInterface
     public function get(string $name): ResponseInterface
     {
         try {
-            return $this->steps->get($name);
+            return $this->jobs->get($name);
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
@@ -96,7 +96,7 @@ final class WorkflowRun implements WorkflowRunInterface
         // @codeCoverageIgnoreEnd
         catch (\OutOfBoundsException $e) {
             throw new OutOfBoundsException(
-                (new Message('Step %name% not found'))
+                (new Message('Job %name% not found'))
                     ->code('%name%', $name)
             );
         }

@@ -11,18 +11,13 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\Workflow;
+namespace Chevere\Tests;
 
 use Chevere\DataStructure\Map;
-use function Chevere\Filesystem\dirForPath;
-use Chevere\Filesystem\Path;
-use Chevere\Tests\Workflow\_resources\src\WorkflowRunnerTestDependentStep1;
-use Chevere\Tests\Workflow\_resources\src\WorkflowRunnerTestDependentStep2;
-use Chevere\Tests\Workflow\_resources\src\WorkflowRunnerTestStep1;
-use Chevere\Tests\Workflow\_resources\src\WorkflowRunnerTestStep2;
-use Chevere\Throwable\Exceptions\LogicException;
-use Chevere\Workflow\Step;
-use Chevere\Workflow\Steps;
+use Chevere\Tests\_resources\src\WorkflowRunnerTestStep1;
+use Chevere\Tests\_resources\src\WorkflowRunnerTestStep2;
+use Chevere\Workflow\Job;
+use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
 use Chevere\Workflow\WorkflowRun;
 use Chevere\Workflow\WorkflowRunner;
@@ -34,13 +29,13 @@ final class WorkflowRunnerTest extends TestCase
     {
         $foo = 'hola';
         $bar = 'mundo';
-        $workflow = (new Workflow(new Steps()))
-            ->withAddedStep(
-                step1: new Step(
+        $workflow = (new Workflow(new Jobs()))
+            ->withAddedJob(
+                step1: new Job(
                     WorkflowRunnerTestStep1::class,
                     foo: '${foo}'
                 ),
-                step2: new Step(
+                step2: new Job(
                     WorkflowRunnerTestStep2::class,
                     foo: '${step1:response1}',
                     bar: '${bar}'
@@ -79,37 +74,5 @@ final class WorkflowRunnerTest extends TestCase
                 ->data(),
             $workflowRun->get('step2')->data()
         );
-    }
-
-    public function testWithDependencies(): void
-    {
-        $foo = 'hola';
-        $bar = 'mundo';
-        $workflow = (new Workflow(new Steps()))
-            ->withAddedStep(
-                step1: new Step(
-                    WorkflowRunnerTestDependentStep1::class,
-                    foo: '${foo}'
-                ),
-                step2: new Step(
-                    WorkflowRunnerTestDependentStep2::class,
-                    foo: '${step1:response1}',
-                    bar: '${bar}'
-                )
-            );
-        $workflowRun = new WorkflowRun(
-            $workflow,
-            foo: $foo,
-            bar: $bar,
-        );
-        $container = new Map(
-            path: new Path(__FILE__),
-            dir: dirForPath(__DIR__ . '/')
-        );
-        (new WorkflowRunner($workflowRun))
-            ->withRun($container);
-        $this->expectException(LogicException::class);
-        (new WorkflowRunner($workflowRun))
-            ->withRun(new Map());
     }
 }

@@ -13,20 +13,20 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Workflow\Interfaces\StepInterface;
+use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Chevere\Workflow\Interfaces\WorkflowMessageInterface;
 
-function workflow(StepInterface ...$namedSteps): WorkflowInterface
+function workflow(JobInterface ...$namedSteps): WorkflowInterface
 {
     return new Workflow(
-        new Steps(...$namedSteps)
+        new Jobs(...$namedSteps)
     );
 }
 
-function step(string $action, mixed ...$namedArguments): StepInterface
+function job(string $action, mixed ...$namedArguments): JobInterface
 {
-    return new Step($action, ...$namedArguments);
+    return new Job($action, ...$namedArguments);
 }
 
 /**

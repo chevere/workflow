@@ -11,34 +11,34 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\Workflow;
+namespace Chevere\Tests;
 
-use Chevere\Tests\Workflow\_resources\src\TaskTestStep0;
-use Chevere\Tests\Workflow\_resources\src\TaskTestStep1;
+use Chevere\Tests\_resources\src\TaskTestStep0;
+use Chevere\Tests\_resources\src\TaskTestStep1;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Workflow\Step;
+use Chevere\Workflow\Job;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
 
-final class StepTest extends TestCase
+final class JobTest extends TestCase
 {
     public function testInvalidArgument(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new Step('callable');
+        new Job('callable');
     }
 
     public function testUnexpectedValue(): void
     {
         $this->expectException(UnexpectedValueException::class);
-        new Step(__CLASS__);
+        new Job(__CLASS__);
     }
 
     public function testArgumentCountError(): void
     {
         $this->expectException(ArgumentCountError::class);
-        new Step(
+        new Job(
             TaskTestStep0::class,
             foo: 'foo',
             bar: 'invalid extra argument'
@@ -48,7 +48,7 @@ final class StepTest extends TestCase
     public function testWithArgumentCountError(): void
     {
         $this->expectException(ArgumentCountError::class);
-        new Step(
+        new Job(
             TaskTestStep0::class,
             foo: 'foo',
             bar: 'invalid extra argument'
@@ -62,13 +62,13 @@ final class StepTest extends TestCase
             'foo' => '1',
             'bar' => 123,
         ];
-        $task = new Step($action);
-        $this->assertSame($action, $task->action());
-        $this->assertSame([], $task->arguments());
-        $taskWithArgument = $task->withArguments(...$arguments);
-        $this->assertNotSame($task, $taskWithArgument);
+        $job = new Job($action);
+        $this->assertSame($action, $job->action());
+        $this->assertSame([], $job->arguments());
+        $taskWithArgument = $job->withArguments(...$arguments);
+        $this->assertNotSame($job, $taskWithArgument);
         $this->assertSame($arguments, $taskWithArgument->arguments());
-        $task = new Step($action, ...$arguments);
-        $this->assertSame($arguments, $task->arguments());
+        $job = new Job($action, ...$arguments);
+        $this->assertSame($arguments, $job->arguments());
     }
 }

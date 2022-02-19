@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\Workflow\_resources\src;
+namespace Chevere\Tests\_resources\src;
 
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Chevere\Workflow\Interfaces\WorkflowProviderInterface;

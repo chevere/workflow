@@ -43,15 +43,15 @@ interface WorkflowRunInterface
     /**
      * @throws ArgumentCountError
      */
-    public function withStepResponse(string $step, ResponseInterface $response): self;
+    public function withJobResponse(string $job, ResponseInterface $response): self;
 
     /**
-     * Indicates whether the instance has the given `$step`. Will return `true` if step has ran.
+     * Indicates whether the instance has the given `$job`. Will return `true` if job has ran.
      */
-    public function has(string $step): bool;
+    public function has(string $job): bool;
 
     /**
-     * Provides access to the ResponseInterface instance for the given `$step`.
+     * Provides access to the ResponseInterface instance for the given `$job`.
      */
-    public function get(string $step): ResponseInterface;
+    public function get(string $job): ResponseInterface;
 }

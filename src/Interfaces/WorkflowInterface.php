@@ -25,43 +25,43 @@ interface WorkflowInterface extends Countable
 {
     public const REGEX_PARAMETER_REFERENCE = '/^\${([\w-]*)}$/';
 
-    public const REGEX_STEP_REFERENCE = '/^\${([\w-]*)\:([\w-]*)}$/';
+    public const REGEX_JOB_REFERENCE = '/^\${([\w-]*)\:([\w-]*)}$/';
 
-    public function __construct(StepsInterface $steps);
+    public function __construct(JobsInterface $jobs);
 
-    public function steps(): StepsInterface;
+    public function jobs(): JobsInterface;
 
     public function vars(): Map;
 
     /**
-     * Return an instance with the specified `$step`.
+     * Return an instance with the specified `$job`.
      *
      * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified `$step`.
+     * an instance that contains the specified `$job`.
      *
      * @throws OverflowException
      */
-    public function withAddedStep(StepInterface ...$steps): self;
+    public function withAddedJob(JobInterface ...$jobs): self;
 
     /**
-     * Return an instance with the specified `$step` added before `$before`.
+     * Return an instance with the specified `$job` added before `$before`.
      *
      * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified `$step` added before `$before`.
+     * an instance that contains the specified `$job` added before `$before`.
      *
      * @throws OverflowException
      */
-    public function withAddedStepBefore(string $before, StepInterface ...$steps): self;
+    public function withAddedJobBefore(string $before, JobInterface ...$jobs): self;
 
     /**
-     * Return an instance with the specified `$step` added after `$after`.
+     * Return an instance with the specified `$job` added after `$after`.
      *
      * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified `$step` added after `$after`.
+     * an instance that contains the specified `$job` added after `$after`.
      *
      * @throws OverflowException
      */
-    public function withAddedStepAfter(string $after, StepInterface ...$steps): self;
+    public function withAddedJobAfter(string $after, JobInterface ...$jobs): self;
 
     public function parameters(): ParametersInterface;
 
@@ -85,7 +85,7 @@ interface WorkflowInterface extends Countable
     public function getVar(string $var): array;
 
     /**
-     * Provides access to the expected return arguments for the given `$step`.
+     * Provides access to the expected return arguments for the given `$job`.
      */
-    public function getProvided(string $step): ParametersInterface;
+    public function getProvided(string $job): ParametersInterface;
 }

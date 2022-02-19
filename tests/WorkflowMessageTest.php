@@ -11,11 +11,11 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\Workflow;
+namespace Chevere\Tests;
 
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\WorkflowRunInterface;
-use Chevere\Workflow\Steps;
+use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
 use Chevere\Workflow\WorkflowMessage;
 use Chevere\Workflow\WorkflowRun;
@@ -25,7 +25,7 @@ final class WorkflowMessageTest extends TestCase
 {
     public function getWorkflowRun(): WorkflowRunInterface
     {
-        return new WorkflowRun(new Workflow(new Steps()));
+        return new WorkflowRun(new Workflow(new Jobs()));
     }
 
     public function testConstruct(): void

@@ -16,9 +16,9 @@ namespace Chevere\Workflow\Interfaces;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 
 /**
- * Describes the component in charge of defining a task (a unit of job).
+ * Describes the component in charge of defining a job.
  */
-interface StepInterface
+interface JobInterface
 {
     /**
      * @throws InvalidArgumentException

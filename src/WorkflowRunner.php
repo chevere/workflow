@@ -15,16 +15,14 @@ namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
-use Chevere\Dependent\Interfaces\DependentInterface;
 use Chevere\Message\Message;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\LogicException;
 use Chevere\Throwable\Exceptions\RuntimeException;
 use function Chevere\VarSupport\deepCopy;
-use Chevere\Workflow\Interfaces\StepInterface;
+use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\WorkflowRunInterface;
 use Chevere\Workflow\Interfaces\WorkflowRunnerInterface;
 use Throwable;
@@ -43,34 +41,12 @@ final class WorkflowRunner implements WorkflowRunnerInterface
 
     public function withRun(MapInterface $serviceContainer): static
     {
-        $this->assertDependencies($serviceContainer);
         $new = clone $this;
-        foreach ($new->workflowRun->workflow()->steps()->getIterator() as $name => $step) {
+        foreach ($new->workflowRun->workflow()->jobs()->getIterator() as $name => $job) {
             if ($new->workflowRun->has($name)) {
                 continue;
             }
-
-            try {
-                $actionName = $step->action();
-                /** @var ActionInterface $action */
-                $action = new $actionName();
-                $new->injectDependencies($action, $serviceContainer);
-                $arguments = $new->getActionArguments($action, $step);
-                $response = $new->getActionRunResponse($action, $arguments);
-                deepCopy($response);
-                $new->addStep($name, $response);
-            }
-            // @codeCoverageIgnoreStart
-            catch (Throwable $e) {
-                throw new RuntimeException(
-                    previous: $e,
-                    message: (new Message('Caught %throwable% at step:%step% when running action:%action%'))
-                        ->code('%throwable%', $e::class)
-                        ->code('%step%', $name)
-                        ->code('%action%', $actionName)
-                );
-            }
-            // @codeCoverageIgnoreEnd
+            $new->runJob($name, $job);
         }
 
         return $new;
@@ -98,9 +74,9 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         // @codeCoverageIgnoreEnd
     }
 
-    private function getActionArguments(ActionInterface $action, StepInterface $step): ArgumentsInterface
+    private function getActionArguments(ActionInterface $action, JobInterface $job): ArgumentsInterface
     {
-        $arguments = $this->getStepArguments($step);
+        $arguments = $this->getJobArguments($job);
 
         try {
             return new Arguments($action->parameters(), ...$arguments);
@@ -115,41 +91,10 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         // @codeCoverageIgnoreEnd
     }
 
-    private function assertDependencies(MapInterface $serviceContainer): void
-    {
-        $dependencies = $this->workflowRun->workflow()->steps()->dependencies();
-        $missing = [];
-        foreach ($dependencies->getIterator() as $name => $className) {
-            $isMissing =
-                !$serviceContainer->has($name) ||
-                !is_a($serviceContainer->get($name), $className, false);
-            if ($isMissing) {
-                $missing[] = "${name}:${className}";
-            }
-        }
-        if ($missing !== []) {
-            throw new LogicException(
-                message: (new Message('Missing %missing% dependency(ies)'))
-                    ->code('%missing%', implode(', ', $missing))
-            );
-        }
-    }
-
-    private function injectDependencies(ActionInterface &$action, MapInterface $serviceContainer): void
-    {
-        if ($action instanceof DependentInterface) {
-            $instances = [];
-            foreach ($action->dependencies()->getIterator() as $name => $className) {
-                $instances[$name] = $serviceContainer->get($name);
-            }
-            $action = $action->withDependencies(...$instances);
-        }
-    }
-
-    private function getStepArguments(StepInterface $step): array
+    private function getJobArguments(JobInterface $job): array
     {
         $arguments = [];
-        foreach ($step->arguments() as $name => $taskArgument) {
+        foreach ($job->arguments() as $name => $taskArgument) {
             if (!$this->workflowRun->workflow()->vars()->has($taskArgument)) {
                 // @codeCoverageIgnoreStart
                 $arguments[$name] = $taskArgument;
@@ -170,9 +115,33 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         return $arguments;
     }
 
-    private function addStep(string $name, ResponseInterface $response): void
+    private function addJob(string $name, ResponseInterface $response): void
     {
         $this->workflowRun = $this->workflowRun
-            ->withStepResponse($name, $response);
+            ->withJobResponse($name, $response);
+    }
+
+    private function runJob(string $name, JobInterface $job): void
+    {
+        try {
+            $actionName = $job->action();
+            /** @var ActionInterface $action */
+            $action = new $actionName();
+            $arguments = $this->getActionArguments($action, $job);
+            $response = $this->getActionRunResponse($action, $arguments);
+            deepCopy($response);
+            $this->addJob($name, $response);
+        }
+        // @codeCoverageIgnoreStart
+        catch (Throwable $e) {
+            throw new RuntimeException(
+                previous: $e,
+                message: (new Message('Caught %throwable% at job:%job% when running action:%action%'))
+                    ->code('%throwable%', $e::class)
+                    ->code('%job%', $name)
+                    ->code('%action%', $actionName)
+            );
+        }
+        // @codeCoverageIgnoreEnd
     }
 }

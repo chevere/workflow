@@ -11,14 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\Workflow;
+namespace Chevere\Tests;
 
-use Chevere\Workflow\Step;
-use function Chevere\Workflow\step;
-use Chevere\Workflow\Steps;
+use Chevere\Tests\_resources\src\ActionTestAction;
+use Chevere\Workflow\Job;
+use function Chevere\Workflow\job;
+use Chevere\Workflow\Jobs;
 use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
-use Chevere\Tests\Workflow\_resources\src\ActionTestAction;
 use PHPUnit\Framework\TestCase;
 
 final class WorkflowFunctionsTest extends TestCase
@@ -26,13 +26,13 @@ final class WorkflowFunctionsTest extends TestCase
     public function testFunctionWorkflow(): void
     {
         $workflow = workflow();
-        $this->assertEquals(new Workflow(new Steps()), $workflow);
+        $this->assertEquals(new Workflow(new Jobs()), $workflow);
     }
 
     public function testFunctionStep(): void
     {
         $args = ['action' => ActionTestAction::class];
-        $step = step(...$args);
-        $this->assertEquals(new Step(...$args), $step);
+        $step = job(...$args);
+        $this->assertEquals(new Job(...$args), $step);
     }
 }
