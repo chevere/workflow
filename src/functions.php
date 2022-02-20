@@ -31,14 +31,6 @@ function job(
     return new Job($action, ...$namedArguments);
 }
 
-function jobAfter(
-    string $action,
-    mixed ...$namedArguments
-): JobInterface {
-    return (new Job($action, ...$namedArguments))
-        ->withDependsOn(':previous');
-}
-
 /**
  * @codeCoverageIgnore
  */

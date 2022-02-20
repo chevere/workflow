@@ -31,7 +31,7 @@ interface JobInterface
 
     public function withArguments(mixed ...$namedArguments): self;
 
-    public function withDependsOn(string ...$jobs): self;
+    public function withDepends(string ...$jobs): self;
 
     public function action(): string;
 

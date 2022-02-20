@@ -15,7 +15,6 @@ namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\ActionTestAction;
 use function Chevere\Workflow\job;
-use function Chevere\Workflow\jobAfter;
 use Chevere\Workflow\Jobs;
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +38,7 @@ final class JobsTest extends TestCase
     {
         $jobs = new Jobs(
             j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class)->withDependsOn('j1'),
+            j2: job(ActionTestAction::class)->withDepends('j1'),
         );
         $this->assertSame(
             [
@@ -54,7 +53,7 @@ final class JobsTest extends TestCase
     {
         $jobs = new Jobs(
             j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class)->withDependsOn(':previous'),
+            j2: job(ActionTestAction::class)->withDepends('j1'),
         );
         $this->assertSame(
             [
@@ -71,8 +70,8 @@ final class JobsTest extends TestCase
             j1: job(ActionTestAction::class),
             j2: job(ActionTestAction::class),
             j3: job(ActionTestAction::class)
-                ->withDependsOn(':previous')
-                ->withDependsOn('j1'),
+                ->withDepends('j2')
+                ->withDepends('j1'),
         );
         $this->assertSame(
             [
@@ -87,12 +86,35 @@ final class JobsTest extends TestCase
     {
         $jobs = new Jobs(
             j1: job(ActionTestAction::class),
-            j2: jobAfter(ActionTestAction::class),
+            j2: job(ActionTestAction::class)->withDepends('j1'),
+            j3: job(ActionTestAction::class)->withDepends('j2'),
         );
         $this->assertSame(
             [
                 0 => ['j1'],
                 1 => ['j2'],
+                2 => ['j3'],
+            ],
+            $jobs->getGraph()
+        );
+    }
+
+    public function testWithDependsMix(): void
+    {
+        $jobs = new Jobs(
+            j1: job(ActionTestAction::class),
+            j2: job(ActionTestAction::class),
+            j3: job(ActionTestAction::class)
+                ->withDepends('j1', 'j2'),
+            j4: job(ActionTestAction::class),
+            j5: job(ActionTestAction::class)->withDepends('j4'),
+            j6: job(ActionTestAction::class)->withDepends('j5'),
+        );
+        $this->assertSame(
+            [
+                0 => ['j1', 'j2', 'j4'],
+                1 => ['j3', 'j5'],
+                2 => ['j6'],
             ],
             $jobs->getGraph()
         );

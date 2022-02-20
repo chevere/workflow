@@ -78,13 +78,10 @@ final class JobsGraph implements JobsGraphInterface
     {
         $array = $this->toArray();
         uasort($array, function (Vector $a, Vector $b) {
-            $countA = $a->count();
-            $countB = $b->count();
-
             return match (true) {
-                $countA == $countB => 0,
-                $countA < $countB => -1,
-                default => 1
+                $b->contains(...$a->toArray()) => -1,
+                $a->contains(...$b->toArray()) => 1,
+                default => 0
             };
         });
 

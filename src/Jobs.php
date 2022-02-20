@@ -33,13 +33,13 @@ final class Jobs implements JobsInterface
 
     private Vector $jobs;
 
-    private JobsGraphInterface $dependencies;
+    private JobsGraphInterface $graph;
 
     public function __construct(JobInterface ...$jobs)
     {
         $this->map = new Map();
         $this->jobs = new Vector();
-        $this->dependencies = new JobsGraph();
+        $this->graph = new JobsGraph();
         $this->putAdded(...$jobs);
     }
 
@@ -50,7 +50,7 @@ final class Jobs implements JobsInterface
 
     public function getGraph(): array
     {
-        return $this->dependencies->getGraph();
+        return $this->graph->getGraph();
     }
 
     /**
@@ -110,20 +110,12 @@ final class Jobs implements JobsInterface
 
     private function putAdded(JobInterface ...$jobs): void
     {
-        $previousName = null;
         foreach ($jobs as $name => $job) {
             $name = strval($name);
             $this->addMap($name, $job);
             $this->jobs->push($name);
-            $search = array_search(':previous', $job->dependencies());
-            if ($search !== false) {
-                $dependencies = $job->dependencies();
-                unset($dependencies[$search]);
-                $dependencies[] = $previousName;
-                $job = $job->withDependsOn(...$dependencies);
-            }
             $this->assertJobContainsDependencies($name, $job);
-            $this->dependencies = $this->dependencies
+            $this->graph = $this->graph
                 ->withPut($name, ...$job->dependencies());
             $previousName = $name;
         }
