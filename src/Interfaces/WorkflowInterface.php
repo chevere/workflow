@@ -43,26 +43,6 @@ interface WorkflowInterface extends Countable
      */
     public function withAddedJob(JobInterface ...$jobs): self;
 
-    /**
-     * Return an instance with the specified `$job` added before `$before`.
-     *
-     * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified `$job` added before `$before`.
-     *
-     * @throws OverflowException
-     */
-    public function withAddedJobBefore(string $before, JobInterface ...$jobs): self;
-
-    /**
-     * Return an instance with the specified `$job` added after `$after`.
-     *
-     * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified `$job` added after `$after`.
-     *
-     * @throws OverflowException
-     */
-    public function withAddedJobAfter(string $after, JobInterface ...$jobs): self;
-
     public function parameters(): ParametersInterface;
 
     /**

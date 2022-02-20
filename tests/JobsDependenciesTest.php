@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Str\Exceptions\StrCtypeDigitException;
+use Chevere\Str\Exceptions\StrCtypeSpaceException;
+use Chevere\Str\Exceptions\StrEmptyException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\JobsDependencies;
@@ -99,5 +102,26 @@ final class JobsDependenciesTest extends TestCase
         $dependencies = new JobsDependencies();
         $this->expectException(OverflowException::class);
         $dependencies->withPut('j0', 'j1', 'j1');
+    }
+
+    public function testWithPutEmpty(): void
+    {
+        $dependencies = new JobsDependencies();
+        $this->expectException(StrEmptyException::class);
+        $dependencies->withPut('job', '');
+    }
+
+    public function testWithPutSpace(): void
+    {
+        $dependencies = new JobsDependencies();
+        $this->expectException(StrCtypeSpaceException::class);
+        $dependencies->withPut('job', ' ');
+    }
+
+    public function testWithPutDigit(): void
+    {
+        $dependencies = new JobsDependencies();
+        $this->expectException(StrCtypeDigitException::class);
+        $dependencies->withPut('job', '123');
     }
 }

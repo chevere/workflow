@@ -71,31 +71,7 @@ final class Workflow implements WorkflowInterface
 
         return $new;
     }
-
-    public function withAddedJobBefore(string $before, JobInterface ...$jobs): WorkflowInterface
-    {
-        $new = clone $this;
-        $new->jobs = $new->jobs->withAddedBefore($before, ...$jobs);
-        foreach ($jobs as $name => $job) {
-            $name = strval($name);
-            $new->setParameters($name, $job);
-        }
-
-        return $new;
-    }
-
-    public function withAddedJobAfter(string $after, JobInterface ...$jobs): WorkflowInterface
-    {
-        $new = clone $this;
-        $new->jobs = $new->jobs->withAddedAfter($after, ...$jobs);
-        foreach ($jobs as $name => $job) {
-            $name = strval($name);
-            $new->setParameters($name, $job);
-        }
-
-        return $new;
-    }
-    
+   
     public function parameters(): ParametersInterface
     {
         return $this->parameters;

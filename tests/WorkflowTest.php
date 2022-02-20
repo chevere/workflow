@@ -17,7 +17,6 @@ use Chevere\Tests\_resources\src\WorkflowTestStep0;
 use Chevere\Tests\_resources\src\WorkflowTestStep1;
 use Chevere\Tests\_resources\src\WorkflowTestStep2;
 use Chevere\Tests\_resources\src\WorkflowTestStep2Conflict;
-use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
@@ -60,63 +59,7 @@ final class WorkflowTest extends TestCase
         $this->expectException(OverflowException::class);
         $workflowWithAddedStep->withAddedJob(step: $step);
     }
-
-    public function testWithAddedBeforeAndAfter(): void
-    {
-        $workflow = (new Workflow(new Jobs()));
-        $workflowWithAddedSteps = $workflow
-            ->withAddedJob(step: new Job(WorkflowTestStep0::class))
-            ->withAddedJobBefore(
-                'step',
-                stepBefore: new Job(WorkflowTestStep0::class)
-            );
-        $this->assertNotSame($workflow, $workflowWithAddedSteps);
-        $this->assertSame(['stepBefore', 'step'], $workflowWithAddedSteps->jobs()->keys());
-        $workflowWithAddedSteps = $workflowWithAddedSteps
-            ->withAddedJobAfter(
-                'stepBefore',
-                stepAfter: new Job(WorkflowTestStep0::class)
-            );
-        $this->assertNotSame($workflow, $workflowWithAddedSteps);
-        $this->assertSame([
-            'stepBefore',
-            'stepAfter',
-            'step',
-        ], $workflowWithAddedSteps->jobs()->keys());
-        $this->expectException(BadMethodCallException::class);
-        $workflowWithAddedSteps->withAddedJob(
-            step3: new Job(
-                WorkflowTestStep1::class,
-                missing: '${not-found:reference}'
-            )
-        );
-    }
-
-    public function testWithAddedBeforeOutOfBounds(): void
-    {
-        $workflow = (new Workflow(new Jobs()))
-            ->withAddedJob(
-                found: new Job(WorkflowTestStep0::class)
-            );
-        $this->expectException(OutOfBoundsException::class);
-        $workflow->withAddedJobBefore(
-            'not-found',
-            test: new Job(WorkflowTestStep0::class)
-        );
-    }
-
-    public function testWithAddedAfterOutOfBounds(): void
-    {
-        $step = new Job(WorkflowTestStep0::class);
-        $workflow = (new Workflow(new Jobs(step: $step)))
-            ->withAddedJob(found: $step);
-        $this->expectException(OutOfBoundsException::class);
-        $workflow->withAddedJobAfter(
-            'not-found',
-            test: new Job(WorkflowTestStep0::class)
-        );
-    }
-
+    
     public function testWithAddedStepWithArguments(): void
     {
         $step = new Job(

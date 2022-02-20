@@ -23,26 +23,17 @@ interface JobsInterface extends MappedInterface
 {
     public function __construct(JobInterface ...$jobs);
 
-    public function has(string $name): bool;
+    public function has(string $job): bool;
 
-    public function get(string $name): JobInterface;
+    public function get(string $job): JobInterface;
 
     public function keys(): array;
 
     public function count(): int;
 
-    public function jobDependencies(): JobsDependenciesInterface;
+    public function getGraph(): array;
 
     public function withAdded(JobInterface ...$jobs): JobsInterface;
-
-    public function withAddedBefore(string $before, JobInterface ...$job): JobsInterface;
-
-    public function withAddedAfter(string $after, JobInterface ...$job): JobsInterface;
-
-    /**
-     * Define `...$jobs` that must be executed before job identified by `$name`.
-     */
-    public function withJobDependencies(string $name, string ...$jobs): JobsInterface;
 
     /**
      * @return Iterator<string, JobInterface>

@@ -33,13 +33,13 @@ final class Jobs implements JobsInterface
 
     private Vector $jobs;
 
-    private JobsDependenciesInterface $jobDependencies;
+    private JobsDependenciesInterface $dependencies;
 
     public function __construct(JobInterface ...$jobs)
     {
         $this->map = new Map();
         $this->jobs = new Vector();
-        $this->jobDependencies = new JobsDependencies();
+        $this->dependencies = new JobsDependencies();
         $this->putAdded(...$jobs);
     }
 
@@ -48,19 +48,19 @@ final class Jobs implements JobsInterface
         return $this->jobs->toArray();
     }
 
-    public function jobDependencies(): JobsDependenciesInterface
+    public function getGraph(): array
     {
-        return $this->jobDependencies;
+        return $this->dependencies->getGraph();
     }
 
     /**
      * @throws TypeError
      * @throws OutOfBoundsException
      */
-    public function get(string $jobs): JobInterface
+    public function get(string $job): JobInterface
     {
         try {
-            return $this->map->get($jobs);
+            return $this->map->get($job);
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
@@ -71,7 +71,7 @@ final class Jobs implements JobsInterface
         catch (\OutOfBoundsException $e) {
             throw new OutOfBoundsException(
                 (new Message('Job %name% not found'))
-                    ->code('%name%', $jobs)
+                    ->code('%name%', $job)
             );
         }
     }
@@ -97,49 +97,23 @@ final class Jobs implements JobsInterface
         return $new;
     }
 
-    public function withAddedBefore(string $before, JobInterface ...$job): JobsInterface
+    public function withdependencies(string $job, string ...$dependencies): JobsInterface
     {
         $new = clone $this;
-        $new->assertHasJobByName($before);
-        foreach ($job as $name => $jobEl) {
-            $name = (string) $name;
-            $new->addMap($name, $jobEl);
-            $new->jobs->insert($new->jobs->find($before), $name);
-        }
-
-        return $new;
-    }
-
-    public function withAddedAfter(string $after, JobInterface ...$job): JobsInterface
-    {
-        $new = clone $this;
-        $new->assertHasJobByName($after);
-        foreach ($job as $name => $jobEl) {
-            $name = (string) $name;
-            $new->addMap($name, $jobEl);
-            $new->jobs->insert($new->jobs->find($after) + 1, $name);
-        }
-
-        return $new;
-    }
-
-    public function withJobDependencies(string $name, string ...$jobs): JobsInterface
-    {
-        $new = clone $this;
-        $new->assertHasJobByName($name);
-        foreach ($jobs as $job) {
-            $new->assertHasJobByName($job);
-            if ($new->jobDependencies->has($job)
-                && $new->jobDependencies->hasDependencies($job, $name)) {
+        $new->assertHasJobByName($job);
+        foreach ($dependencies as $dependency) {
+            $new->assertHasJobByName($dependency);
+            if ($new->dependencies->has($dependency)
+                && $new->dependencies->hasDependencies($job, $dependency)) {
                 throw new LogicException(
-                    message("Job %name% can't depend on %job% (%job% depends on %name%).")
+                    message("Job %job% can't depend on %dependency% (depends on %job%).")
                             ->code('%job%', $job)
-                            ->code('%name%', $name)
+                            ->code('%dependency%', $dependency)
                 );
             }
         }
-        $new->jobDependencies = $new->jobDependencies
-            ->withPut($name, ...$jobs);
+        $new->dependencies = $new->dependencies
+            ->withPut($job, ...$dependencies);
 
         return $new;
     }
@@ -161,17 +135,17 @@ final class Jobs implements JobsInterface
             $name = strval($name);
             $this->addMap($name, $job);
             $this->jobs->push($name);
-            $this->jobDependencies = $this->jobDependencies
+            $this->dependencies = $this->dependencies
                 ->withPut($name, ...$job->dependencies());
         }
     }
 
-    private function assertHasJobByName(string $jobs): void
+    private function assertHasJobByName(string $job): void
     {
-        if (!$this->map->has($jobs)) {
+        if (!$this->map->has($job)) {
             throw new OutOfBoundsException(
                 (new Message("Job %name% doesn't exists"))
-                    ->code('%name%', $jobs)
+                    ->code('%name%', $job)
             );
         }
     }
