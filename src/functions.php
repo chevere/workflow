@@ -16,6 +16,7 @@ namespace Chevere\Workflow;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Chevere\Workflow\Interfaces\WorkflowMessageInterface;
+use Chevere\Workflow\Interfaces\WorkflowRunnerInterface;
 
 function workflow(JobInterface ...$namedSteps): WorkflowInterface
 {
@@ -47,4 +48,19 @@ function pushWorkflowQueue(WorkflowMessageInterface $workflowMessage, $stack): v
 {
     $stack->push($workflowMessage);
     $stack[] = $workflowMessage;
+}
+
+function runJob(
+    WorkflowRunnerInterface $workflowRunner,
+    string ...$jobs,
+): WorkflowRunnerInterface {
+    foreach ($jobs as $name) {
+        if ($workflowRunner->workflowRun()->has($name)) {
+            continue;
+        }
+        $job = $workflowRunner->workflowRun()->workflow()->jobs()->get($name);
+        $workflowRunner->runJob($name, $job);
+    }
+
+    return $workflowRunner;
 }

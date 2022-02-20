@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use function Amp\Parallel\Worker\enqueueCallable;
+use function Amp\Promise\all;
+use function Amp\Promise\wait;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\Message\Message;
@@ -39,21 +42,27 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         return $this->workflowRun;
     }
 
-    public function withRun(MapInterface $serviceContainer): static
+    public function withRun(MapInterface $serviceContainer): WorkflowRunnerInterface
     {
         $new = clone $this;
-        foreach ($new->workflowRun->workflow()->jobs()->getIterator() as $name => $job) {
-            if ($new->workflowRun->has($name)) {
-                continue;
-            }
-            $new->runJob($name, $job);
+        $jobs = $new->workflowRun->workflow()->jobs();
+        $promises = [];
+        foreach ($jobs->getGraph() as $jobs) {
+            $promises[] = enqueueCallable(
+                'Chevere\\Workflow\\runJob',
+                $new,
+                ...$jobs,
+            );
         }
+        $responses = wait(all($promises));
 
-        return $new;
+        return end($responses);
     }
 
-    private function getActionRunResponse(ActionInterface $action, ArgumentsInterface $arguments): ResponseInterface
-    {
+    private function getActionRunResponse(
+        ActionInterface $action,
+        ArgumentsInterface $arguments
+    ): ResponseInterface {
         try {
             return $action->run($arguments);
         }
@@ -121,7 +130,7 @@ final class WorkflowRunner implements WorkflowRunnerInterface
             ->withJobResponse($name, $response);
     }
 
-    private function runJob(string $name, JobInterface $job): void
+    public function runJob(string $name, JobInterface $job): void
     {
         try {
             $actionName = $job->action();

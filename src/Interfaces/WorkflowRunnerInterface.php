@@ -24,5 +24,7 @@ interface WorkflowRunnerInterface
 
     public function workflowRun(): WorkflowRunInterface;
 
-    public function withRun(MapInterface $serviceContainer): static;
+    public function withRun(MapInterface $serviceContainer): WorkflowRunnerInterface;
+
+    public function runJob(string $name, JobInterface $job): void;
 }
