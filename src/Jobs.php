@@ -22,7 +22,7 @@ use Chevere\Throwable\Exceptions\LogicException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Chevere\Workflow\Interfaces\JobsDependenciesInterface;
+use Chevere\Workflow\Interfaces\JobsGraphInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Ds\Vector;
 use Iterator;
@@ -33,13 +33,13 @@ final class Jobs implements JobsInterface
 
     private Vector $jobs;
 
-    private JobsDependenciesInterface $dependencies;
+    private JobsGraphInterface $dependencies;
 
     public function __construct(JobInterface ...$jobs)
     {
         $this->map = new Map();
         $this->jobs = new Vector();
-        $this->dependencies = new JobsDependencies();
+        $this->dependencies = new JobsGraph();
         $this->putAdded(...$jobs);
     }
 
@@ -97,27 +97,6 @@ final class Jobs implements JobsInterface
         return $new;
     }
 
-    public function withdependencies(string $job, string ...$dependencies): JobsInterface
-    {
-        $new = clone $this;
-        $new->assertHasJobByName($job);
-        foreach ($dependencies as $dependency) {
-            $new->assertHasJobByName($dependency);
-            if ($new->dependencies->has($dependency)
-                && $new->dependencies->hasDependencies($job, $dependency)) {
-                throw new LogicException(
-                    message("Job %job% can't depend on %dependency% (depends on %job%).")
-                            ->code('%job%', $job)
-                            ->code('%dependency%', $dependency)
-                );
-            }
-        }
-        $new->dependencies = $new->dependencies
-            ->withPut($job, ...$dependencies);
-
-        return $new;
-    }
-
     private function addMap(string $name, JobInterface $job): void
     {
         if ($this->map->has($name)) {
@@ -131,12 +110,38 @@ final class Jobs implements JobsInterface
 
     private function putAdded(JobInterface ...$jobs): void
     {
+        $previousName = null;
         foreach ($jobs as $name => $job) {
             $name = strval($name);
             $this->addMap($name, $job);
             $this->jobs->push($name);
+            $search = array_search(':previous', $job->dependencies());
+            if ($search !== false) {
+                $dependencies = $job->dependencies();
+                unset($dependencies[$search]);
+                $dependencies[] = $previousName;
+                $job = $job->withDependsOn(...$dependencies);
+            }
+            $this->assertJobContainsDependencies($name, $job);
             $this->dependencies = $this->dependencies
                 ->withPut($name, ...$job->dependencies());
+            $previousName = $name;
+        }
+    }
+
+    private function assertJobContainsDependencies(string $name, JobInterface $job): void
+    {
+        if (!$this->jobs->contains(...$job->dependencies())) {
+            $missing = array_diff_assoc($job->dependencies(), $this->jobs->toArray());
+
+            throw new LogicException(
+                message('Job %job% has dependencies not declared (%dependencies%)')
+                    ->code('%job%', $name)
+                    ->code(
+                        '%dependencies%',
+                        implode(', ', $missing)
+                    )
+            );
         }
     }
 

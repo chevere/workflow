@@ -18,14 +18,14 @@ use Chevere\Str\Exceptions\StrCtypeSpaceException;
 use Chevere\Str\Exceptions\StrEmptyException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use Chevere\Workflow\JobsDependencies;
+use Chevere\Workflow\JobsGraph;
 use PHPUnit\Framework\TestCase;
 
 final class JobsDependenciesTest extends TestCase
 {
     public function testWithPut(): void
     {
-        $dependencies = new JobsDependencies();
+        $dependencies = new JobsGraph();
         $expected = [];
         $this->assertSame($expected, $dependencies->getGraph());
         $dependencies = $dependencies->withPut('j0', 'j1');
@@ -79,7 +79,7 @@ final class JobsDependenciesTest extends TestCase
 
     public function testWithPutWea(): void
     {
-        $dependencies = new JobsDependencies();
+        $dependencies = new JobsGraph();
         $dependencies = $dependencies->withPut('j1');
         $dependencies = $dependencies->withPut('j2');
         $dependencies = $dependencies->withPut('j3', 'j1');
@@ -92,35 +92,35 @@ final class JobsDependenciesTest extends TestCase
 
     public function testWithPutSelf(): void
     {
-        $dependencies = new JobsDependencies();
+        $dependencies = new JobsGraph();
         $this->expectException(InvalidArgumentException::class);
         $dependencies->withPut('j0', 'j0');
     }
 
     public function testWithPutDupes(): void
     {
-        $dependencies = new JobsDependencies();
+        $dependencies = new JobsGraph();
         $this->expectException(OverflowException::class);
         $dependencies->withPut('j0', 'j1', 'j1');
     }
 
     public function testWithPutEmpty(): void
     {
-        $dependencies = new JobsDependencies();
+        $dependencies = new JobsGraph();
         $this->expectException(StrEmptyException::class);
         $dependencies->withPut('job', '');
     }
 
     public function testWithPutSpace(): void
     {
-        $dependencies = new JobsDependencies();
+        $dependencies = new JobsGraph();
         $this->expectException(StrCtypeSpaceException::class);
         $dependencies->withPut('job', ' ');
     }
 
     public function testWithPutDigit(): void
     {
-        $dependencies = new JobsDependencies();
+        $dependencies = new JobsGraph();
         $this->expectException(StrCtypeDigitException::class);
         $dependencies->withPut('job', '123');
     }

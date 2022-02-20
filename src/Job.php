@@ -71,11 +71,11 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withDependencies(string ...$dependencies): JobInterface
+    public function withDependsOn(string ...$jobs): JobInterface
     {
-        $this->assertDependencies(...$dependencies);
+        $this->assertDependencies(...$jobs);
         $new = clone $this;
-        $new->dependencies = $dependencies;
+        $new->dependencies = $jobs;
 
         return $new;
     }

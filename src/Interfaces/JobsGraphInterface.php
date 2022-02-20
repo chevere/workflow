@@ -20,7 +20,7 @@ use Ds\Vector;
 /**
  * Describes the component in charge of defining jobs dependencies.
  */
-interface JobsDependenciesInterface extends MappedInterface, ToArrayInterface
+interface JobsGraphInterface extends MappedInterface, ToArrayInterface
 {
     public function has(string $job): bool;
 
@@ -28,7 +28,7 @@ interface JobsDependenciesInterface extends MappedInterface, ToArrayInterface
 
     public function hasDependencies(string $job, string ...$dependencies): bool;
 
-    public function withPut(string $job, string ...$dependencies): JobsDependenciesInterface;
+    public function withPut(string $job, string ...$dependencies): JobsGraphInterface;
 
     /**
      * Retrieves the dependency graph.

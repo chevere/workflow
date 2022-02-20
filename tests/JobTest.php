@@ -79,7 +79,7 @@ final class JobTest extends TestCase
     {
         $job = new Job(ActionTestAction::class);
         $this->assertSame([], $job->dependencies());
-        $job = $job->withDependencies('foo', 'bar');
+        $job = $job->withDependsOn('foo', 'bar');
         $this->assertSame(['foo', 'bar'], $job->dependencies());
     }
 
@@ -88,7 +88,7 @@ final class JobTest extends TestCase
         $job = new Job(ActionTestAction::class);
         $this->assertSame([], $job->dependencies());
         $this->expectException(OverflowException::class);
-        $job->withDependencies('foo', 'foo');
+        $job->withDependsOn('foo', 'foo');
     }
 
     public function testWithWrongDeps(): void
@@ -96,6 +96,6 @@ final class JobTest extends TestCase
         $job = new Job(ActionTestAction::class);
         $this->assertSame([], $job->dependencies());
         $this->expectException(Exception::class);
-        $job->withDependencies('');
+        $job->withDependsOn('');
     }
 }

@@ -31,7 +31,7 @@ interface JobInterface
 
     public function withArguments(mixed ...$namedArguments): self;
 
-    public function withDependencies(string ...$dependencies): self;
+    public function withDependsOn(string ...$jobs): self;
 
     public function action(): string;
 
@@ -40,5 +40,8 @@ interface JobInterface
      */
     public function arguments(): array;
 
+    /**
+     * @return string[]
+     */
     public function dependencies(): array;
 }

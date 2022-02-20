@@ -17,11 +17,11 @@ use Chevere\DataStructure\Traits\MapToArrayTrait;
 use Chevere\DataStructure\Traits\MapTrait;
 use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Workflow\Interfaces\JobsDependenciesInterface;
+use Chevere\Workflow\Interfaces\JobsGraphInterface;
 use Chevere\Workflow\Traits\JobDependenciesTrait;
 use Ds\Vector;
 
-final class JobsDependencies implements JobsDependenciesInterface
+final class JobsGraph implements JobsGraphInterface
 {
     use JobDependenciesTrait;
 
@@ -31,7 +31,7 @@ final class JobsDependencies implements JobsDependenciesInterface
 
     private array $stack;
 
-    public function withPut(string $job, string ...$dependencies): JobsDependenciesInterface
+    public function withPut(string $job, string ...$dependencies): JobsGraphInterface
     {
         $this->assertDependencies(...$dependencies);
         $vector = new Vector($dependencies);
