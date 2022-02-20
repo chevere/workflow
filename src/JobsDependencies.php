@@ -17,12 +17,14 @@ use Chevere\DataStructure\Traits\MapToArrayTrait;
 use Chevere\DataStructure\Traits\MapTrait;
 use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\JobsDependenciesInterface;
+use Chevere\Workflow\Traits\JobDependenciesTrait;
 use Ds\Vector;
 
 final class JobsDependencies implements JobsDependenciesInterface
 {
+    use JobDependenciesTrait;
+
     use MapTrait;
 
     use MapToArrayTrait;
@@ -31,7 +33,7 @@ final class JobsDependencies implements JobsDependenciesInterface
 
     public function withPut(string $job, string ...$dependencies): JobsDependenciesInterface
     {
-        $this->assertUniqueDependencies($dependencies);
+        $this->assertDependencies(...$dependencies);
         $vector = new Vector($dependencies);
         $this->assertNotSelfDependency($job, $vector);
         $new = clone $this;
@@ -93,27 +95,23 @@ final class JobsDependencies implements JobsDependenciesInterface
     {
         $return = [];
         $toIndex = 0;
-        $previous = null;
+        $previous = [];
+        /** @var Vector $dependencies */
         foreach ($this->getSortAsc() as $job => $dependencies) {
-            if ($previous && $dependencies->contains($previous)) {
-                $toIndex++;
+            foreach ($dependencies as $dependency) {
+                if (in_array($dependency, $previous)) {
+                    $toIndex++;
+                    $previous = [];
+
+                    break;
+                }
             }
+            
             $return[$toIndex][] = $job;
-            $previous = $job;
+            $previous[] = $job;
         }
         
         return $return;
-    }
-
-    private function assertUniqueDependencies(array $dependencies): void
-    {
-        $uniques = array_unique($dependencies);
-        if ($uniques !== $dependencies) {
-            throw new OverflowException(
-                message('Job dependencies must be unique (repeated %dependencies%)')
-                    ->code('%dependencies%', implode(', ', array_diff_assoc($dependencies, $uniques)))
-            );
-        }
     }
 
     private function assertNotSelfDependency(string $job, Vector $vector): void

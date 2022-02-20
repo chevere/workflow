@@ -22,12 +22,18 @@ use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\UnexpectedValueException;
 use Chevere\Workflow\Interfaces\JobInterface;
+use Chevere\Workflow\Traits\JobDependenciesTrait;
 use ReflectionClass;
 use ReflectionException;
 
 final class Job implements JobInterface
 {
+    use JobDependenciesTrait;
+
     private array $arguments;
+
+    /** @var string[] */
+    private array $dependencies = [];
 
     private ParametersInterface $parameters;
 
@@ -65,6 +71,15 @@ final class Job implements JobInterface
         return $new;
     }
 
+    public function withDependencies(string ...$dependencies): JobInterface
+    {
+        $this->assertDependencies(...$dependencies);
+        $new = clone $this;
+        $new->dependencies = $dependencies;
+
+        return $new;
+    }
+
     public function action(): string
     {
         return $this->action;
@@ -73,6 +88,11 @@ final class Job implements JobInterface
     public function arguments(): array
     {
         return $this->arguments;
+    }
+    
+    public function dependencies(): array
+    {
+        return $this->dependencies;
     }
 
     private function setArguments(mixed ...$namedArguments): void

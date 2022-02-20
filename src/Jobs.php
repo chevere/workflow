@@ -161,7 +161,8 @@ final class Jobs implements JobsInterface
             $name = strval($name);
             $this->addMap($name, $job);
             $this->jobs->push($name);
-            $this->jobDependencies = $this->jobDependencies->withPut($name);
+            $this->jobDependencies = $this->jobDependencies
+                ->withPut($name, ...$job->dependencies());
         }
     }
 

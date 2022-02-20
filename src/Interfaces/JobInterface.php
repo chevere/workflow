@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use function Chevere\Workflow\job;
 
 /**
  * Describes the component in charge of defining a job.
@@ -23,15 +24,14 @@ interface JobInterface
     /**
      * @throws InvalidArgumentException
      */
-    public function __construct(string $action, mixed ...$namedArguments);
+    public function __construct(
+        string $action,
+        mixed ...$namedArguments
+    );
 
-    /**
-     * Return an instance with the specified `$namedArguments`.
-     *
-     * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified `$namedArguments`.
-     */
     public function withArguments(mixed ...$namedArguments): self;
+
+    public function withDependencies(string ...$dependencies): self;
 
     public function action(): string;
 
@@ -39,4 +39,6 @@ interface JobInterface
      * @return string[]
      */
     public function arguments(): array;
+
+    public function dependencies(): array;
 }

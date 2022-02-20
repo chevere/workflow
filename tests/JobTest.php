@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Tests\_resources\src\ActionTestAction;
 use Chevere\Tests\_resources\src\TaskTestStep0;
 use Chevere\Tests\_resources\src\TaskTestStep1;
 use Chevere\Throwable\Errors\ArgumentCountError;
+use Chevere\Throwable\Exception;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
@@ -70,5 +73,29 @@ final class JobTest extends TestCase
         $this->assertSame($arguments, $taskWithArgument->arguments());
         $job = new Job($action, ...$arguments);
         $this->assertSame($arguments, $job->arguments());
+    }
+
+    public function testWithDependencies(): void
+    {
+        $job = new Job(ActionTestAction::class);
+        $this->assertSame([], $job->dependencies());
+        $job = $job->withDependencies('foo', 'bar');
+        $this->assertSame(['foo', 'bar'], $job->dependencies());
+    }
+
+    public function testWithDependenciesOverflow(): void
+    {
+        $job = new Job(ActionTestAction::class);
+        $this->assertSame([], $job->dependencies());
+        $this->expectException(OverflowException::class);
+        $job->withDependencies('foo', 'foo');
+    }
+
+    public function testWithWrongDeps(): void
+    {
+        $job = new Job(ActionTestAction::class);
+        $this->assertSame([], $job->dependencies());
+        $this->expectException(Exception::class);
+        $job->withDependencies('');
     }
 }

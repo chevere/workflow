@@ -74,6 +74,19 @@ final class JobsDependenciesTest extends TestCase
         $this->assertSame($expected, $dependencies->getGraph());
     }
 
+    public function testWithPutWea(): void
+    {
+        $dependencies = new JobsDependencies();
+        $dependencies = $dependencies->withPut('j1');
+        $dependencies = $dependencies->withPut('j2');
+        $dependencies = $dependencies->withPut('j3', 'j1');
+        $expected = [
+            0 => ['j1', 'j2'],
+            1 => ['j3'],
+        ];
+        $this->assertSame($expected, $dependencies->getGraph());
+    }
+
     public function testWithPutSelf(): void
     {
         $dependencies = new JobsDependencies();

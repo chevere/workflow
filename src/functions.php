@@ -24,8 +24,10 @@ function workflow(JobInterface ...$namedSteps): WorkflowInterface
     );
 }
 
-function job(string $action, mixed ...$namedArguments): JobInterface
-{
+function job(
+    string $action,
+    mixed ...$namedArguments
+): JobInterface {
     return new Job($action, ...$namedArguments);
 }
 

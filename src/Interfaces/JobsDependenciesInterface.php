@@ -28,7 +28,7 @@ interface JobsDependenciesInterface extends MappedInterface, ToArrayInterface
 
     public function hasDependencies(string $job, string ...$dependencies): bool;
 
-    public function withPut(string $job, string ...$vector): JobsDependenciesInterface;
+    public function withPut(string $job, string ...$dependencies): JobsDependenciesInterface;
 
     /**
      * Retrieves the dependency graph.
