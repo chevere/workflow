@@ -21,7 +21,7 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\JobsGraph;
 use PHPUnit\Framework\TestCase;
 
-final class JobsDependenciesTest extends TestCase
+final class JobsGraphTest extends TestCase
 {
     public function testWithPut(): void
     {

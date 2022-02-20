@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\ActionTestAction;
+use Chevere\Throwable\Exceptions\LogicException;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use PHPUnit\Framework\TestCase;
@@ -49,18 +50,11 @@ final class JobsTest extends TestCase
         );
     }
 
-    public function testWithDependsOnPrevious(): void
+    public function testWithDependsMissing(): void
     {
-        $jobs = new Jobs(
-            j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class)->withDepends('j1'),
-        );
-        $this->assertSame(
-            [
-                0 => ['j1'],
-                1 => ['j2'],
-            ],
-            $jobs->getGraph()
+        $this->expectException(LogicException::class);
+        new Jobs(
+            j1: job(ActionTestAction::class)->withDepends('j0'),
         );
     }
 
