@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\DataStructure\Map;
+use Chevere\Tests\_resources\src\ActionTestAction;
 use Chevere\Tests\_resources\src\WorkflowRunnerTestStep1;
 use Chevere\Tests\_resources\src\WorkflowRunnerTestStep2;
-use Chevere\Workflow\Job;
+use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
+use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use Chevere\Workflow\WorkflowRun;
 use Chevere\Workflow\WorkflowRunner;
@@ -31,15 +33,15 @@ final class WorkflowRunnerTest extends TestCase
         $bar = 'mundo';
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                step1: new Job(
+                step1: job(
                     WorkflowRunnerTestStep1::class,
                     foo: '${foo}'
                 ),
-                step2: new Job(
+                step2: job(
                     WorkflowRunnerTestStep2::class,
                     foo: '${step1:response1}',
                     bar: '${bar}'
-                )
+                )->withDepends('step1')
             );
         $arguments = [
             'foo' => $foo,
@@ -48,7 +50,6 @@ final class WorkflowRunnerTest extends TestCase
         $workflowRun = new WorkflowRun($workflow, ...$arguments);
         $container = new Map();
         $workflowRunner = (new WorkflowRunner($workflowRun))
-            ->withRun($container)
             ->withRun($container);
         $workflowRun = $workflowRunner->workflowRun();
         $this->assertSame($workflowRun, $workflowRunner->workflowRun());
@@ -74,5 +75,24 @@ final class WorkflowRunnerTest extends TestCase
                 ->data(),
             $workflowRun->get('step2')->data()
         );
+    }
+
+    public function testParallelRunner(): void
+    {
+        $workflow = workflow(
+            j1: job(
+                ActionTestAction::class,
+            ),
+            j2: job(
+                ActionTestAction::class,
+            ),
+        );
+        $arguments = [];
+        $workflowRun = new WorkflowRun($workflow, ...$arguments);
+        $container = new Map();
+        $workflowRunner = (new WorkflowRunner($workflowRun))
+            ->withRun($container);
+        $workflowRun = $workflowRunner->workflowRun();
+        $this->assertSame($workflowRun, $workflowRunner->workflowRun());
     }
 }

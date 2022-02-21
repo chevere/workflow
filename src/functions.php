@@ -52,15 +52,13 @@ function pushWorkflowQueue(WorkflowMessageInterface $workflowMessage, $stack): v
 
 function runJob(
     WorkflowRunnerInterface $workflowRunner,
-    string ...$jobs,
+    string $name,
 ): WorkflowRunnerInterface {
-    foreach ($jobs as $name) {
-        if ($workflowRunner->workflowRun()->has($name)) {
-            continue;
-        }
-        $job = $workflowRunner->workflowRun()->workflow()->jobs()->get($name);
-        $workflowRunner->runJob($name, $job);
+    if ($workflowRunner->workflowRun()->has($name)) {
+        return $workflowRunner;
     }
+    $job = $workflowRunner->workflowRun()->workflow()->jobs()->get($name);
+    $workflowRunner->runJob($name, $job);
 
     return $workflowRunner;
 }

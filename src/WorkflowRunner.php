@@ -48,15 +48,18 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         $jobs = $new->workflowRun->workflow()->jobs();
         $promises = [];
         foreach ($jobs->getGraph() as $jobs) {
-            $promises[] = enqueueCallable(
-                'Chevere\\Workflow\\runJob',
-                $new,
-                ...$jobs,
-            );
+            foreach ($jobs as $job) {
+                $promises[] = enqueueCallable(
+                    'Chevere\\Workflow\\runJob',
+                    $new,
+                    $job,
+                );
+            }
+            $responses = wait(all($promises));
+            $new = end($responses);
         }
-        $responses = wait(all($promises));
-
-        return end($responses);
+        
+        return $new;
     }
 
     private function getActionRunResponse(
