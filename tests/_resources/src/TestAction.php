@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\IntegerParameter;
+use function Chevere\Parameter\integerParameter;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Response\Interfaces\ResponseInterface;
 
-final class ActionTestAction extends Action
+final class TestAction extends Action
 {
     public function getDescription(): string
     {
@@ -29,7 +29,7 @@ final class ActionTestAction extends Action
 
     public function getResponseParameters(): ParametersInterface
     {
-        return new Parameters(id: new IntegerParameter());
+        return new Parameters(id: integerParameter());
     }
 
     public function run(ArgumentsInterface $arguments): ResponseInterface

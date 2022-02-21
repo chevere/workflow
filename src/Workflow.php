@@ -125,17 +125,19 @@ final class Workflow implements WorkflowInterface
         $action = new $action();
         $parameters = $action->parameters();
         $this->provided->put($name, $action->responseParameters());
-        foreach ($job->arguments() as $argument => $reference) {
-            $parameter = $parameters->get($argument);
-
+        foreach ($job->arguments() as $argument => $value) {
             try {
-                if (preg_match(self::REGEX_PARAMETER_REFERENCE, (string) $reference, $matches) !== 0) {
+                if (!is_string($value)) {
+                    continue;
+                }
+                $parameter = $parameters->get($argument);
+                if (preg_match(self::REGEX_PARAMETER_REFERENCE, $value, $matches) !== 0) {
                     /** @var array $matches */
                     if (!$this->parameters->has($matches[1])) {
-                        $this->vars = $this->vars->withPut($reference, [$matches[1]]);
+                        $this->vars = $this->vars->withPut($value, [$matches[1]]);
                     }
                     $this->putParameter($matches[1], $parameter);
-                } elseif (preg_match(self::REGEX_JOB_REFERENCE, (string) $reference, $matches) !== 0) {
+                } elseif (preg_match(self::REGEX_JOB_REFERENCE, $value, $matches) !== 0) {
                     /** @var array $matches */
                     $previousJob = (string) $matches[1];
                     $previousResponseKey = (string) $matches[2];
@@ -143,7 +145,7 @@ final class Workflow implements WorkflowInterface
                     $expected = $this->expected->get($previousJob, []);
                     $expected[] = $previousResponseKey;
                     $this->expected->put($previousJob, $expected);
-                    $this->vars = $this->vars->withPut($reference, [$previousJob, $previousResponseKey]);
+                    $this->vars = $this->vars->withPut($value, [$previousJob, $previousResponseKey]);
                 }
             } catch (Throwable $e) {
                 throw new InvalidArgumentException(

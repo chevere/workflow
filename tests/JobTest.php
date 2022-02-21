@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\ActionTestAction;
 use Chevere\Tests\_resources\src\TaskTestStep0;
 use Chevere\Tests\_resources\src\TaskTestStep1;
+use Chevere\Tests\_resources\src\TestAction;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exception;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
@@ -77,7 +77,7 @@ final class JobTest extends TestCase
 
     public function testWithDependencies(): void
     {
-        $job = new Job(ActionTestAction::class);
+        $job = new Job(TestAction::class);
         $this->assertSame([], $job->dependencies());
         $job = $job->withDepends('foo', 'bar');
         $this->assertSame(['foo', 'bar'], $job->dependencies());
@@ -85,7 +85,7 @@ final class JobTest extends TestCase
 
     public function testWithDependenciesOverflow(): void
     {
-        $job = new Job(ActionTestAction::class);
+        $job = new Job(TestAction::class);
         $this->assertSame([], $job->dependencies());
         $this->expectException(OverflowException::class);
         $job->withDepends('foo', 'foo');
@@ -93,7 +93,7 @@ final class JobTest extends TestCase
 
     public function testWithWrongDeps(): void
     {
-        $job = new Job(ActionTestAction::class);
+        $job = new Job(TestAction::class);
         $this->assertSame([], $job->dependencies());
         $this->expectException(Exception::class);
         $job->withDepends('');

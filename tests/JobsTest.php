@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\ActionTestAction;
+use Chevere\Tests\_resources\src\TestAction;
 use Chevere\Throwable\Exceptions\LogicException;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
@@ -24,8 +24,8 @@ final class JobsTest extends TestCase
     public function testParallel(): void
     {
         $jobs = new Jobs(
-            j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class),
+            j1: job(TestAction::class),
+            j2: job(TestAction::class),
         );
         $this->assertSame(
             [
@@ -38,8 +38,8 @@ final class JobsTest extends TestCase
     public function testWithDependsOnJob(): void
     {
         $jobs = new Jobs(
-            j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class)->withDepends('j1'),
+            j1: job(TestAction::class),
+            j2: job(TestAction::class)->withDepends('j1'),
         );
         $this->assertSame(
             [
@@ -54,16 +54,16 @@ final class JobsTest extends TestCase
     {
         $this->expectException(LogicException::class);
         new Jobs(
-            j1: job(ActionTestAction::class)->withDepends('j0'),
+            j1: job(TestAction::class)->withDepends('j0'),
         );
     }
 
     public function testWithDependsOnPreviousChain(): void
     {
         $jobs = new Jobs(
-            j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class),
-            j3: job(ActionTestAction::class)
+            j1: job(TestAction::class),
+            j2: job(TestAction::class),
+            j3: job(TestAction::class)
                 ->withDepends('j2')
                 ->withDepends('j1'),
         );
@@ -79,9 +79,9 @@ final class JobsTest extends TestCase
     public function testWithDependsOnPreviousFunction(): void
     {
         $jobs = new Jobs(
-            j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class)->withDepends('j1'),
-            j3: job(ActionTestAction::class)->withDepends('j2'),
+            j1: job(TestAction::class),
+            j2: job(TestAction::class)->withDepends('j1'),
+            j3: job(TestAction::class)->withDepends('j2'),
         );
         $this->assertSame(
             [
@@ -96,13 +96,13 @@ final class JobsTest extends TestCase
     public function testWithDependsMix(): void
     {
         $jobs = new Jobs(
-            j1: job(ActionTestAction::class),
-            j2: job(ActionTestAction::class),
-            j3: job(ActionTestAction::class)
+            j1: job(TestAction::class),
+            j2: job(TestAction::class),
+            j3: job(TestAction::class)
                 ->withDepends('j1', 'j2'),
-            j4: job(ActionTestAction::class),
-            j5: job(ActionTestAction::class)->withDepends('j4'),
-            j6: job(ActionTestAction::class)->withDepends('j5'),
+            j4: job(TestAction::class),
+            j5: job(TestAction::class)->withDepends('j4'),
+            j6: job(TestAction::class)->withDepends('j5'),
         );
         $this->assertSame(
             [

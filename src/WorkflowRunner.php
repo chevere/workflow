@@ -66,8 +66,9 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         ActionInterface $action,
         ArgumentsInterface $arguments
     ): ResponseInterface {
+        return $action->run($arguments);
+
         try {
-            return $action->run($arguments);
         }
         // @codeCoverageIgnoreStart
         catch (Throwable $e) {
@@ -107,7 +108,7 @@ final class WorkflowRunner implements WorkflowRunnerInterface
     {
         $arguments = [];
         foreach ($job->arguments() as $name => $taskArgument) {
-            if (!$this->workflowRun->workflow()->vars()->has($taskArgument)) {
+            if (!is_string($taskArgument) || !$this->workflowRun->workflow()->vars()->has($taskArgument)) {
                 // @codeCoverageIgnoreStart
                 $arguments[$name] = $taskArgument;
 
@@ -135,14 +136,15 @@ final class WorkflowRunner implements WorkflowRunnerInterface
 
     public function runJob(string $name, JobInterface $job): void
     {
+        $actionName = $job->action();
+        /** @var ActionInterface $action */
+        $action = new $actionName();
+        $arguments = $this->getActionArguments($action, $job);
+        $response = $this->getActionRunResponse($action, $arguments);
+        deepCopy($response);
+        $this->addJob($name, $response);
+
         try {
-            $actionName = $job->action();
-            /** @var ActionInterface $action */
-            $action = new $actionName();
-            $arguments = $this->getActionArguments($action, $job);
-            $response = $this->getActionRunResponse($action, $arguments);
-            deepCopy($response);
-            $this->addJob($name, $response);
         }
         // @codeCoverageIgnoreStart
         catch (Throwable $e) {

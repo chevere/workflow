@@ -36,7 +36,7 @@ interface JobInterface
     public function action(): string;
 
     /**
-     * @return string[]
+     * @return mixed[]
      */
     public function arguments(): array;
 
