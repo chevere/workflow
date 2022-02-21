@@ -15,7 +15,6 @@ namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Message\Message;
-use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
@@ -56,7 +55,7 @@ final class Job implements JobInterface
                     ->code('%interface%', ActionInterface::class)
             );
         }
-        $this->parameters = $reflection->newInstance()->getParameters();
+        $this->parameters = $reflection->newInstance()->parameters();
         $this->arguments = [];
         if ($namedArguments !== []) {
             $this->setArguments(...$namedArguments);
@@ -111,7 +110,7 @@ final class Job implements JobInterface
         }
         if ($missing !== []) {
             throw new BadMethodCallException(
-                (new Message('Missing argument(s) %arguments%'))
+                (new Message('Missing argument(s) [%arguments%]'))
                     ->code('%arguments%', implode(', ', $missing))
             );
         }
@@ -124,11 +123,10 @@ final class Job implements JobInterface
         $countRequired = count($this->parameters->required());
         if ($countRequired > $countPassed || $countRequired === 0 && $countPassed > 0) {
             throw new ArgumentCountError(
-                (new Message('Method %action% expects %interface% providing %parametersCount% arguments, %given% given'))
+                (new Message('Method %action% expects values for parameters %parameters% (missing %missing%)'))
                     ->code('%action%', $this->action . '::run')
-                    ->code('%interface%', ArgumentsInterface::class)
-                    ->code('%parametersCount%', (string) $countRequired)
-                    ->code('%given%', (string) $countPassed)
+                    ->code('%missing%', implode(', ', array_diff($this->parameters->required()->toArray(), array_keys($arguments))))
+                    ->code('%parameters%', implode(', ', $this->parameters->required()->toArray()))
             );
         }
     }

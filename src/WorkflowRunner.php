@@ -66,9 +66,8 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         ActionInterface $action,
         ArgumentsInterface $arguments
     ): ResponseInterface {
-        return $action->run($arguments);
-
         try {
+            return $action->run(...$arguments->toArray());
         }
         // @codeCoverageIgnoreStart
         catch (Throwable $e) {
@@ -91,8 +90,9 @@ final class WorkflowRunner implements WorkflowRunnerInterface
     {
         $arguments = $this->getJobArguments($job);
 
+        return new Arguments($action->parameters(), ...$arguments);
+
         try {
-            return new Arguments($action->parameters(), ...$arguments);
         }
         // @codeCoverageIgnoreStart
         catch (Throwable $e) {

@@ -17,11 +17,14 @@ use Chevere\Tests\_resources\src\WorkflowTestStep0;
 use Chevere\Tests\_resources\src\WorkflowTestStep1;
 use Chevere\Tests\_resources\src\WorkflowTestStep2;
 use Chevere\Tests\_resources\src\WorkflowTestStep2Conflict;
+use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
+use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
+use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
 
@@ -108,54 +111,48 @@ final class WorkflowTest extends TestCase
 
     public function testConflictingParameterType(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        new Workflow(
-            new Jobs(
-                step1: new Job(
-                    WorkflowTestStep1::class,
-                    foo: '${foo}'
-                ),
-                step2: new Job(
-                    WorkflowTestStep2Conflict::class,
-                    baz: '${foo}',
-                    bar: 'test'
-                )
-            )
+        $this->expectException(BadMethodCallException::class);
+        workflow(
+            step1: job(
+                WorkflowTestStep1::class,
+                foo: '${foo}'
+            ),
+            step2: job(
+                WorkflowTestStep2Conflict::class,
+                baz: '${foo}',
+                bar: 'test'
+            )->withDepends('step1')
         );
     }
 
     public function testWithConflictingReferencedParameters(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new Workflow(
-            new Jobs(
-                step1: new Job(
-                    WorkflowTestStep1::class,
-                    foo: '${foo}'
-                ),
-                step2: new Job(
-                    WorkflowTestStep2::class,
-                    foo: '${step1:missing}',
-                    bar: '${foo}'
-                )
+        workflow(
+            step1: job(
+                WorkflowTestStep1::class,
+                foo: '${foo}'
+            ),
+            step2: job(
+                WorkflowTestStep2::class,
+                foo: '${step1:missing}',
+                bar: '${foo}'
             )
         );
     }
 
     public function testWithConflictingTypeReferencedParameters(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        new Workflow(
-            new Jobs(
-                step1: new Job(
-                    WorkflowTestStep1::class,
-                    foo: '${foo}'
-                ),
-                step2: new Job(
-                    WorkflowTestStep2Conflict::class,
-                    baz: '${step1:bar}',
-                    bar: '${foo}'
-                )
+        $this->expectException(BadMethodCallException::class);
+        workflow(
+            step1: job(
+                WorkflowTestStep1::class,
+                foo: '${foo}'
+            ),
+            step2: job(
+                WorkflowTestStep2Conflict::class,
+                baz: '${step1:bar}',
+                bar: '${foo}'
             )
         );
     }

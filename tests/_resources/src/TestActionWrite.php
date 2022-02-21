@@ -15,10 +15,6 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 use Chevere\Filesystem\Interfaces\FileInterface;
-use Chevere\Parameter\Interfaces\ArgumentsInterface;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use function Chevere\Parameter\objectParameter;
-use Chevere\Parameter\Parameters;
 use Chevere\Response\Interfaces\ResponseInterface;
 
 final class TestActionWrite extends Action
@@ -28,17 +24,8 @@ final class TestActionWrite extends Action
         return 'test';
     }
 
-    public function getParameters(): ParametersInterface
+    public function run(FileInterface $file): ResponseInterface
     {
-        return new Parameters(
-            file: objectParameter(FileInterface::class),
-        );
-    }
-
-    public function run(ArgumentsInterface $arguments): ResponseInterface
-    {
-        /** @var FileInterface $file */
-        $file = $arguments->get('file');
         $fp = fopen($file->path()->__toString(), 'a+');
         fwrite($fp, $this->flagStart());
         usleep(10000);

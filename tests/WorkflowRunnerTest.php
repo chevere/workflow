@@ -57,9 +57,9 @@ final class WorkflowRunnerTest extends TestCase
         $action1 = new WorkflowRunnerTestStep1();
         $this->assertSame(
             $action1->run(
-                $action1->getArguments(...[
+                ...$action1->getArguments(...[
                     'foo' => $foo,
-                ])
+                ])->toArray()
             )->data(),
             $workflowRun->get('step1')->data()
         );
@@ -68,10 +68,10 @@ final class WorkflowRunnerTest extends TestCase
         $this->assertSame(
             $action2
                 ->run(
-                    $action2->getArguments(...[
+                    ...$action2->getArguments(...[
                         'foo' => $foo,
                         'bar' => $bar,
-                    ])
+                    ])->toArray()
                 )
                 ->data(),
             $workflowRun->get('step2')->data()
@@ -128,8 +128,8 @@ final class WorkflowRunnerTest extends TestCase
             ),
         );
         $arguments = [];
-        $workflowRun = new WorkflowRun($workflow, ...$arguments);
-        (new WorkflowRunner($workflowRun))
+        $run = new WorkflowRun($workflow, ...$arguments);
+        $runner = (new WorkflowRunner($run))
             ->withRun(new Map());
         $this->assertStringEqualsFile(
             $file->path()->__toString(),

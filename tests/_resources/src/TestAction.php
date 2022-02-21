@@ -15,7 +15,6 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 use function Chevere\Parameter\integerParameter;
-use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Response\Interfaces\ResponseInterface;
@@ -32,7 +31,7 @@ final class TestAction extends Action
         return new Parameters(id: integerParameter());
     }
 
-    public function run(ArgumentsInterface $arguments): ResponseInterface
+    public function run(): ResponseInterface
     {
         return $this->getResponse(id: 123);
     }

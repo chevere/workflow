@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Parameter\StringParameter;
@@ -22,20 +21,15 @@ use Chevere\Response\Interfaces\ResponseInterface;
 
 class WorkflowRunnerTestStep1 extends Action
 {
-    public function getParameters(): ParametersInterface
-    {
-        return new Parameters(foo: new StringParameter());
-    }
-
     public function getResponseParameters(): ParametersInterface
     {
         return new Parameters(response1: new StringParameter());
     }
 
-    public function run(ArgumentsInterface $arguments): ResponseInterface
+    public function run(string $foo): ResponseInterface
     {
         return $this->getResponse(
-            response1: $arguments->getString('foo')
+            response1: $foo
         );
     }
 }

@@ -14,25 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Filesystem\Interfaces\PathInterface;
-use Chevere\Parameter\Interfaces\ArgumentsInterface;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Parameter\ObjectParameter;
-use Chevere\Parameter\Parameters;
-use Chevere\Parameter\StringParameter;
+use Chevere\Filesystem\Path;
 use Chevere\Response\Interfaces\ResponseInterface;
 
 class WorkflowTestStep2Conflict extends Action
 {
-    public function getParameters(): ParametersInterface
-    {
-        return new Parameters(
-            baz: new ObjectParameter(PathInterface::class),
-            bar: new StringParameter()
-        );
-    }
-
-    public function run(ArgumentsInterface $arguments): ResponseInterface
+    public function run(Path $path, string $bar): ResponseInterface
     {
         return $this->getResponse();
     }

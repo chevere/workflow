@@ -14,24 +14,11 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\IntegerParameter;
-use Chevere\Parameter\Interfaces\ArgumentsInterface;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Parameter\Parameters;
-use Chevere\Parameter\StringParameter;
 use Chevere\Response\Interfaces\ResponseInterface;
 
 class TaskTestStep1 extends Action
 {
-    public function getParameters(): ParametersInterface
-    {
-        return new Parameters(
-            foo: new StringParameter(),
-            bar: new IntegerParameter()
-        );
-    }
-
-    public function run(ArgumentsInterface $arguments): ResponseInterface
+    public function run(string $foo, int $bar): ResponseInterface
     {
         return $this->getResponse();
     }
