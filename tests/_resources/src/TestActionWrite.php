@@ -28,7 +28,7 @@ final class TestActionWrite extends Action
     {
         $fp = fopen($file->path()->__toString(), 'a+');
         fwrite($fp, '^');
-        usleep(10000);
+        usleep(200000);
         fwrite($fp, '$');
         fclose($fp);
 

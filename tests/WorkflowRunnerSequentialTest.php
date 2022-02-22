@@ -27,7 +27,8 @@ final class WorkflowRunnerSequentialTest extends TestCase
     public function testSequentialRunner(): void
     {
         $file = fileForPath(__DIR__ . '/_resources/output-sequential');
-        $file->createIfNotExists();
+        $file->removeIfExists();
+        $file->create();
         $file->put('');
         $action = new TestActionWrite();
         $workflow = workflow(
