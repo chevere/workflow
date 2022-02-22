@@ -16,7 +16,7 @@ namespace Chevere\Tests\_resources\src;
 use Chevere\Action\Action;
 use Chevere\Response\Interfaces\ResponseInterface;
 
-class WorkflowTestStep2 extends Action
+class WorkflowTestJob2 extends Action
 {
     public function run(string $foo, string $bar): ResponseInterface
     {

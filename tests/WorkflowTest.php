@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Tests\_resources\src\WorkflowTestJob2;
 use Chevere\Tests\_resources\src\WorkflowTestStep0;
 use Chevere\Tests\_resources\src\WorkflowTestStep1;
-use Chevere\Tests\_resources\src\WorkflowTestStep2;
 use Chevere\Tests\_resources\src\WorkflowTestStep2Conflict;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
@@ -90,11 +90,12 @@ final class WorkflowTest extends TestCase
         $workflow = $workflow
             ->withAddedJob(
                 step2: new Job(
-                    WorkflowTestStep2::class,
+                    WorkflowTestJob2::class,
                     foo: '${step1:bar}',
                     bar: '${foo}'
                 )
             );
+        $this->assertContains('step1', $workflow->jobs()->get('step2')->dependencies());
         $this->assertTrue($workflow->vars()->has('${foo}'));
         $this->assertTrue($workflow->vars()->has('${step1:bar}'));
         $this->assertTrue($workflow->parameters()->has('foo'));
@@ -134,7 +135,7 @@ final class WorkflowTest extends TestCase
                 foo: '${foo}'
             ),
             step2: job(
-                WorkflowTestStep2::class,
+                WorkflowTestJob2::class,
                 foo: '${step1:missing}',
                 bar: '${foo}'
             )

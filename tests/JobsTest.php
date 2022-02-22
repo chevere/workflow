@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestAction;
-use Chevere\Throwable\Exceptions\LogicException;
+use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use PHPUnit\Framework\TestCase;
@@ -52,7 +52,7 @@ final class JobsTest extends TestCase
 
     public function testWithDependsMissing(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(InvalidArgumentException::class);
         new Jobs(
             j1: job(TestAction::class)->withDepends('j0'),
         );

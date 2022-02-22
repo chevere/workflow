@@ -46,7 +46,7 @@ final class WorkflowRunnerSequentialTest extends TestCase
             ->withRun(new Map());
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
-            str_repeat($action->flagStart() . $action->flagFinish(), 2)
+            str_repeat('^$', 2)
         );
         $file->removeIfExists();
     }

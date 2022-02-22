@@ -18,7 +18,7 @@ use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\Message\Message;
 use function Chevere\Message\message;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\LogicException;
+use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -117,7 +117,6 @@ final class Jobs implements JobsInterface
             $this->assertJobContainsDependencies($name, $job);
             $this->graph = $this->graph
                 ->withPut($name, ...$job->dependencies());
-            $previousName = $name;
         }
     }
 
@@ -126,8 +125,8 @@ final class Jobs implements JobsInterface
         if (!$this->jobs->contains(...$job->dependencies())) {
             $missing = array_diff_assoc($job->dependencies(), $this->jobs->toArray());
 
-            throw new LogicException(
-                message('Job %job% has dependencies not declared (%dependencies%)')
+            throw new InvalidArgumentException(
+                message('Job %job% has undeclared job dependencies: %dependencies%')
                     ->code('%job%', $name)
                     ->code(
                         '%dependencies%',

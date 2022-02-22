@@ -16,6 +16,7 @@ namespace Chevere\Tests;
 use Chevere\Tests\_resources\src\TaskTestStep0;
 use Chevere\Tests\_resources\src\TaskTestStep1;
 use Chevere\Tests\_resources\src\TestAction;
+use Chevere\Tests\_resources\src\WorkflowTestJob2;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exception;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
@@ -97,5 +98,16 @@ final class JobTest extends TestCase
         $this->assertSame([], $job->dependencies());
         $this->expectException(Exception::class);
         $job->withDepends('');
+    }
+
+    public function testWithJobReference(): void
+    {
+        $job = new Job(
+            WorkflowTestJob2::class,
+            foo: '${step1:bar}',
+            bar: '${foo}'
+        );
+        $job = $job->withDepends('step1');
+        $this->assertContains('step1', $job->dependencies());
     }
 }

@@ -41,6 +41,7 @@ final class WorkflowRunnerTest extends TestCase
                     bar: '${bar}'
                 )->withDepends('step1')
             );
+        
         $arguments = [
             'foo' => $foo,
             'bar' => $bar,

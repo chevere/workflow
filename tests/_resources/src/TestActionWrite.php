@@ -27,21 +27,11 @@ final class TestActionWrite extends Action
     public function run(FileInterface $file): ResponseInterface
     {
         $fp = fopen($file->path()->__toString(), 'a+');
-        fwrite($fp, $this->flagStart());
+        fwrite($fp, '^');
         usleep(10000);
-        fwrite($fp, $this->flagFinish());
+        fwrite($fp, '$');
         fclose($fp);
 
         return $this->getResponse();
-    }
-
-    public function flagStart(): string
-    {
-        return '^';
-    }
-
-    public function flagFinish(): string
-    {
-        return '$';
     }
 }

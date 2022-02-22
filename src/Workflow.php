@@ -131,16 +131,16 @@ final class Workflow implements WorkflowInterface
                     continue;
                 }
                 $parameter = $parameters->get($argument);
-                if (preg_match(self::REGEX_PARAMETER_REFERENCE, $value, $matches) !== 0) {
+                if (preg_match(self::REGEX_VARIABLE_REFERENCE, $value, $matches) !== 0) {
                     /** @var array $matches */
                     if (!$this->parameters->has($matches[1])) {
                         $this->vars = $this->vars->withPut($value, [$matches[1]]);
                     }
                     $this->putParameter($matches[1], $parameter);
-                } elseif (preg_match(self::REGEX_JOB_REFERENCE, $value, $matches) !== 0) {
+                } elseif (preg_match(JobInterface::REGEX_JOB_RESPONSE_REFERENCE, $value, $matches) !== 0) {
                     /** @var array $matches */
-                    $previousJob = (string) $matches[1];
-                    $previousResponseKey = (string) $matches[2];
+                    $previousJob = strval($matches[1]);
+                    $previousResponseKey = strval($matches[2]);
                     $this->assertPreviousReference($parameter, $previousJob, $previousResponseKey);
                     $expected = $this->expected->get($previousJob, []);
                     $expected[] = $previousResponseKey;

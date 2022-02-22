@@ -22,6 +22,7 @@ use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\UnexpectedValueException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Traits\JobDependenciesTrait;
+use Ds\Vector;
 use ReflectionClass;
 use ReflectionException;
 
@@ -31,8 +32,7 @@ final class Job implements JobInterface
 
     private array $arguments;
 
-    /** @var string[] */
-    private array $dependencies = [];
+    private Vector $dependencies;
 
     private ParametersInterface $parameters;
 
@@ -55,6 +55,7 @@ final class Job implements JobInterface
                     ->code('%interface%', ActionInterface::class)
             );
         }
+        $this->dependencies = new Vector();
         $this->parameters = $reflection->newInstance()->parameters();
         $this->arguments = [];
         if ($namedArguments !== []) {
@@ -72,9 +73,8 @@ final class Job implements JobInterface
 
     public function withDepends(string ...$jobs): JobInterface
     {
-        $this->assertDependencies(...$jobs);
         $new = clone $this;
-        $new->dependencies = array_merge($new->dependencies, $jobs);
+        $new->addDependencies(...$jobs);
 
         return $new;
     }
@@ -91,7 +91,7 @@ final class Job implements JobInterface
     
     public function dependencies(): array
     {
-        return $this->dependencies;
+        return $this->dependencies->toArray();
     }
 
     private function setArguments(mixed ...$namedArguments): void
@@ -100,10 +100,12 @@ final class Job implements JobInterface
         $this->assertArgumentsCount($namedArguments);
         $store = [];
         $missing = [];
+        $dependencies = [];
         foreach ($this->parameters->getIterator() as $name => $parameter) {
             $argument = $namedArguments[$name] ?? null;
             if ($argument !== null) {
                 $store[$name] = $argument;
+                $this->inferDependencies($argument);
             } elseif ($this->parameters->isRequired($name)) {
                 $missing[] = $name;
             }
@@ -128,6 +130,34 @@ final class Job implements JobInterface
                     ->code('%missing%', implode(', ', array_diff($this->parameters->required()->toArray(), array_keys($arguments))))
                     ->code('%parameters%', implode(', ', $this->parameters->required()->toArray()))
             );
+        }
+    }
+
+    private function inferDependencies(mixed $argument): void
+    {
+        if (!is_string($argument)) {
+            return;
+        }
+        preg_match(self::REGEX_JOB_RESPONSE_REFERENCE, $argument, $matches);
+        /** @var array $matches */
+        if ($matches === []) {
+            return;
+        }
+        $dependency = strval($matches[1]);
+        if ($this->dependencies->contains($dependency)) {
+            return;
+        }
+        $this->dependencies->push($dependency);
+    }
+
+    private function addDependencies(string ...$jobs): void
+    {
+        $this->assertDependencies(...$jobs);
+        foreach ($jobs as $job) {
+            if ($this->dependencies->contains($job)) {
+                continue;
+            }
+            $this->dependencies->push($job);
         }
     }
 }
