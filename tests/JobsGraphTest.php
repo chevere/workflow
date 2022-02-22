@@ -25,103 +25,122 @@ final class JobsGraphTest extends TestCase
 {
     public function testWithPut(): void
     {
-        $dependencies = new JobsGraph();
+        $graph = new JobsGraph();
         $expected = [];
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j0', 'j1');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j0', 'j1');
         $expected = [
             0 => ['j1'],
             1 => ['j0'],
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j0', 'j1');
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j0', 'j2');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j0', 'j1');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j0', 'j2');
         $expected = [
             0 => ['j1', 'j2'],
             1 => ['j0'],
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j1');
-        $dependencies = $dependencies->withPut('j2');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j1');
+        $graph = $graph->withPut('j2');
         $expected = [
             0 => ['j1', 'j2'],
             1 => ['j0']
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j2', 'j0');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j2', 'j0');
         $expected = [
             0 => ['j1'],
             1 => ['j0'],
             2 => ['j2']
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j1', 'j0');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j1', 'j0');
         $expected = [
             0 => ['j0'],
             1 => ['j1', 'j2'],
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j0', 'j1');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j0', 'j1');
         $expected = [
             0 => ['j1'],
             1 => ['j0'],
             2 => ['j2'],
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
-        $dependencies = $dependencies->withPut('j0', 'j2');
+        $this->assertSame($expected, $graph->getGraph());
+        $graph = $graph->withPut('j0', 'j2');
         $expected = [
             0 => ['j1', 'j2'],
             1 => ['j0'],
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
+        $this->assertSame($expected, $graph->getGraph());
     }
 
     public function testWithPutWea(): void
     {
-        $dependencies = new JobsGraph();
-        $dependencies = $dependencies->withPut('j1');
-        $dependencies = $dependencies->withPut('j2');
-        $dependencies = $dependencies->withPut('j3', 'j1');
+        $graph = new JobsGraph();
+        $graph = $graph->withPut('j1');
+        $graph = $graph->withPut('j2');
+        $graph = $graph->withPut('j3', 'j1');
         $expected = [
             0 => ['j1', 'j2'],
             1 => ['j3'],
         ];
-        $this->assertSame($expected, $dependencies->getGraph());
+        $this->assertSame($expected, $graph->getGraph());
     }
 
     public function testWithPutSelf(): void
     {
-        $dependencies = new JobsGraph();
+        $graph = new JobsGraph();
         $this->expectException(InvalidArgumentException::class);
-        $dependencies->withPut('j0', 'j0');
+        $graph->withPut('j0', 'j0');
     }
 
     public function testWithPutDupes(): void
     {
-        $dependencies = new JobsGraph();
+        $graph = new JobsGraph();
         $this->expectException(OverflowException::class);
-        $dependencies->withPut('j0', 'j1', 'j1');
+        $graph->withPut('j0', 'j1', 'j1');
     }
 
     public function testWithPutEmpty(): void
     {
-        $dependencies = new JobsGraph();
+        $graph = new JobsGraph();
         $this->expectException(StrEmptyException::class);
-        $dependencies->withPut('job', '');
+        $graph->withPut('job', '');
     }
 
     public function testWithPutSpace(): void
     {
-        $dependencies = new JobsGraph();
+        $graph = new JobsGraph();
         $this->expectException(StrCtypeSpaceException::class);
-        $dependencies->withPut('job', ' ');
+        $graph->withPut('job', ' ');
     }
 
     public function testWithPutDigit(): void
     {
-        $dependencies = new JobsGraph();
+        $graph = new JobsGraph();
         $this->expectException(StrCtypeDigitException::class);
-        $dependencies->withPut('job', '123');
+        $graph->withPut('job', '123');
+    }
+    
+    public function testPodcast(): void
+    {
+        $graph = new JobsGraph();
+        $graph = $graph
+            ->withPut('ReleaseOnTransistorFM', 'ProcessPodcast', 'OptimizePodcast')
+            ->withPut('ReleaseOnApplePodcasts', 'ProcessPodcast', 'OptimizePodcast')
+            ->withPut('CreateAudioTranscription', 'ProcessPodcast')
+            ->withPut('TranslateAudioTranscription', 'CreateAudioTranscription')
+            ->withPut('NotifySubscribers', 'ReleaseOnTransistorFM', 'ReleaseOnApplePodcasts')
+            ->withPut('SendTweetAboutNewPodcast', 'TranslateAudioTranscription', 'ReleaseOnTransistorFM', 'ReleaseOnApplePodcasts');
+        $expected = [
+            0 => ['ProcessPodcast', 'OptimizePodcast'],
+            1 => ['CreateAudioTranscription', 'ReleaseOnTransistorFM', 'ReleaseOnApplePodcasts'],
+            2 => ['TranslateAudioTranscription', 'NotifySubscribers'],
+            3 => ['SendTweetAboutNewPodcast'],
+        ];
+        $this->assertSame($expected, $graph->getGraph());
     }
 }
