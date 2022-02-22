@@ -13,12 +13,12 @@
     ],
     "require": {
         "amphp/parallel": "^1.4",
-        "chevere/chevere": "^0.4 || ^0.5.x-dev"
+        "chevere/chevere": "~0.4"
     },
     "require-dev": {
-        "chevere/var-dump": "^0.2.x-dev",
+        "chevere/var-dump": "~0.2",
         "phpunit/phpunit": "^9.5",
-        "symplify/easy-coding-standard": "^9.4"
+        "symplify/easy-coding-standard": "^10.1"
     },
     "autoload": {
         "files": [
