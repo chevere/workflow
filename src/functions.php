@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\Container\Container;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Chevere\Workflow\Interfaces\WorkflowMessageInterface;
+use Chevere\Workflow\Interfaces\WorkflowRunInterface;
 use Chevere\Workflow\Interfaces\WorkflowRunnerInterface;
+use Psr\Container\ContainerInterface;
 
 function workflow(JobInterface ...$namedSteps): WorkflowInterface
 {
@@ -40,25 +43,27 @@ function getWorkflowMessage(WorkflowInterface $workflow, mixed ...$namedArgument
     return new WorkflowMessage(new WorkflowRun($workflow, ...$namedArguments));
 }
 
-/**
- * Push `$workflowQueue` to the queue
- * @codeCoverageIgnore
- */
-function pushWorkflowQueue(WorkflowMessageInterface $workflowMessage, $stack): void
-{
-    $stack->push($workflowMessage);
-    $stack[] = $workflowMessage;
-}
-
-function runJob(
+function workflowRunner(
     WorkflowRunnerInterface $workflowRunner,
-    string $name,
+    string $job,
 ): WorkflowRunnerInterface {
-    if ($workflowRunner->workflowRun()->has($name)) {
+    $run = $workflowRunner->workflowRun();
+    if ($run->has($job)) {
         return $workflowRunner;
     }
-    $job = $workflowRunner->workflowRun()->workflow()->jobs()->get($name);
-    $workflowRunner->runJob($name, $job);
+    $workflowRunner->runJob($job);
 
     return $workflowRunner;
+}
+
+function workflowRun(
+    WorkflowInterface $workflow,
+    array $arguments = [],
+    ?ContainerInterface $container = null
+): WorkflowRunInterface {
+    $workflowRun = new WorkflowRun($workflow, ...$arguments);
+
+    return (new WorkflowRunner($workflowRun))
+        ->withRun($container ?? new Container())
+        ->workflowRun();
 }

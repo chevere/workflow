@@ -33,10 +33,10 @@ final class WorkflowRun implements WorkflowRunInterface
 
     private ArgumentsInterface $arguments;
 
-    public function __construct(private WorkflowInterface $workflow, mixed ...$namedArguments)
+    public function __construct(private WorkflowInterface $workflow, mixed ...$namedVariables)
     {
         $this->uuid = Uuid::uuid4()->toString();
-        $this->arguments = new Arguments($workflow->parameters(), ...$namedArguments);
+        $this->arguments = new Arguments($workflow->parameters(), ...$namedVariables);
         $this->jobs = new Map();
     }
 

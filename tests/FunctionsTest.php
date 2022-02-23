@@ -21,7 +21,7 @@ use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
 
-final class WorkflowFunctionsTest extends TestCase
+final class FunctionsTest extends TestCase
 {
     public function testFunctionWorkflow(): void
     {

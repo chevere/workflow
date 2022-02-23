@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\DataStructure\Map;
+use Chevere\Container\Container;
 use Chevere\Tests\_resources\src\WorkflowRunnerTestStep1;
 use Chevere\Tests\_resources\src\WorkflowRunnerTestStep2;
 use function Chevere\Workflow\job;
-use Chevere\Workflow\Jobs;
-use Chevere\Workflow\Workflow;
+use function Chevere\Workflow\workflow;
+use function Chevere\Workflow\workflowRun;
 use Chevere\Workflow\WorkflowRun;
 use Chevere\Workflow\WorkflowRunner;
 use PHPUnit\Framework\TestCase;
@@ -29,29 +29,28 @@ final class WorkflowRunnerTest extends TestCase
     {
         $foo = 'hola';
         $bar = 'mundo';
-        $workflow = (new Workflow(new Jobs()))
-            ->withAddedJob(
-                step1: job(
-                    WorkflowRunnerTestStep1::class,
-                    foo: '${foo}'
-                ),
-                step2: job(
-                    WorkflowRunnerTestStep2::class,
-                    foo: '${step1:response1}',
-                    bar: '${bar}'
-                )->withDepends('step1')
-            );
-        
+        $workflow = workflow(
+            step1: job(
+                WorkflowRunnerTestStep1::class,
+                foo: '${foo}'
+            ),
+            step2: job(
+                WorkflowRunnerTestStep2::class,
+                foo: '${step1:response1}',
+                bar: '${bar}'
+            )->withDepends('step1')
+        );
         $arguments = [
             'foo' => $foo,
             'bar' => $bar,
         ];
         $workflowRun = new WorkflowRun($workflow, ...$arguments);
-        $container = new Map();
         $workflowRunner = (new WorkflowRunner($workflowRun))
-            ->withRun($container);
+            ->withRun(new Container());
         $workflowRun = $workflowRunner->workflowRun();
         $this->assertSame($workflowRun, $workflowRunner->workflowRun());
+        $workflowRunFunction = workflowRun($workflow, $arguments);
+        $this->assertEquals($workflowRunFunction->workflow(), $workflowRunner->workflowRun()->workflow());
         $action1 = new WorkflowRunnerTestStep1();
         $this->assertSame(
             $action1->run(

@@ -13,13 +13,11 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\DataStructure\Map;
 use function Chevere\Filesystem\fileForPath;
 use Chevere\Tests\_resources\src\TestActionWrite;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\workflow;
-use Chevere\Workflow\WorkflowRun;
-use Chevere\Workflow\WorkflowRunner;
+use function Chevere\Workflow\workflowRun;
 use PHPUnit\Framework\TestCase;
 
 final class WorkflowRunnerSequentialTest extends TestCase
@@ -42,9 +40,7 @@ final class WorkflowRunnerSequentialTest extends TestCase
             )->withDepends('j1'),
         );
         $arguments = [];
-        $workflowRun = new WorkflowRun($workflow, ...$arguments);
-        (new WorkflowRunner($workflowRun))
-            ->withRun(new Map());
+        $run = workflowRun($workflow, ...$arguments);
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
             str_repeat('^$', 2)

@@ -13,13 +13,11 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\DataStructure\Map;
 use function Chevere\Filesystem\fileForPath;
 use Chevere\Tests\_resources\src\TestActionWrite;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\workflow;
-use Chevere\Workflow\WorkflowRun;
-use Chevere\Workflow\WorkflowRunner;
+use function Chevere\Workflow\workflowRun;
 use PHPUnit\Framework\TestCase;
 
 final class WorkflowRunnerParallelTest extends TestCase
@@ -42,9 +40,7 @@ final class WorkflowRunnerParallelTest extends TestCase
             ),
         );
         $arguments = [];
-        $run = new WorkflowRun($workflow, ...$arguments);
-        (new WorkflowRunner($run))
-            ->withRun(new Map());
+        $run = workflowRun($workflow, ...$arguments);
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
             '^^$$'

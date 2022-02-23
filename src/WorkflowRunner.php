@@ -17,10 +17,7 @@ use function Amp\Parallel\Worker\enqueueCallable;
 use function Amp\Promise\all;
 use function Amp\Promise\wait;
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\Message\Message;
-use Chevere\Parameter\Arguments;
-use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\RuntimeException;
@@ -28,10 +25,13 @@ use function Chevere\VarSupport\deepCopy;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\WorkflowRunInterface;
 use Chevere\Workflow\Interfaces\WorkflowRunnerInterface;
+use Psr\Container\ContainerInterface;
 use Throwable;
 
 final class WorkflowRunner implements WorkflowRunnerInterface
 {
+    private ContainerInterface $container;
+
     public function __construct(
         private WorkflowRunInterface $workflowRun
     ) {
@@ -42,15 +42,16 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         return $this->workflowRun;
     }
 
-    public function withRun(MapInterface $serviceContainer): WorkflowRunnerInterface
+    public function withRun(ContainerInterface $container): WorkflowRunnerInterface
     {
         $new = clone $this;
+        $new->container = $container;
         $jobs = $new->workflowRun->workflow()->jobs();
         $promises = [];
         foreach ($jobs->getGraph() as $jobs) {
             foreach ($jobs as $job) {
                 $promises[] = enqueueCallable(
-                    'Chevere\\Workflow\\runJob',
+                    'Chevere\\Workflow\\workflowRunner',
                     $new,
                     $job,
                 );
@@ -62,12 +63,39 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         return $new;
     }
 
-    private function getActionRunResponse(
+    public function runJob(string $name): void
+    {
+        $job = $this->workflowRun()->workflow()->jobs()->get($name);
+        $actionName = $job->action();
+        /** @var ActionInterface $action */
+        $action = new $actionName();
+        $action = $action->withContainer($this->container);
+        $arguments = $this->getJobArguments($job);
+        $response = $this->getActionResponse($action, $arguments);
+        deepCopy($response);
+        $this->addJob($name, $response);
+
+        try {
+        }
+        // @codeCoverageIgnoreStart
+        catch (Throwable $e) {
+            throw new RuntimeException(
+                previous: $e,
+                message: (new Message('Caught %throwable% at job:%job% when running action:%action%'))
+                    ->code('%throwable%', $e::class)
+                    ->code('%job%', $name)
+                    ->code('%action%', $actionName)
+            );
+        }
+        // @codeCoverageIgnoreEnd
+    }
+
+    private function getActionResponse(
         ActionInterface $action,
-        ArgumentsInterface $arguments
+        array $arguments
     ): ResponseInterface {
         try {
-            return $action->run(...$arguments->toArray());
+            return $action->runner(...$arguments);
         }
         // @codeCoverageIgnoreStart
         catch (Throwable $e) {
@@ -79,26 +107,10 @@ final class WorkflowRunner implements WorkflowRunnerInterface
 
             throw new InvalidArgumentException(
                 previous: $e,
-                message: (new Message('Missing argument(s) at %fileLine%'))
+                message: (new Message('%message% at %fileLine% for action %action%'))
+                    ->strtr('%message%', $e->getMessage())
                     ->code('%fileLine%', $fileLine)
-            );
-        }
-        // @codeCoverageIgnoreEnd
-    }
-
-    private function getActionArguments(ActionInterface $action, JobInterface $job): ArgumentsInterface
-    {
-        $arguments = $this->getJobArguments($job);
-
-        return new Arguments($action->parameters(), ...$arguments);
-
-        try {
-        }
-        // @codeCoverageIgnoreStart
-        catch (Throwable $e) {
-            throw new InvalidArgumentException(
-                previous: $e,
-                message: (new Message('Missing argument(s)'))
+                    ->code('%action%', $action::class)
             );
         }
         // @codeCoverageIgnoreEnd
@@ -132,30 +144,5 @@ final class WorkflowRunner implements WorkflowRunnerInterface
     {
         $this->workflowRun = $this->workflowRun
             ->withJobResponse($name, $response);
-    }
-
-    public function runJob(string $name, JobInterface $job): void
-    {
-        $actionName = $job->action();
-        /** @var ActionInterface $action */
-        $action = new $actionName();
-        $arguments = $this->getActionArguments($action, $job);
-        $response = $this->getActionRunResponse($action, $arguments);
-        deepCopy($response);
-        $this->addJob($name, $response);
-
-        try {
-        }
-        // @codeCoverageIgnoreStart
-        catch (Throwable $e) {
-            throw new RuntimeException(
-                previous: $e,
-                message: (new Message('Caught %throwable% at job:%job% when running action:%action%'))
-                    ->code('%throwable%', $e::class)
-                    ->code('%job%', $name)
-                    ->code('%action%', $actionName)
-            );
-        }
-        // @codeCoverageIgnoreEnd
     }
 }
