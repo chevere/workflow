@@ -1,0 +1,80 @@
+{
+    "interface": {
+        "description": "Chevere interface",
+        "prefix": "interface",
+        "body": [
+            "<?php",
+            "",
+            "namespace Chevere\\Workflow\\\\${TM_DIRECTORY/.*src\\/(([^\\/]*)(\\/)?)|(\\/)([^\\/]*)/$2${3:+\\\\}${5:+\\\\}$5/g};",
+            "",
+            "/**",
+            " * Describes the component in charge of ${1:doing}.",
+            " */",
+            "interface $TM_FILENAME_BASE",
+            "{",
+            "\t$0",
+            "}"
+        ]
+    },
+    "immutable-method": {
+        "description": "Chevere immutable method",
+        "prefix": "immutable-method",
+        "body": [
+            "private ${2|int,string,bool,array,object,resource|} \\$${3:argument};",
+            "",
+            "public function with${1:Name}(${2|int,string,bool,array,object,resource|} \\$${3:argument}): ${4:self}",
+            "{",
+            "\t\\$new = clone \\$this;",
+            "\t\\$new->${3:argument} = \\$${3:argument};",
+            "",
+            "\treturn \\$new;",
+            "}"
+        ]
+    },
+    "component": {
+        "description": "Class",
+        "prefix": "class",
+        "body": [
+            "<?php",
+            "",
+            "namespace Chevere\\Workflow\\\\${TM_DIRECTORY/.*src\\/(([^\\/]*)(\\/)?)|(\\/)([^\\/]*)/$2${3:+\\\\}${5:+\\\\}$5/g};",
+            "",
+            "final class $TM_FILENAME_BASE",
+            "{",
+            "\t$0",
+            "}"
+        ]
+    },
+    "exception": {
+        "description": "Chevere exception",
+        "prefix": "exception",
+        "body": [
+            "<?php",
+            "",
+            "namespace Chevere\\Workflow\\\\${TM_DIRECTORY/.*src\\/(([^\\/]*)(\\/)?)|(\\/)([^\\/]*)/$2${3:+\\\\}${5:+\\\\}$5/g};",
+            "",
+            "use Chevere\\WorkflowExceptions\\Core\\Exception;",
+            "",
+            "/**",
+            " * Exception thrown when ${1:description}.",
+            " */",
+            "final class $TM_FILENAME_BASE extends Exception",
+            "{",
+            "}"
+        ]
+    },
+    "trait": {
+        "description": "Create a component trait",
+        "prefix": "trait",
+        "body": [
+            "<?php",
+            "",
+            "namespace Chevere\\Workflow\\\\${TM_DIRECTORY/.*src\\/(([^\\/]*)(\\/)?)|(\\/)([^\\/]*)/$2${3:+\\\\}${5:+\\\\}$5/g};",
+            "",
+            "trait $TM_FILENAME_BASE",
+            "{",
+            "\t$0",
+            "}"
+        ]
+    },
+}
