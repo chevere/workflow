@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Response\Interfaces\ResponseInterface;
 
 class WorkflowTestJob2 extends Action
 {
-    public function run(string $foo, string $bar): ResponseInterface
+    public function run(string $foo, string $bar): array
     {
-        return $this->getResponse();
+        return [];
     }
 }

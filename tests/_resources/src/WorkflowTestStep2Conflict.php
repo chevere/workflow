@@ -15,12 +15,11 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 use Chevere\Filesystem\Path;
-use Chevere\Response\Interfaces\ResponseInterface;
 
 class WorkflowTestStep2Conflict extends Action
 {
-    public function run(Path $path, string $bar): ResponseInterface
+    public function run(Path $path, string $bar): array
     {
-        return $this->getResponse();
+        return [];
     }
 }

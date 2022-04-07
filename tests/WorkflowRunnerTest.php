@@ -57,7 +57,7 @@ final class WorkflowRunnerTest extends TestCase
                 ...$action1->getArguments(...[
                     'foo' => $foo,
                 ])->toArray()
-            )->data(),
+            ),
             $workflowRun->get('step1')->data()
         );
         $foo = $workflowRun->get('step1')->data()['response1'];
@@ -69,8 +69,7 @@ final class WorkflowRunnerTest extends TestCase
                         'foo' => $foo,
                         'bar' => $bar,
                     ])->toArray()
-                )
-                ->data(),
+                ),
             $workflowRun->get('step2')->data()
         );
     }

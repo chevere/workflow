@@ -17,7 +17,6 @@ use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Parameter\StringParameter;
-use Chevere\Response\Interfaces\ResponseInterface;
 
 class WorkflowTestStep1 extends Action
 {
@@ -28,8 +27,8 @@ class WorkflowTestStep1 extends Action
         );
     }
 
-    public function run(string $foo): ResponseInterface
+    public function run(string $foo): array
     {
-        return $this->getResponse();
+        return [];
     }
 }

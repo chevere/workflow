@@ -17,7 +17,6 @@ use Chevere\Action\Action;
 use function Chevere\Parameter\integerParameter;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
-use Chevere\Response\Interfaces\ResponseInterface;
 
 final class TestAction extends Action
 {
@@ -31,8 +30,10 @@ final class TestAction extends Action
         return new Parameters(id: integerParameter());
     }
 
-    public function run(): ResponseInterface
+    public function run(): array
     {
-        return $this->getResponse(id: 123);
+        return [
+            'id' => 123
+        ];
     }
 }

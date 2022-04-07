@@ -15,7 +15,6 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 use Chevere\Filesystem\Interfaces\FileInterface;
-use Chevere\Response\Interfaces\ResponseInterface;
 
 final class TestActionWrite extends Action
 {
@@ -24,7 +23,7 @@ final class TestActionWrite extends Action
         return 'test';
     }
 
-    public function run(FileInterface $file): ResponseInterface
+    public function run(FileInterface $file): array
     {
         $fp = fopen($file->path()->__toString(), 'a+');
         fwrite($fp, '^');
@@ -32,6 +31,6 @@ final class TestActionWrite extends Action
         fwrite($fp, '$');
         fclose($fp);
 
-        return $this->getResponse();
+        return [];
     }
 }

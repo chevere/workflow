@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Response\Interfaces\ResponseInterface;
 
 class TaskTestStep1 extends Action
 {
-    public function run(string $foo, int $bar): ResponseInterface
+    public function run(string $foo, int $bar): array
     {
-        return $this->getResponse();
+        return [];
     }
 }
