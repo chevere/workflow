@@ -28,7 +28,6 @@ final class WorkflowRunnerParallelTest extends TestCase
         $file->removeIfExists();
         $file->create();
         $file->put('');
-        $action = new TestActionWrite();
         $workflow = workflow(
             j1: job(
                 TestActionWrite::class,
@@ -40,7 +39,7 @@ final class WorkflowRunnerParallelTest extends TestCase
             ),
         );
         $arguments = [];
-        $run = workflowRun($workflow, ...$arguments);
+        workflowRun($workflow, ...$arguments);
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
             '^^$$'

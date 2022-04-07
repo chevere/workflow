@@ -135,14 +135,4 @@ final class Jobs implements JobsInterface
             );
         }
     }
-
-    private function assertHasJobByName(string $job): void
-    {
-        if (!$this->map->has($job)) {
-            throw new OutOfBoundsException(
-                (new Message("Job %name% doesn't exists"))
-                    ->code('%name%', $job)
-            );
-        }
-    }
 }

@@ -65,7 +65,7 @@ final class WorkflowRun implements WorkflowRunInterface
         $new = clone $this;
         $new->workflow->jobs()->get($job);
         $tryArguments = new Arguments(
-            $new->workflow->getProvided($job),
+            $new->workflow->getJobReturnArguments($job),
             ...$response->data()
         );
         $tryArguments->parameters();

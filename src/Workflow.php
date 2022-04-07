@@ -100,7 +100,7 @@ final class Workflow implements WorkflowInterface
         }
     }
 
-    public function getProvided(string $job): ParametersInterface
+    public function getJobReturnArguments(string $job): ParametersInterface
     {
         try {
             return $this->provided->get($job);

@@ -24,12 +24,8 @@ use Ds\Vector;
 final class JobsGraph implements JobsGraphInterface
 {
     use JobDependenciesTrait;
-
     use MapTrait;
-
     use MapToArrayTrait;
-
-    private array $stack;
 
     public function withPut(string $job, string ...$dependencies): JobsGraphInterface
     {

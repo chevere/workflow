@@ -45,7 +45,7 @@ interface WorkflowInterface extends Countable
     public function parameters(): ParametersInterface;
 
     /**
-     * Provides access to the `$var` mapping for job variables.
+     * Provides access to the variable mapping for job variables.
      *
      * Case `${foo}` (workflow variables):
      *
@@ -53,7 +53,7 @@ interface WorkflowInterface extends Countable
      * return ['foo'];
      * ```
      *
-     * Case `${step:var}` (named step responses):
+     * Case `${step:var}` (named job response):
      *
      * ```php
      * return ['step', 'var'];
@@ -66,5 +66,5 @@ interface WorkflowInterface extends Countable
     /**
      * Provides access to the expected return arguments for the given `$job`.
      */
-    public function getProvided(string $job): ParametersInterface;
+    public function getJobReturnArguments(string $job): ParametersInterface;
 }

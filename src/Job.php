@@ -100,8 +100,10 @@ final class Job implements JobInterface
         $this->assertArgumentsCount($namedArguments);
         $store = [];
         $missing = [];
-        $dependencies = [];
-        foreach ($this->parameters->getIterator() as $name => $parameter) {
+        $iterator = $this->parameters->getIterator();
+        $iterator->rewind();
+        while ($iterator->valid()) {
+            $name = $iterator->key();
             $argument = $namedArguments[$name] ?? null;
             if ($argument !== null) {
                 $store[$name] = $argument;
@@ -109,6 +111,7 @@ final class Job implements JobInterface
             } elseif ($this->parameters->isRequired($name)) {
                 $missing[] = $name;
             }
+            $iterator->next();
         }
         if ($missing !== []) {
             throw new BadMethodCallException(
