@@ -16,15 +16,18 @@ namespace Chevere\Workflow\Interfaces;
 use Psr\Container\ContainerInterface;
 
 /**
- * Describes the component in charge of doing.
+ * Describes the component in charge of running the workflow.
  */
 interface WorkflowRunnerInterface
 {
-    public function __construct(WorkflowRunInterface $workflowRun);
+    public function __construct(
+        WorkflowRunInterface $workflowRun,
+        ContainerInterface $container
+    );
 
     public function workflowRun(): WorkflowRunInterface;
 
-    public function withRun(ContainerInterface $container): WorkflowRunnerInterface;
+    public function withRun(): WorkflowRunnerInterface;
 
     public function runJob(string $name): void;
 }

@@ -16,7 +16,7 @@ namespace Chevere\Tests\_resources\src;
 use Chevere\Action\Action;
 use Chevere\Filesystem\Path;
 
-class WorkflowTestStep2Conflict extends Action
+class WorkflowTestJob2Conflict extends Action
 {
     public function run(Path $path, string $bar): array
     {

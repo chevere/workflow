@@ -18,14 +18,14 @@ use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Errors\ArgumentCountError;
 
 /**
- * Describes the component in charge of defining a workflow run, with the arguments returned for each task.
+ * Describes the component in charge of defining a workflow run, with arguments returned for each job.
  */
 interface WorkflowRunInterface
 {
     /**
-     * @param mixed $namedVariables
+     * @param mixed ...$vars Workflow variables.
      */
-    public function __construct(WorkflowInterface $workflow, mixed ...$namedVariables);
+    public function __construct(WorkflowInterface $workflow, mixed ...$vars);
 
     /**
      * Provides access to workflow uuid V4 (RFC 4122).
@@ -34,12 +34,12 @@ interface WorkflowRunInterface
     public function uuid(): string;
 
     /**
-     * Provides access to the WorkflowInterface instance.
+     * Provides access to the workflow instance.
      */
     public function workflow(): WorkflowInterface;
 
     /**
-     * Provides access to the ArgumentsInterface instance.
+     * Provides access to the arguments instance.
      */
     public function arguments(): ArgumentsInterface;
 

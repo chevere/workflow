@@ -30,10 +30,9 @@ use Throwable;
 
 final class WorkflowRunner implements WorkflowRunnerInterface
 {
-    private ContainerInterface $container;
-
     public function __construct(
-        private WorkflowRunInterface $workflowRun
+        private WorkflowRunInterface $workflowRun,
+        private ContainerInterface $container
     ) {
     }
 
@@ -42,10 +41,9 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         return $this->workflowRun;
     }
 
-    public function withRun(ContainerInterface $container): WorkflowRunnerInterface
+    public function withRun(): WorkflowRunnerInterface
     {
         $new = clone $this;
-        $new->container = $container;
         $jobs = $new->workflowRun->workflow()->jobs();
         $promises = [];
         foreach ($jobs->getGraph() as $jobs) {
@@ -65,17 +63,16 @@ final class WorkflowRunner implements WorkflowRunnerInterface
 
     public function runJob(string $name): void
     {
-        $job = $this->workflowRun()->workflow()->jobs()->get($name);
-        $actionName = $job->action();
-        /** @var ActionInterface $action */
-        $action = new $actionName();
-        $action = $action->withContainer($this->container);
-        $arguments = $this->getJobArguments($job);
-        $response = $this->getActionResponse($action, $arguments);
-        deepCopy($response);
-        $this->addJob($name, $response);
-
         try {
+            $job = $this->workflowRun()->workflow()->jobs()->get($name);
+            $actionName = $job->action();
+            /** @var ActionInterface $action */
+            $action = new $actionName();
+            $action = $action->withContainer($this->container);
+            $arguments = $this->getJobArguments($job);
+            $response = $this->getActionResponse($action, $arguments);
+            deepCopy($response);
+            $this->addJob($name, $response);
         }
         // @codeCoverageIgnoreStart
         catch (Throwable $e) {

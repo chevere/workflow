@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Container\Container;
-use Chevere\Tests\_resources\src\WorkflowRunnerTestStep1;
-use Chevere\Tests\_resources\src\WorkflowRunnerTestStep2;
+use Chevere\Tests\_resources\src\WorkflowRunnerTestJob1;
+use Chevere\Tests\_resources\src\WorkflowRunnerTestJob2;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\workflowRun;
@@ -31,11 +31,11 @@ final class WorkflowRunnerTest extends TestCase
         $bar = 'mundo';
         $workflow = workflow(
             step1: job(
-                WorkflowRunnerTestStep1::class,
+                WorkflowRunnerTestJob1::class,
                 foo: '${foo}'
             ),
             step2: job(
-                WorkflowRunnerTestStep2::class,
+                WorkflowRunnerTestJob2::class,
                 foo: '${step1:response1}',
                 bar: '${bar}'
             )->withDepends('step1')
@@ -45,13 +45,13 @@ final class WorkflowRunnerTest extends TestCase
             'bar' => $bar,
         ];
         $workflowRun = new WorkflowRun($workflow, ...$arguments);
-        $workflowRunner = (new WorkflowRunner($workflowRun))
-            ->withRun(new Container());
+        $workflowRunner = (new WorkflowRunner($workflowRun, new Container()))
+            ->withRun();
         $workflowRun = $workflowRunner->workflowRun();
         $this->assertSame($workflowRun, $workflowRunner->workflowRun());
         $workflowRunFunction = workflowRun($workflow, $arguments);
         $this->assertEquals($workflowRunFunction->workflow(), $workflowRunner->workflowRun()->workflow());
-        $action1 = new WorkflowRunnerTestStep1();
+        $action1 = new WorkflowRunnerTestJob1();
         $this->assertSame(
             $action1->run(
                 ...$action1->getArguments(...[
@@ -61,7 +61,7 @@ final class WorkflowRunnerTest extends TestCase
             $workflowRun->get('step1')->data()
         );
         $foo = $workflowRun->get('step1')->data()['response1'];
-        $action2 = new WorkflowRunnerTestStep2();
+        $action2 = new WorkflowRunnerTestJob2();
         $this->assertSame(
             $action2
                 ->run(

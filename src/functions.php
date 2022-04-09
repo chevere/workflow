@@ -58,12 +58,15 @@ function workflowRunner(
 
 function workflowRun(
     WorkflowInterface $workflow,
-    array $arguments = [],
+    array $vars = [],
     ?ContainerInterface $container = null
 ): WorkflowRunInterface {
-    $workflowRun = new WorkflowRun($workflow, ...$arguments);
+    $workflowRun = new WorkflowRun($workflow, ...$vars);
 
-    return (new WorkflowRunner($workflowRun))
-        ->withRun($container ?? new Container())
+    return (new WorkflowRunner(
+        $workflowRun,
+        $container ?? new Container()
+    ))
+        ->withRun()
         ->workflowRun();
 }

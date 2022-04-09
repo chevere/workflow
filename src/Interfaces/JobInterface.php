@@ -22,7 +22,7 @@ use function Chevere\Workflow\job;
 interface JobInterface
 {
     /** ${job:key} */
-    public const REGEX_JOB_RESPONSE_REFERENCE = '/^\${([\w-]*)\:([\w-]*)}$/';
+    public const REGEX_JOB_RESPONSE_REFERENCE = '/^\${([\w]*)\:([\w-]*)}$/';
 
     /**
      * @throws InvalidArgumentException

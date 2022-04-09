@@ -29,10 +29,10 @@ final class FunctionsTest extends TestCase
         $this->assertEquals(new Workflow(new Jobs()), $workflow);
     }
 
-    public function testFunctionStep(): void
+    public function testFunctionJob(): void
     {
         $args = ['action' => TestAction::class];
-        $step = job(...$args);
-        $this->assertEquals(new Job(...$args), $step);
+        $job = job(...$args);
+        $this->assertEquals(new Job(...$args), $job);
     }
 }

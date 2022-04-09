@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TaskTestStep0;
-use Chevere\Tests\_resources\src\TaskTestStep1;
+use Chevere\Tests\_resources\src\TaskTestJob0;
+use Chevere\Tests\_resources\src\TaskTestJob1;
 use Chevere\Tests\_resources\src\TestAction;
 use Chevere\Tests\_resources\src\WorkflowTestJob2;
 use Chevere\Throwable\Errors\ArgumentCountError;
@@ -43,7 +43,7 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         new Job(
-            TaskTestStep0::class,
+            TaskTestJob0::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );
@@ -53,7 +53,7 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         new Job(
-            TaskTestStep0::class,
+            TaskTestJob0::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );
@@ -61,7 +61,7 @@ final class JobTest extends TestCase
 
     public function testConstruct(): void
     {
-        $action = TaskTestStep1::class;
+        $action = TaskTestJob1::class;
         $arguments = [
             'foo' => '1',
             'bar' => 123,

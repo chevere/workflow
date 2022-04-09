@@ -18,7 +18,7 @@ use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Parameter\StringParameter;
 
-class WorkflowRunnerTestStep2 extends Action
+class WorkflowRunnerTestJob2 extends Action
 {
     public function getResponseParameters(): ParametersInterface
     {

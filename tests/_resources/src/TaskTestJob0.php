@@ -15,7 +15,7 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 
-class WorkflowTestStep0 extends Action
+class TaskTestJob0 extends Action
 {
     public function run(): array
     {
