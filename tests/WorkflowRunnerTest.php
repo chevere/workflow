@@ -53,11 +53,7 @@ final class WorkflowRunnerTest extends TestCase
         $this->assertEquals($workflowRunFunction->workflow(), $workflowRunner->workflowRun()->workflow());
         $action1 = new WorkflowRunnerTestJob1();
         $this->assertSame(
-            $action1->run(
-                ...$action1->getArguments(...[
-                    'foo' => $foo,
-                ])->toArray()
-            ),
+            $action1->run(foo: $foo),
             $workflowRun->get('step1')->data()
         );
         $foo = $workflowRun->get('step1')->data()['response1'];
@@ -65,10 +61,8 @@ final class WorkflowRunnerTest extends TestCase
         $this->assertSame(
             $action2
                 ->run(
-                    ...$action2->getArguments(...[
-                        'foo' => $foo,
-                        'bar' => $bar,
-                    ])->toArray()
+                    foo: $foo,
+                    bar: $bar,
                 ),
             $workflowRun->get('step2')->data()
         );
