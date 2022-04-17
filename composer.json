@@ -1,6 +1,6 @@
 {
     "name": "chevere/workflow",
-    "description": "A chevere workflow component.",
+    "description": "The chevere workflow component",
     "homepage": "https://chevere.org",
     "type": "library",
     "license": "Apache-2.0",
@@ -13,7 +13,7 @@
     ],
     "require": {
         "amphp/parallel": "^1.4",
-        "chevere/chevere": "^0.6.x-dev",
+        "chevere/chevere": "^0.7",
         "psr/container": "^2.0"
     },
     "require-dev": {
