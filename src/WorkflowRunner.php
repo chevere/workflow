@@ -17,9 +17,11 @@ use function Amp\Parallel\Worker\enqueueCallable;
 use function Amp\Promise\all;
 use function Amp\Promise\wait;
 use Chevere\Action\Interfaces\ActionInterface;
+use function Chevere\Message\message;
 use Chevere\Message\Message;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Throwable\Exceptions\RuntimeException;
 use function Chevere\VarSupport\deepCopy;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\WorkflowRunInterface;
@@ -57,7 +59,12 @@ final class WorkflowRunner implements WorkflowRunnerInterface
             try {
                 $responses = wait(all($promises));
             } catch (Throwable $e) {
-                vdd($e->getOriginalMessage());
+                throw new RuntimeException(
+                    message('Error running job %job% [%message%]')
+                        ->code('%job%', $job->name())
+                        ->strtr('%message%', $e->getMessage()),
+                    previous: $e
+                );
             }
             $new = end($responses);
         }
