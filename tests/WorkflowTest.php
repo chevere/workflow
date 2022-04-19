@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\WorkflowTestJob0;
-use Chevere\Tests\_resources\src\WorkflowTestJob1;
-use Chevere\Tests\_resources\src\WorkflowTestJob2;
-use Chevere\Tests\_resources\src\WorkflowTestJob2Conflict;
+use Chevere\Tests\_resources\src\TestActionEmpty;
+use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\_resources\src\TestActionObjectConflict;
+use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
+use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -30,7 +31,7 @@ use PHPUnit\Framework\TestCase;
 
 final class WorkflowTest extends TestCase
 {
-    public function testConstructEmpty(): void
+    public function testEmpty(): void
     {
         $workflow = new Workflow(new Jobs());
         $this->assertCount(0, $workflow);
@@ -38,9 +39,38 @@ final class WorkflowTest extends TestCase
         $workflow->getVar('not-found');
     }
 
+    public function testMissingReference(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        workflow(
+            zero: job(
+                TestActionEmpty::class
+            ),
+            one: job(
+                TestActionParamFooResponseBar::class,
+                foo: '${null:value}'
+            )
+        );
+    }
+
+    public function testWrongType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        workflow(
+            one: job(
+                TestActionNoParamsIntegerResponse::class,
+            ),
+            two: job(
+                TestActionParams::class,
+                foo: '${one:id}',
+                bar: '${one:id}'
+            )
+        );
+    }
+
     public function testConstruct(): void
     {
-        $step = new Job(WorkflowTestJob0::class);
+        $step = new Job(TestActionEmpty::class);
         $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
         $this->assertCount(1, $workflow);
@@ -50,7 +80,7 @@ final class WorkflowTest extends TestCase
 
     public function testWithAdded(): void
     {
-        $step = new Job(WorkflowTestJob0::class);
+        $step = new Job(TestActionEmpty::class);
         $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
         $workflowWithAddedStep = $workflow->withAddedJob(step2: $step);
@@ -66,7 +96,7 @@ final class WorkflowTest extends TestCase
     public function testWithAddedStepWithArguments(): void
     {
         $step = new Job(
-            WorkflowTestJob1::class,
+            TestActionParamFooResponseBar::class,
             foo: 'foo'
         );
         $workflow = (new Workflow(new Jobs(step: $step)))
@@ -79,7 +109,7 @@ final class WorkflowTest extends TestCase
         $workflow = new Workflow(
             new Jobs(
                 step1: new Job(
-                    WorkflowTestJob1::class,
+                    TestActionParamFooResponseBar::class,
                     foo: '${foo}'
                 )
             )
@@ -90,7 +120,7 @@ final class WorkflowTest extends TestCase
         $workflow = $workflow
             ->withAddedJob(
                 step2: new Job(
-                    WorkflowTestJob2::class,
+                    TestActionParams::class,
                     foo: '${step1:bar}',
                     bar: '${foo}'
                 )
@@ -104,7 +134,7 @@ final class WorkflowTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $workflow->withAddedJob(
             step: new Job(
-                WorkflowTestJob1::class,
+                TestActionParamFooResponseBar::class,
                 foo: '${not:found}'
             )
         );
@@ -115,11 +145,11 @@ final class WorkflowTest extends TestCase
         $this->expectException(BadMethodCallException::class);
         workflow(
             step1: job(
-                WorkflowTestJob1::class,
+                TestActionParamFooResponseBar::class,
                 foo: '${foo}'
             ),
             step2: job(
-                WorkflowTestJob2Conflict::class,
+                TestActionObjectConflict::class,
                 baz: '${foo}',
                 bar: 'test'
             )->withDepends('step1')
@@ -131,11 +161,11 @@ final class WorkflowTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         workflow(
             step1: job(
-                WorkflowTestJob1::class,
+                TestActionParamFooResponseBar::class,
                 foo: '${foo}'
             ),
             step2: job(
-                WorkflowTestJob2::class,
+                TestActionParams::class,
                 foo: '${step1:missing}',
                 bar: '${foo}'
             )
@@ -147,11 +177,11 @@ final class WorkflowTest extends TestCase
         $this->expectException(BadMethodCallException::class);
         workflow(
             step1: job(
-                WorkflowTestJob1::class,
+                TestActionParamFooResponseBar::class,
                 foo: '${foo}'
             ),
             step2: job(
-                WorkflowTestJob2Conflict::class,
+                TestActionObjectConflict::class,
                 baz: '${step1:bar}',
                 bar: '${foo}'
             )

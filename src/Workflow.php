@@ -16,6 +16,7 @@ namespace Chevere\Workflow;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Map;
 use Chevere\Message\Message;
+use function Chevere\Message\message;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
@@ -149,33 +150,42 @@ final class Workflow implements WorkflowInterface
                 }
             } catch (Throwable $e) {
                 throw new InvalidArgumentException(
-                    previous: $e,
-                    message: (new Message('Incompatible declaration on %name% by %action%: %message%'))
+                    message('Incompatible declaration on Job %name% (%arg%) [%message%]')
                         ->strong('%name%', $name)
-                        ->strong('%action%', $action::class . ":${argument}")
-                        ->strtr('%message%', '[' . $e::class . '] ' . $e->getMessage())
+                        ->strong('%arg%', "argument@${argument}")
+                        ->strtr('%message%', $e->getMessage()),
+                    previous: $e,
                 );
             }
         }
     }
 
-    private function assertMatchesExistingParameter(string $name, ParameterInterface $existent, ParameterInterface $parameter): void
-    {
+    private function assertMatchesExistingParameter(
+        string $name,
+        ParameterInterface $existent,
+        ParameterInterface $parameter
+    ): void {
         if ($existent::class !== $parameter::class) {
-            throw new InvalidArgumentException(
-                message: (new Message('Reference %name% of type %expected% is not compatible with the type %provided% provided'))
-                    ->code('%expected%', $existent::class)
+            throw new TypeError(
+                message("Reference %name% of type %type% doesn't match type %provided%")
                     ->strong('%name%', $name)
-                    ->code('%provided%', $parameter::class)
+                    ->code('%type%', $existent::class)
+                    ->code('%provided%', $parameter::class),
             );
         }
     }
 
-    private function putParameter(string $name, ParameterInterface $parameter): void
-    {
+    private function putParameter(
+        string $name,
+        ParameterInterface $parameter
+    ): void {
         if ($this->parameters->has($name)) {
             $existent = $this->parameters->get($name);
-            $this->assertMatchesExistingParameter('${' . $name . '}', $existent, $parameter);
+            $this->assertMatchesExistingParameter(
+                '${' . $name . '}',
+                $existent,
+                $parameter
+            );
             $this->parameters = $this->parameters
                 ->withModify(...[
                     $name => $parameter,
@@ -189,24 +199,20 @@ final class Workflow implements WorkflowInterface
             ]);
     }
 
-    private function assertPreviousReference(ParameterInterface $parameter, string $previousJob, string $responseKey): void
-    {
+    private function assertPreviousReference(
+        ParameterInterface $parameter,
+        string $previousJob,
+        string $responseKey
+    ): void {
         $reference = '${' . "${previousJob}:${responseKey}" . '}';
-        if (!$this->jobs()->has($previousJob)) {
-            throw new OutOfBoundsException(
-                (new Message("Reference %reference% not found, job %previous% doesn't exists"))
-                    ->code('%reference%', $reference)
-                    ->strong('%previous%', $previousJob)
-            );
-        }
         /** @var ParametersInterface $responseParameters */
         $responseParameters = $this->provided->get($previousJob);
         if (!$responseParameters->has($responseKey)) {
             throw new OutOfBoundsException(
-                (new Message('Reference %reference% not found, response parameter %parameter% is not declared by %previous%'))
+                message('Reference %reference% not found, response parameter %parameter% is not declared by %job%')
                     ->code('%reference%', $reference)
                     ->strong('%parameter%', $responseKey)
-                    ->strong('%previous%', $previousJob)
+                    ->strong('%job%', $previousJob),
             );
         }
         $this->assertMatchesExistingParameter(

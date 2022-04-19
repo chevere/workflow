@@ -13,10 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TaskTestJob0;
-use Chevere\Tests\_resources\src\TaskTestJob1;
-use Chevere\Tests\_resources\src\TestAction;
-use Chevere\Tests\_resources\src\WorkflowTestJob2;
+use Chevere\Tests\_resources\src\TestActionEmpty;
+use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\_resources\src\TestActionParamsAlt;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exception;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
@@ -43,7 +42,7 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         new Job(
-            TaskTestJob0::class,
+            TestActionEmpty::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );
@@ -53,7 +52,7 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         new Job(
-            TaskTestJob0::class,
+            TestActionEmpty::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );
@@ -61,7 +60,7 @@ final class JobTest extends TestCase
 
     public function testConstruct(): void
     {
-        $action = TaskTestJob1::class;
+        $action = TestActionParamsAlt::class;
         $arguments = [
             'foo' => '1',
             'bar' => 123,
@@ -78,7 +77,7 @@ final class JobTest extends TestCase
 
     public function testWithDependencies(): void
     {
-        $job = new Job(TestAction::class);
+        $job = new Job(TestActionNoParamsIntegerResponse::class);
         $this->assertSame([], $job->dependencies());
         $job = $job->withDepends('foo', 'bar');
         $this->assertSame(['foo', 'bar'], $job->dependencies());
@@ -86,7 +85,7 @@ final class JobTest extends TestCase
 
     public function testWithDependenciesOverflow(): void
     {
-        $job = new Job(TestAction::class);
+        $job = new Job(TestActionNoParamsIntegerResponse::class);
         $this->assertSame([], $job->dependencies());
         $this->expectException(OverflowException::class);
         $job->withDepends('foo', 'foo');
@@ -94,7 +93,7 @@ final class JobTest extends TestCase
 
     public function testWithWrongDeps(): void
     {
-        $job = new Job(TestAction::class);
+        $job = new Job(TestActionNoParamsIntegerResponse::class);
         $this->assertSame([], $job->dependencies());
         $this->expectException(Exception::class);
         $job->withDepends('');
@@ -103,7 +102,7 @@ final class JobTest extends TestCase
     public function testWithJobReference(): void
     {
         $job = new Job(
-            WorkflowTestJob2::class,
+            TestActionParamsAlt::class,
             foo: '${step1:bar}',
             bar: '${foo}'
         );

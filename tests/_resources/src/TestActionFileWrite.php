@@ -14,26 +14,23 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use function Chevere\Parameter\integerParameter;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Parameter\Parameters;
+use Chevere\Filesystem\Interfaces\FileInterface;
 
-final class TestAction extends Action
+final class TestActionFileWrite extends Action
 {
     public function getDescription(): string
     {
         return 'test';
     }
 
-    public function getResponseParameters(): ParametersInterface
+    public function run(FileInterface $file): array
     {
-        return new Parameters(id: integerParameter());
-    }
+        $fp = fopen($file->path()->__toString(), 'a+');
+        fwrite($fp, '^');
+        usleep(200000);
+        fwrite($fp, '$');
+        fclose($fp);
 
-    public function run(): array
-    {
-        return [
-            'id' => 123
-        ];
+        return [];
     }
 }

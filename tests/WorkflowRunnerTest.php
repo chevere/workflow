@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Container\Container;
-use Chevere\Tests\_resources\src\WorkflowRunnerTestJob1;
-use Chevere\Tests\_resources\src\WorkflowRunnerTestJob2;
+use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
+use Chevere\Tests\_resources\src\TestActionParamsFooResponse1;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\workflowRun;
@@ -31,11 +31,11 @@ final class WorkflowRunnerTest extends TestCase
         $bar = 'mundo';
         $workflow = workflow(
             step1: job(
-                WorkflowRunnerTestJob1::class,
+                TestActionParamsFooResponse1::class,
                 foo: '${foo}'
             ),
             step2: job(
-                WorkflowRunnerTestJob2::class,
+                TestActionParamsFooBarResponse2::class,
                 foo: '${step1:response1}',
                 bar: '${bar}'
             )->withDepends('step1')
@@ -51,13 +51,13 @@ final class WorkflowRunnerTest extends TestCase
         $this->assertSame($workflowRun, $workflowRunner->workflowRun());
         $workflowRunFunction = workflowRun($workflow, $arguments);
         $this->assertEquals($workflowRunFunction->workflow(), $workflowRunner->workflowRun()->workflow());
-        $action1 = new WorkflowRunnerTestJob1();
+        $action1 = new TestActionParamsFooResponse1();
         $this->assertSame(
             $action1->run(foo: $foo),
             $workflowRun->get('step1')->data()
         );
         $foo = $workflowRun->get('step1')->data()['response1'];
-        $action2 = new WorkflowRunnerTestJob2();
+        $action2 = new TestActionParamsFooBarResponse2();
         $this->assertSame(
             $action2
                 ->run(

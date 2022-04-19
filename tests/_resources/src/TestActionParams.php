@@ -15,9 +15,9 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 
-class TaskTestJob1 extends Action
+class TestActionParams extends Action
 {
-    public function run(string $foo, int $bar): array
+    public function run(string $foo, string $bar): array
     {
         return [];
     }

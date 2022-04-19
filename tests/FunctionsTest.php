@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestAction;
+use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
@@ -31,7 +31,7 @@ final class FunctionsTest extends TestCase
 
     public function testFunctionJob(): void
     {
-        $args = ['action' => TestAction::class];
+        $args = ['action' => TestActionNoParamsIntegerResponse::class];
         $job = job(...$args);
         $this->assertEquals(new Job(...$args), $job);
     }

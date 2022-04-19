@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use function Chevere\Filesystem\fileForPath;
-use Chevere\Tests\_resources\src\TestActionWrite;
+use Chevere\Tests\_resources\src\TestActionFileWrite;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\workflowRun;
@@ -30,11 +30,11 @@ final class WorkflowRunnerParallelTest extends TestCase
         $file->put('');
         $workflow = workflow(
             j1: job(
-                TestActionWrite::class,
+                TestActionFileWrite::class,
                 file: $file,
             ),
             j2: job(
-                TestActionWrite::class,
+                TestActionFileWrite::class,
                 file: $file,
             ),
         );

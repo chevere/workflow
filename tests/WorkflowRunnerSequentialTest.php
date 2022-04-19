@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use function Chevere\Filesystem\fileForPath;
-use Chevere\Tests\_resources\src\TestActionWrite;
+use Chevere\Tests\_resources\src\TestActionFileWrite;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\workflowRun;
@@ -28,14 +28,14 @@ final class WorkflowRunnerSequentialTest extends TestCase
         $file->removeIfExists();
         $file->create();
         $file->put('');
-        $action = new TestActionWrite();
+        $action = new TestActionFileWrite();
         $workflow = workflow(
             j1: job(
-                TestActionWrite::class,
+                TestActionFileWrite::class,
                 file: $file,
             ),
             j2: job(
-                TestActionWrite::class,
+                TestActionFileWrite::class,
                 file: $file,
             )->withDepends('j1'),
         );

@@ -14,11 +14,10 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Filesystem\Path;
 
-class WorkflowTestJob2Conflict extends Action
+class TestActionEmpty extends Action
 {
-    public function run(Path $path, string $bar): array
+    public function run(): array
     {
         return [];
     }

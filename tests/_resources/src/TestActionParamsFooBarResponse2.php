@@ -18,17 +18,17 @@ use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Parameter\StringParameter;
 
-class WorkflowRunnerTestJob1 extends Action
+class TestActionParamsFooBarResponse2 extends Action
 {
     public function getResponseParameters(): ParametersInterface
     {
-        return new Parameters(response1: new StringParameter());
+        return new Parameters(response2: new StringParameter());
     }
 
-    public function run(string $foo): array
+    public function run(string $foo, string $bar): array
     {
         return [
-            'response1' => $foo
+            'response2' => "$foo^$bar"
         ];
     }
 }

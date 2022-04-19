@@ -126,7 +126,7 @@ final class Jobs implements JobsInterface
             $missing = array_diff_assoc($job->dependencies(), $this->jobs->toArray());
 
             throw new InvalidArgumentException(
-                message('Job %job% has undeclared job dependencies: %dependencies%')
+                message('Job %job% has undeclared dependencies: %dependencies%')
                     ->code('%job%', $name)
                     ->code(
                         '%dependencies%',
