@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use function Chevere\Workflow\job;
 
 /**
  * Describes the component in charge of defining a job.

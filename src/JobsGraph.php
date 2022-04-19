@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\DataStructure\Traits\MapToArrayTrait;
 use Chevere\DataStructure\Traits\MapTrait;
 use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
@@ -25,7 +24,6 @@ final class JobsGraph implements JobsGraphInterface
 {
     use JobDependenciesTrait;
     use MapTrait;
-    use MapToArrayTrait;
 
     public function withPut(string $job, string ...$dependencies): JobsGraphInterface
     {
@@ -72,7 +70,8 @@ final class JobsGraph implements JobsGraphInterface
 
     private function getSortAsc(): array
     {
-        $array = $this->toArray();
+        /** @phpstan-ignore-next-line */
+        $array = iterator_to_array($this->map->getIterator(), true);
         uasort($array, function (Vector $a, Vector $b) {
             return match (true) {
                 $b->contains(...$a->toArray()) => -1,
@@ -84,7 +83,7 @@ final class JobsGraph implements JobsGraphInterface
         return $array;
     }
 
-    public function getGraph(): array
+    public function toArray(): array
     {
         $return = [];
         $toIndex = 0;
@@ -119,15 +118,12 @@ final class JobsGraph implements JobsGraphInterface
 
     private function handleDependencyUpdate(string $job, Vector $vector): void
     {
-        /** @var string $dep */
-        foreach ($vector as $dep) {
-            if (!$this->map->has($dep)) {
-                continue;
-            }
+        /** @var string $dependency */
+        foreach ($vector as $dependency) {
             /** @var Vector $update */
-            $update = $this->map->get($dep);
+            $update = $this->map->get($dependency);
             unset($update[$update->find($job)]);
-            $this->map = $this->map->withPut($dep, $update);
+            $this->map = $this->map->withPut($dependency, $update);
         }
     }
 }

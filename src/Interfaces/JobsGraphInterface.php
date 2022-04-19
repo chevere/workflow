@@ -30,8 +30,5 @@ interface JobsGraphInterface extends MappedInterface, ToArrayInterface
 
     public function withPut(string $job, string ...$dependencies): JobsGraphInterface;
 
-    /**
-     * Retrieves the dependency graph.
-     */
-    public function getGraph(): array;
+    public function toArray(): array;
 }
