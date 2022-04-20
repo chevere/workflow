@@ -133,18 +133,23 @@ final class WorkflowRunner implements WorkflowRunnerInterface
     private function getJobArguments(JobInterface $job): array
     {
         $arguments = [];
-        foreach ($job->arguments() as $name => $taskArgument) {
-            if (!is_string($taskArgument) || !$this->workflowRun->workflow()->vars()->has($taskArgument)) {
-                // sequential 43
-                $arguments[$name] = $taskArgument;
+        foreach ($job->arguments() as $name => $argument) {
+            if (!is_string($argument)
+                || !$this->workflowRun->workflow()->vars()->has($argument)
+            ) {
+                // @codeCoverageIgnoreStart
+                $arguments[$name] = $argument;
 
                 continue;
+                // @codeCoverageIgnoreEnd
             }
-            $reference = $this->workflowRun->workflow()->getVar($taskArgument);
+            $reference = $this->workflowRun->workflow()->getVar($argument);
             if (isset($reference[1])) {
-                // WorkflowRunnerTest.php:55
+                // @codeCoverageIgnoreStart
                 $arguments[$name] = $this->workflowRun
-                    ->get($reference[0])->data()[$reference[1]];
+                    ->get($reference[0])
+                    ->data()[$reference[1]];
+            // @codeCoverageIgnoreEnd
             } else {
                 $arguments[$name] = $this->workflowRun
                     ->arguments()->get($reference[0]);
