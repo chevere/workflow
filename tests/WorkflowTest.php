@@ -18,6 +18,7 @@ use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionObjectConflict;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
+use Chevere\Tests\_resources\src\TestActionParamsAlt;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -142,23 +143,32 @@ final class WorkflowTest extends TestCase
 
     public function testConflictingParameterType(): void
     {
-        $this->expectException(BadMethodCallException::class);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Incompatible declaration');
+        $this->expectExceptionMessage('(argument@bar)');
+        $this->expectExceptionMessage('Reference ${bar}');
+        $this->expectExceptionMessage("doesn't match type");
         workflow(
             step1: job(
-                TestActionParamFooResponseBar::class,
-                foo: '${foo}'
+                TestActionParams::class,
+                foo: '${foo}',
+                bar: '${bar}'
             ),
             step2: job(
-                TestActionObjectConflict::class,
-                baz: '${foo}',
-                bar: 'test'
-            )->withDepends('step1')
+                TestActionParamsAlt::class,
+                foo: '${foo}',
+                bar: '${bar}'
+            )
         );
     }
 
     public function testWithConflictingReferencedParameters(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Incompatible declaration');
+        $this->expectExceptionMessage('step2 (argument@foo)');
+        $this->expectExceptionMessage('Reference ${step1:missing} not found');
+        $this->expectExceptionMessage('not declared by step1');
         workflow(
             step1: job(
                 TestActionParamFooResponseBar::class,

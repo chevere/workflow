@@ -66,7 +66,6 @@ final class JobsGraph implements JobsGraphInterface
 
     public function hasDependencies(string $job, string ...$dependencies): bool
     {
-        $this->map->assertHas($job);
         /** @var Vector<string> $array */
         $array = $this->map->get($job);
 
@@ -83,6 +82,7 @@ final class JobsGraph implements JobsGraphInterface
         uasort($array, function (Vector $a, Vector $b) {
             return match (true) {
                 $b->contains(...$a->toArray()) => -1,
+                // @infection-ignore-all
                 $a->contains(...$b->toArray()) => 1,
                 default => 0
             };

@@ -53,8 +53,11 @@ final class JobsTest extends TestCase
     public function testWithDependsMissing(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/undeclared dependencies\: j0$/');
         new Jobs(
-            j1: job(TestActionNoParamsIntegerResponse::class)->withDepends('j0'),
+            j1: job(TestActionNoParamsIntegerResponse::class),
+            j2: job(TestActionNoParamsIntegerResponse::class)
+                    ->withDepends('j0', 'j1'),
         );
     }
 
@@ -80,8 +83,10 @@ final class JobsTest extends TestCase
     {
         $jobs = new Jobs(
             j1: job(TestActionNoParamsIntegerResponse::class),
-            j2: job(TestActionNoParamsIntegerResponse::class)->withDepends('j1'),
-            j3: job(TestActionNoParamsIntegerResponse::class)->withDepends('j2'),
+            j2: job(TestActionNoParamsIntegerResponse::class)
+                    ->withDepends('j1'),
+            j3: job(TestActionNoParamsIntegerResponse::class)
+                    ->withDepends('j2'),
         );
         $this->assertSame(
             [
@@ -99,10 +104,12 @@ final class JobsTest extends TestCase
             j1: job(TestActionNoParamsIntegerResponse::class),
             j2: job(TestActionNoParamsIntegerResponse::class),
             j3: job(TestActionNoParamsIntegerResponse::class)
-                ->withDepends('j1', 'j2'),
+                    ->withDepends('j1', 'j2'),
             j4: job(TestActionNoParamsIntegerResponse::class),
-            j5: job(TestActionNoParamsIntegerResponse::class)->withDepends('j4'),
-            j6: job(TestActionNoParamsIntegerResponse::class)->withDepends('j5'),
+            j5: job(TestActionNoParamsIntegerResponse::class)
+                    ->withDepends('j4'),
+            j6: job(TestActionNoParamsIntegerResponse::class)
+                    ->withDepends('j5'),
         );
         $this->assertSame(
             [
@@ -112,5 +119,16 @@ final class JobsTest extends TestCase
             ],
             $jobs->getGraph()
         );
+    }
+    
+    public function testWithAdded(): void
+    {
+        $jobs = new Jobs();
+        $this->assertFalse($jobs->has('j1'));
+        $withAdded = $jobs->withAdded(
+            j1: job(TestActionNoParamsIntegerResponse::class),
+        );
+        $this->assertNotSame($jobs, $withAdded);
+        $this->assertTrue($withAdded->has('j1'));
     }
 }

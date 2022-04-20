@@ -41,6 +41,8 @@ final class JobTest extends TestCase
     public function testArgumentCountError(): void
     {
         $this->expectException(ArgumentCountError::class);
+        $this->expectExceptionMessage('requires 0 arguments');
+        $this->expectExceptionMessage('provided 2 foo, bar');
         new Job(
             TestActionEmpty::class,
             foo: 'foo',
@@ -81,6 +83,8 @@ final class JobTest extends TestCase
         $this->assertSame([], $job->dependencies());
         $job = $job->withDepends('foo', 'bar');
         $this->assertSame(['foo', 'bar'], $job->dependencies());
+        $job = $job->withDepends('foo', 'bar', 'wea');
+        $this->assertSame(['foo', 'bar', 'wea'], $job->dependencies());
     }
 
     public function testWithDependenciesOverflow(): void

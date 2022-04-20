@@ -190,14 +190,11 @@ final class Workflow implements WorkflowInterface
         if ($this->parameters->has($name)) {
             $existent = $this->parameters->get($name);
             $this->assertMatchesExistingParameter(
+                // @infection-ignore-all
                 '${' . $name . '}',
                 $existent,
                 $parameter
             );
-            $this->parameters = $this->parameters
-                ->withModify(...[
-                    $name => $parameter,
-                ]);
 
             return;
         }

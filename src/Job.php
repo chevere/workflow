@@ -120,6 +120,7 @@ final class Job implements JobInterface
             } elseif ($this->parameters->isRequired($name)) {
                 $missing[] = $name;
             }
+            // @infection-ignore-all
             $iterator->next();
         }
         if ($missing !== []) {
@@ -136,14 +137,26 @@ final class Job implements JobInterface
      */
     private function assertArgumentsCount(array $arguments): void
     {
-        $countPassed = count($arguments);
+        $countProvided = count($arguments);
         $countRequired = count($this->parameters->required());
-        if ($countRequired > $countPassed || $countRequired === 0 && $countPassed > 0) {
+        if ($countRequired > $countProvided
+            || $countRequired === 0
+            && $countProvided > 0
+        ) {
+            $provided = implode(', ', array_keys($arguments));
+            $parameters = implode(
+                ', ',
+                $this->parameters->required()->toArray()
+            );
+
             throw new ArgumentCountError(
-                (new Message('Method %action% expects values for parameters %parameters% (missing %missing%)'))
-                    ->code('%action%', $this->action . '::run')
-                    ->code('%missing%', implode(', ', array_diff($this->parameters->required()->toArray(), array_keys($arguments))))
-                    ->code('%parameters%', implode(', ', $this->parameters->required()->toArray()))
+                (new Message('Method %method% of %action% requires %countRequired% arguments %parameters% (provided %countProvided% %provided%)'))
+                    ->strong('%method%', 'run')
+                    ->strong('%action%', $this->action)
+                    ->code('%countRequired%', strval($countRequired))
+                    ->code('%provided%', $provided)
+                    ->code('%countProvided%', strval($countProvided))
+                    ->code('%parameters%', $parameters)
             );
         }
     }

@@ -121,10 +121,15 @@ final class Jobs implements JobsInterface
         }
     }
 
-    private function assertJobContainsDependencies(string $name, JobInterface $job): void
-    {
+    private function assertJobContainsDependencies(
+        string $name,
+        JobInterface $job
+    ): void {
         if (!$this->jobs->contains(...$job->dependencies())) {
-            $missing = array_diff_assoc($job->dependencies(), $this->jobs->toArray());
+            $missing = array_diff(
+                $job->dependencies(),
+                $this->jobs->toArray()
+            );
 
             throw new InvalidArgumentException(
                 message('Job %job% has undeclared dependencies: %dependencies%')

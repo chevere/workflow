@@ -17,12 +17,20 @@ use Chevere\Str\Exceptions\StrCtypeDigitException;
 use Chevere\Str\Exceptions\StrCtypeSpaceException;
 use Chevere\Str\Exceptions\StrEmptyException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\JobsGraph;
 use PHPUnit\Framework\TestCase;
 
 final class JobsGraphTest extends TestCase
 {
+    public function testEmpty(): void
+    {
+        $graph = new JobsGraph();
+        $this->expectException(OutOfBoundsException::class);
+        $graph->hasDependencies('j0');
+    }
+
     public function testWithPut(): void
     {
         $graph = new JobsGraph();
