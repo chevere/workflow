@@ -63,7 +63,7 @@ final class WorkflowRunner implements WorkflowRunnerInterface
             catch (Throwable $e) {
                 throw new RuntimeException(
                     message('Error running job %job% [%message%]')
-                        ->code('%job%', $job)
+                        ->code('%job%', $job ?? ':before')
                         ->strtr('%message%', $e->getMessage()),
                     previous: $e
                 );
@@ -92,6 +92,9 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         return $new;
     }
 
+    /**
+     * @param Array<string, mixed> $arguments
+     */
     private function getActionResponse(
         ActionInterface $action,
         array $arguments
@@ -118,6 +121,9 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         // @codeCoverageIgnoreEnd
     }
 
+    /**
+     * @return Array<string, mixed>
+     */
     private function getJobArguments(JobInterface $job): array
     {
         $arguments = [];

@@ -24,11 +24,17 @@ interface JobsGraphInterface extends MappedInterface, ToArrayInterface
 {
     public function has(string $job): bool;
 
+    /**
+     * @return Vector<string>
+     */
     public function get(string $job): Vector;
 
     public function hasDependencies(string $job, string ...$dependencies): bool;
 
     public function withPut(string $job, string ...$dependencies): JobsGraphInterface;
 
+    /**
+     * @return Array<int, string[]>
+     */
     public function toArray(): array;
 }

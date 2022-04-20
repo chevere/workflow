@@ -27,6 +27,9 @@ use Ramsey\Uuid\Uuid;
 
 final class WorkflowRun implements WorkflowRunInterface
 {
+    /**
+     * @var Map<string, ResponseInterface>
+     */
     private Map $jobs;
 
     private string $uuid;
@@ -90,6 +93,7 @@ final class WorkflowRun implements WorkflowRunInterface
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
+        // @phpstan-ignore-next-line
         catch (\TypeError $e) {
             throw new TypeError(previous: $e);
         }

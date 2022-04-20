@@ -62,15 +62,17 @@ final class JobsGraph implements JobsGraphInterface
     public function hasDependencies(string $job, string ...$dependencies): bool
     {
         $this->map->assertHas($job);
-        /** @var Ds\Vector $array */
+        /** @var Vector<string> $array */
         $array = $this->map->get($job);
 
         return $array->contains(...$dependencies);
     }
 
+    /**
+     * @return Array<string, Vector<string>>
+     */
     private function getSortAsc(): array
     {
-        /** @phpstan-ignore-next-line */
         $array = iterator_to_array($this->map->getIterator(), true);
         uasort($array, function (Vector $a, Vector $b) {
             return match (true) {
@@ -88,7 +90,6 @@ final class JobsGraph implements JobsGraphInterface
         $return = [];
         $toIndex = 0;
         $previous = [];
-        /** @var Vector $dependencies */
         foreach ($this->getSortAsc() as $job => $dependencies) {
             foreach ($dependencies as $dependency) {
                 if (in_array($dependency, $previous)) {
@@ -106,6 +107,9 @@ final class JobsGraph implements JobsGraphInterface
         return $return;
     }
 
+    /**
+     * @param Vector<string> $vector
+     */
     private function assertNotSelfDependency(string $job, Vector $vector): void
     {
         if ($vector->contains($job)) {
@@ -116,13 +120,20 @@ final class JobsGraph implements JobsGraphInterface
         }
     }
 
+    /**
+     * @param Vector<string> $vector
+     */
     private function handleDependencyUpdate(string $job, Vector $vector): void
     {
         /** @var string $dependency */
         foreach ($vector as $dependency) {
-            /** @var Vector $update */
+            /** @var Vector<string> $update */
             $update = $this->map->get($dependency);
-            unset($update[$update->find($job)]);
+            $findJob = $update->find($job);
+            if ($findJob !== null) {
+                // @phpstan-ignore-next-line
+                unset($update[$findJob]);
+            }
             $this->map = $this->map->withPut($dependency, $update);
         }
     }

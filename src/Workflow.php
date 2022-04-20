@@ -36,8 +36,14 @@ final class Workflow implements WorkflowInterface
 
     private Map $vars;
 
+    /**
+     * @var DsMap<string, string[]>
+     */
     private DsMap $expected;
 
+    /**
+     * @var DsMap<string, ParametersInterface>
+     */
     private DsMap $provided;
 
     public function __construct(private JobsInterface $jobs)
@@ -89,6 +95,7 @@ final class Workflow implements WorkflowInterface
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
+        // @phpstan-ignore-next-line
         catch (\TypeError $e) {
             throw new TypeError(previous: $e);
         }
@@ -108,6 +115,7 @@ final class Workflow implements WorkflowInterface
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
+        // @phpstan-ignore-next-line
         catch (\TypeError $e) {
             throw new TypeError(previous: $e);
         } catch (\OutOfBoundsException $e) {
@@ -133,20 +141,23 @@ final class Workflow implements WorkflowInterface
                 }
                 $parameter = $parameters->get($argument);
                 if (preg_match(self::REGEX_VARIABLE_REFERENCE, $value, $matches) !== 0) {
-                    /** @var array $matches */
+                    /** @var string[] $matches */
                     if (!$this->parameters->has($matches[1])) {
                         $this->vars = $this->vars->withPut($value, [$matches[1]]);
                     }
                     $this->putParameter($matches[1], $parameter);
                 } elseif (preg_match(JobInterface::REGEX_JOB_RESPONSE_REFERENCE, $value, $matches) !== 0) {
-                    /** @var array $matches */
+                    /** @var string[] $matches */
                     $previousJob = strval($matches[1]);
                     $previousResponseKey = strval($matches[2]);
                     $this->assertPreviousReference($parameter, $previousJob, $previousResponseKey);
                     $expected = $this->expected->get($previousJob, []);
                     $expected[] = $previousResponseKey;
                     $this->expected->put($previousJob, $expected);
-                    $this->vars = $this->vars->withPut($value, [$previousJob, $previousResponseKey]);
+                    $this->vars = $this->vars->withPut(
+                        $value,
+                        [$previousJob, $previousResponseKey]
+                    );
                 }
             } catch (Throwable $e) {
                 throw new InvalidArgumentException(

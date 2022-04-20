@@ -30,8 +30,14 @@ final class Job implements JobInterface
 {
     use JobDependenciesTrait;
 
+    /**
+     * @var Array<string, mixed>
+     */
     private array $arguments;
 
+    /**
+     * @var Vector<string>
+     */
     private Vector $dependencies;
 
     private ParametersInterface $parameters;
@@ -41,6 +47,7 @@ final class Job implements JobInterface
         mixed ...$namedArguments
     ) {
         try {
+            // @phpstan-ignore-next-line
             $reflection = new ReflectionClass($this->action);
         } catch (ReflectionException $e) {
             throw new InvalidArgumentException(
@@ -56,7 +63,9 @@ final class Job implements JobInterface
             );
         }
         $this->dependencies = new Vector();
-        $this->parameters = $reflection->newInstance()->parameters();
+        /** @var ActionInterface $instance */
+        $instance = $reflection->newInstance();
+        $this->parameters = $instance->parameters();
         $this->arguments = [];
         if ($namedArguments !== []) {
             $this->setArguments(...$namedArguments);
@@ -122,6 +131,9 @@ final class Job implements JobInterface
         $this->arguments = $store;
     }
 
+    /**
+     * @param mixed[] $arguments
+     */
     private function assertArgumentsCount(array $arguments): void
     {
         $countPassed = count($arguments);
@@ -142,7 +154,7 @@ final class Job implements JobInterface
             return;
         }
         preg_match(self::REGEX_JOB_RESPONSE_REFERENCE, $argument, $matches);
-        /** @var array $matches */
+        /** @var string[] $matches */
         if ($matches === []) {
             return;
         }

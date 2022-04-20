@@ -55,6 +55,9 @@ function workflowRunnerForJob(
     return $workflowRunner->withRunJob($job);
 }
 
+/**
+ * @param Array<string, mixed> $vars
+ */
 function workflowRun(
     WorkflowInterface $workflow,
     array $vars = [],

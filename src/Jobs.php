@@ -31,6 +31,9 @@ final class Jobs implements JobsInterface
 {
     use MapTrait;
 
+    /**
+     * @var Vector<string>
+     */
     private Vector $jobs;
 
     private JobsGraphInterface $graph;
@@ -64,6 +67,7 @@ final class Jobs implements JobsInterface
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
+        // @phpstan-ignore-next-line
         catch (\TypeError $e) {
             throw new TypeError(previous: $e);
         }
