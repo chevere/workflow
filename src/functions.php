@@ -43,7 +43,7 @@ function getWorkflowMessage(WorkflowInterface $workflow, mixed ...$namedArgument
     return new WorkflowMessage(new WorkflowRun($workflow, ...$namedArguments));
 }
 
-function workflowRunner(
+function workflowRunnerForJob(
     WorkflowRunnerInterface $workflowRunner,
     string $job,
 ): WorkflowRunnerInterface {
@@ -51,9 +51,8 @@ function workflowRunner(
     if ($run->has($job)) {
         return $workflowRunner;
     }
-    $workflowRunner->runJob($job);
 
-    return $workflowRunner;
+    return $workflowRunner->withRunJob($job);
 }
 
 function workflowRun(

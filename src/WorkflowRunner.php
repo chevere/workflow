@@ -50,7 +50,7 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         foreach ($jobs->getGraph() as $jobs) {
             foreach ($jobs as $job) {
                 $promises[] = enqueueCallable(
-                    'Chevere\\Workflow\\workflowRunner',
+                    'Chevere\\Workflow\\workflowRunnerForJob',
                     $new,
                     $job,
                 );
@@ -58,7 +58,9 @@ final class WorkflowRunner implements WorkflowRunnerInterface
 
             try {
                 $responses = wait(all($promises));
-            } catch (Throwable $e) {
+            }
+            // @codeCoverageIgnoreStart
+            catch (Throwable $e) {
                 throw new RuntimeException(
                     message('Error running job %job% [%message%]')
                         ->code('%job%', $job->name())
@@ -66,13 +68,15 @@ final class WorkflowRunner implements WorkflowRunnerInterface
                     previous: $e
                 );
             }
+            // @codeCoverageIgnoreEnd
+
             $new = end($responses);
         }
         
         return $new;
     }
 
-    public function runJob(string $name): void
+    public function withRunJob(string $name): WorkflowRunnerInterface
     {
         $job = $this->workflowRun()->workflow()->jobs()->get($name);
         $actionName = $job->action();
@@ -82,7 +86,10 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         $arguments = $this->getJobArguments($job);
         $response = $this->getActionResponse($action, $arguments);
         deepCopy($response);
-        $this->addJob($name, $response);
+        $new = clone $this;
+        $new->addJob($name, $response);
+
+        return $new;
     }
 
     private function getActionResponse(

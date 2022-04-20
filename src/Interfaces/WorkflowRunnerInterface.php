@@ -29,5 +29,5 @@ interface WorkflowRunnerInterface
 
     public function withRun(): WorkflowRunnerInterface;
 
-    public function runJob(string $name): void;
+    public function withRunJob(string $name): WorkflowRunnerInterface;
 }

@@ -21,6 +21,7 @@ use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\workflowRun;
 use Chevere\Workflow\WorkflowRun;
 use Chevere\Workflow\WorkflowRunner;
+use function Chevere\Workflow\workflowRunnerForJob;
 use PHPUnit\Framework\TestCase;
 
 final class WorkflowRunnerTest extends TestCase
@@ -38,19 +39,33 @@ final class WorkflowRunnerTest extends TestCase
                 TestActionParamsFooBarResponse2::class,
                 foo: '${step1:response1}',
                 bar: '${bar}'
-            )->withDepends('step1')
+            )
         );
         $arguments = [
             'foo' => $foo,
             'bar' => $bar,
         ];
         $workflowRun = new WorkflowRun($workflow, ...$arguments);
+        $workflowRunner = new WorkflowRunner($workflowRun, new Container());
+        $workflowRunnerForStep1 = workflowRunnerForJob($workflowRunner, 'step1');
         $workflowRunner = (new WorkflowRunner($workflowRun, new Container()))
             ->withRun();
+        $workflowRunnerForStep2 = workflowRunnerForJob($workflowRunner, 'step2');
         $workflowRun = $workflowRunner->workflowRun();
+        $this->assertSame(
+            $workflowRunnerForStep1->workflowRun()->get('step1')->data(),
+            $workflowRun->get('step1')->data()
+        );
+        $this->assertSame(
+            $workflowRunnerForStep2->workflowRun()->get('step2')->data(),
+            $workflowRun->get('step2')->data()
+        );
         $this->assertSame($workflowRun, $workflowRunner->workflowRun());
         $workflowRunFunction = workflowRun($workflow, $arguments);
-        $this->assertEquals($workflowRunFunction->workflow(), $workflowRunner->workflowRun()->workflow());
+        $this->assertEquals(
+            $workflowRunFunction->workflow(),
+            $workflowRunner->workflowRun()->workflow()
+        );
         $action1 = new TestActionParamsFooResponse1();
         $this->assertSame(
             $action1->run(foo: $foo),
