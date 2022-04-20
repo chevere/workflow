@@ -38,10 +38,11 @@ final class JobsGraph implements JobsGraphInterface
             }
         }
         if ($new->map->has($job)) {
+            /** @var Vector<string> $existing */
             $existing = $new->map->get($job);
-            $vector = new Vector(
-                array_unique($existing->merge($vector)->toArray())
-            );
+            /** @var Array<string> $array */
+            $array = $existing->merge($vector)->toArray();
+            $vector = new Vector(array_unique($array));
         }
         $new->handleDependencyUpdate($job, $vector);
         $new->map = $new->map->withPut($job, $vector);
@@ -54,8 +55,12 @@ final class JobsGraph implements JobsGraphInterface
         return $this->map->has($job);
     }
 
+    /**
+     * @return Vector<string>
+     */
     public function get(string $job): Vector
     {
+        // @phpstan-ignore-next-line
         return $this->map->get($job);
     }
 
@@ -74,6 +79,7 @@ final class JobsGraph implements JobsGraphInterface
     private function getSortAsc(): array
     {
         $array = iterator_to_array($this->map->getIterator(), true);
+        // @phpstan-ignore-next-line
         uasort($array, function (Vector $a, Vector $b) {
             return match (true) {
                 $b->contains(...$a->toArray()) => -1,
@@ -82,6 +88,7 @@ final class JobsGraph implements JobsGraphInterface
             };
         });
 
+        // @phpstan-ignore-next-line
         return $array;
     }
 

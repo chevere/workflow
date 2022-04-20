@@ -31,6 +31,9 @@ use Throwable;
 
 final class WorkflowRunner implements WorkflowRunnerInterface
 {
+    /** @var WorkflowRunnerInterface[] */
+    private array $responses;
+
     public function __construct(
         private WorkflowRunInterface $workflowRun,
         private ContainerInterface $container
@@ -57,7 +60,10 @@ final class WorkflowRunner implements WorkflowRunnerInterface
             }
 
             try {
+                /** @var WorkflowRunnerInterface[] $responses */
                 $responses = wait(all($promises));
+                // @phpstan-ignore-next-line
+                $new->responses = $responses;
             }
             // @codeCoverageIgnoreStart
             catch (Throwable $e) {
@@ -69,10 +75,10 @@ final class WorkflowRunner implements WorkflowRunnerInterface
                 );
             }
             // @codeCoverageIgnoreEnd
-
-            $new = end($responses);
+            /** @var WorkflowRunnerInterface $new */
+            $new = end($new->responses);
         }
-        
+
         return $new;
     }
 

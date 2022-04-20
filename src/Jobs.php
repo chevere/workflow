@@ -56,13 +56,10 @@ final class Jobs implements JobsInterface
         return $this->graph->toArray();
     }
 
-    /**
-     * @throws TypeError
-     * @throws OutOfBoundsException
-     */
     public function get(string $job): JobInterface
     {
         try {
+            // @phpstan-ignore-next-line
             return $this->map->get($job);
         }
         // @codeCoverageIgnoreStart

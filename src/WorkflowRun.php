@@ -45,6 +45,7 @@ final class WorkflowRun implements WorkflowRunInterface
 
     public function __clone()
     {
+        // @phpstan-ignore-next-line
         $this->jobs = deepCopy($this->jobs);
     }
 

@@ -84,13 +84,10 @@ final class Workflow implements WorkflowInterface
         return $this->parameters;
     }
 
-    /**
-     * @throws TypeError
-     * @throws OutOfBoundsException
-     */
     public function getVar(string $variable): array
     {
         try {
+            // @phpstan-ignore-next-line
             return $this->vars->get($variable);
         }
         // @codeCoverageIgnoreStart
