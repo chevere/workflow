@@ -47,10 +47,17 @@ final class WorkflowRunnerTest extends TestCase
         ];
         $workflowRun = new WorkflowRun($workflow, ...$arguments);
         $workflowRunner = new WorkflowRunner($workflowRun, new Container());
-        $workflowRunnerForStep1 = workflowRunnerForJob($workflowRunner, 'step1');
+        $workflowRunnerForStep1 = workflowRunnerForJob(
+            $workflowRunner,
+            'step1'
+        );
         $workflowRunner = (new WorkflowRunner($workflowRun, new Container()))
             ->withRun();
-        $workflowRunnerForStep2 = workflowRunnerForJob($workflowRunner, 'step2');
+        workflowRunnerForJob($workflowRunner, 'step1');
+        $workflowRunnerForStep2 = workflowRunnerForJob(
+            $workflowRunner,
+            'step2'
+        );
         $workflowRun = $workflowRunner->workflowRun();
         $this->assertSame(
             $workflowRunnerForStep1->workflowRun()->get('step1')->data(),

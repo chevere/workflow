@@ -63,7 +63,7 @@ final class WorkflowRunner implements WorkflowRunnerInterface
             catch (Throwable $e) {
                 throw new RuntimeException(
                     message('Error running job %job% [%message%]')
-                        ->code('%job%', $job->name())
+                        ->code('%job%', $job)
                         ->strtr('%message%', $e->getMessage()),
                     previous: $e
                 );
@@ -123,14 +123,14 @@ final class WorkflowRunner implements WorkflowRunnerInterface
         $arguments = [];
         foreach ($job->arguments() as $name => $taskArgument) {
             if (!is_string($taskArgument) || !$this->workflowRun->workflow()->vars()->has($taskArgument)) {
-                // @codeCoverageIgnoreStart
+                // sequential 43
                 $arguments[$name] = $taskArgument;
 
                 continue;
-                // @codeCoverageIgnoreEnd
             }
             $reference = $this->workflowRun->workflow()->getVar($taskArgument);
             if (isset($reference[1])) {
+                // WorkflowRunnerTest.php:55
                 $arguments[$name] = $this->workflowRun
                     ->get($reference[0])->data()[$reference[1]];
             } else {
