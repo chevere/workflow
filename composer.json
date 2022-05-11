@@ -14,10 +14,9 @@
     "require": {
         "amphp/parallel": "^1.4",
         "chevere/chevere": "^0.7",
-        "psr/container": "^2.0"
+        "psr/container": "^1 || ^2"
     },
     "require-dev": {
-        "chevere/var-dump": "~0.2",
         "phpstan/phpstan": "^1.5",
         "phpunit/phpunit": "^9.5",
         "symplify/easy-coding-standard": "^10.1"
