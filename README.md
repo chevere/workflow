@@ -12,7 +12,7 @@
 
 ## Documentation
 
-Documentation is available at [chevere.org](https://chevere.org/packages/Workflow.html).
+Documentation is available at [chevere.org](https://chevere.org/packages/workflow).
 
 ## License
 
