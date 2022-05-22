@@ -20,11 +20,11 @@ use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\Jobs;
+use Chevere\Workflow\Run;
 use Chevere\Workflow\Workflow;
-use Chevere\Workflow\WorkflowRun;
 use PHPUnit\Framework\TestCase;
 
-final class WorkflowRunTest extends TestCase
+final class RunTest extends TestCase
 {
     public function testConstruct(): void
     {
@@ -38,7 +38,7 @@ final class WorkflowRunTest extends TestCase
         $arguments = [
             'foo' => 'bar',
         ];
-        $workflowRun = new WorkflowRun($workflow, ...$arguments);
+        $workflowRun = new Run($workflow, ...$arguments);
         $this->assertMatchesRegularExpression(
             '/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i',
             $workflowRun->uuid()
@@ -68,7 +68,7 @@ final class WorkflowRunTest extends TestCase
             'bar' => 'mundo',
             'baz' => 'ql',
         ];
-        $workflowRun = (new WorkflowRun($workflow, ...$arguments));
+        $workflowRun = (new Run($workflow, ...$arguments));
         $workflowRunWithStepResponse = $workflowRun
             ->withJobResponse('step0', new Response());
         $this->assertNotSame($workflowRun, $workflowRunWithStepResponse);
@@ -94,7 +94,7 @@ final class WorkflowRunTest extends TestCase
             'foo' => 'hola',
         ];
         $this->expectException(OutOfBoundsException::class);
-        (new WorkflowRun($workflow, ...$arguments))
+        (new Run($workflow, ...$arguments))
             ->withJobResponse(
                 'not-found',
                 new Response()
@@ -112,7 +112,7 @@ final class WorkflowRunTest extends TestCase
                 )
             );
         $this->expectException(ArgumentCountError::class);
-        (new WorkflowRun($workflow))
+        (new Run($workflow))
             ->withJobResponse(
                 'step0',
                 new Response()

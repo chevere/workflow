@@ -20,7 +20,7 @@ use Chevere\Throwable\Errors\ArgumentCountError;
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
  */
-interface WorkflowRunInterface
+interface RunInterface
 {
     /**
      * @param mixed ...$vars Workflow variables.

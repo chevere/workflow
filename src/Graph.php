@@ -16,16 +16,16 @@ namespace Chevere\Workflow;
 use Chevere\DataStructure\Traits\MapTrait;
 use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Workflow\Interfaces\JobsGraphInterface;
+use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Traits\JobDependenciesTrait;
 use Ds\Vector;
 
-final class JobsGraph implements JobsGraphInterface
+final class Graph implements GraphInterface
 {
     use JobDependenciesTrait;
     use MapTrait;
 
-    public function withPut(string $job, string ...$dependencies): JobsGraphInterface
+    public function withPut(string $job, string ...$dependencies): GraphInterface
     {
         $this->assertDependencies(...$dependencies);
         $vector = new Vector($dependencies);
@@ -106,11 +106,11 @@ final class JobsGraph implements JobsGraphInterface
                     break;
                 }
             }
-            
+
             $return[$toIndex][] = $job;
             $previous[] = $job;
         }
-        
+
         return $return;
     }
 

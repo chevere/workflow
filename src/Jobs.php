@@ -21,8 +21,8 @@ use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
+use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Chevere\Workflow\Interfaces\JobsGraphInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Ds\Vector;
 use Iterator;
@@ -36,13 +36,13 @@ final class Jobs implements JobsInterface
      */
     private Vector $jobs;
 
-    private JobsGraphInterface $graph;
+    private GraphInterface $graph;
 
     public function __construct(JobInterface ...$jobs)
     {
         $this->map = new Map();
         $this->jobs = new Vector();
-        $this->graph = new JobsGraph();
+        $this->graph = new Graph();
         $this->putAdded(...$jobs);
     }
 

@@ -18,16 +18,16 @@ use Psr\Container\ContainerInterface;
 /**
  * Describes the component in charge of running the workflow.
  */
-interface WorkflowRunnerInterface
+interface RunnerInterface
 {
     public function __construct(
-        WorkflowRunInterface $workflowRun,
+        RunInterface $workflowRun,
         ContainerInterface $container
     );
 
-    public function workflowRun(): WorkflowRunInterface;
+    public function run(): RunInterface;
 
-    public function withRun(): WorkflowRunnerInterface;
+    public function withRun(): RunnerInterface;
 
-    public function withRunJob(string $name): WorkflowRunnerInterface;
+    public function withRunJob(string $name): RunnerInterface;
 }

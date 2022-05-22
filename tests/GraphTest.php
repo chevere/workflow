@@ -19,21 +19,21 @@ use Chevere\Str\Exceptions\StrEmptyException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use Chevere\Workflow\JobsGraph;
+use Chevere\Workflow\Graph;
 use PHPUnit\Framework\TestCase;
 
-final class JobsGraphTest extends TestCase
+final class GraphTest extends TestCase
 {
     public function testEmpty(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $this->expectException(OutOfBoundsException::class);
         $graph->hasDependencies('j0');
     }
 
     public function testWithPut(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $expected = [];
         $this->assertSame($expected, $graph->toArray());
         $graph = $graph->withPut('j0', 'j1');
@@ -87,7 +87,7 @@ final class JobsGraphTest extends TestCase
 
     public function testWithPutWea(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $graph = $graph->withPut('j0');
         $this->assertTrue($graph->hasDependencies('j0'));
         $this->assertFalse($graph->hasDependencies('j0', 'jn'));
@@ -105,42 +105,42 @@ final class JobsGraphTest extends TestCase
 
     public function testWithPutSelf(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $this->expectException(InvalidArgumentException::class);
         $graph->withPut('j0', 'j0');
     }
 
     public function testWithPutDupes(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $this->expectException(OverflowException::class);
         $graph->withPut('j0', 'j1', 'j1');
     }
 
     public function testWithPutEmpty(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $this->expectException(StrEmptyException::class);
         $graph->withPut('job', '');
     }
 
     public function testWithPutSpace(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $this->expectException(StrCtypeSpaceException::class);
         $graph->withPut('job', ' ');
     }
 
     public function testWithPutDigit(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $this->expectException(StrCtypeDigitException::class);
         $graph->withPut('job', '123');
     }
-    
+
     public function testPodcast(): void
     {
-        $graph = new JobsGraph();
+        $graph = new Graph();
         $graph = $graph
             ->withPut(
                 'ReleaseOnTransistorFM',

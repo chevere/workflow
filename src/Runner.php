@@ -24,28 +24,28 @@ use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\RuntimeException;
 use function Chevere\VarSupport\deepCopy;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Chevere\Workflow\Interfaces\WorkflowRunInterface;
-use Chevere\Workflow\Interfaces\WorkflowRunnerInterface;
+use Chevere\Workflow\Interfaces\RunInterface;
+use Chevere\Workflow\Interfaces\RunnerInterface;
 use Psr\Container\ContainerInterface;
 use Throwable;
 
-final class WorkflowRunner implements WorkflowRunnerInterface
+final class Runner implements RunnerInterface
 {
-    /** @var WorkflowRunnerInterface[] */
+    /** @var RunnerInterface[] */
     private array $responses;
 
     public function __construct(
-        private WorkflowRunInterface $workflowRun,
+        private RunInterface $workflowRun,
         private ContainerInterface $container
     ) {
     }
 
-    public function workflowRun(): WorkflowRunInterface
+    public function run(): RunInterface
     {
         return $this->workflowRun;
     }
 
-    public function withRun(): WorkflowRunnerInterface
+    public function withRun(): RunnerInterface
     {
         $new = clone $this;
         $jobs = $new->workflowRun->workflow()->jobs();
@@ -60,7 +60,7 @@ final class WorkflowRunner implements WorkflowRunnerInterface
             }
 
             try {
-                /** @var WorkflowRunnerInterface[] $responses */
+                /** @var RunnerInterface[] $responses */
                 $responses = wait(all($promises));
                 // @phpstan-ignore-next-line
                 $new->responses = $responses;
@@ -75,16 +75,16 @@ final class WorkflowRunner implements WorkflowRunnerInterface
                 );
             }
             // @codeCoverageIgnoreEnd
-            /** @var WorkflowRunnerInterface $new */
+            /** @var RunnerInterface $new */
             $new = end($new->responses);
         }
 
         return $new;
     }
 
-    public function withRunJob(string $name): WorkflowRunnerInterface
+    public function withRunJob(string $name): RunnerInterface
     {
-        $job = $this->workflowRun()->workflow()->jobs()->get($name);
+        $job = $this->run()->workflow()->jobs()->get($name);
         $actionName = $job->action();
         /** @var ActionInterface $action */
         $action = new $actionName();

@@ -20,15 +20,14 @@ use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\workflowRun;
 use PHPUnit\Framework\TestCase;
 
-final class WorkflowRunnerSequentialTest extends TestCase
+final class RunnerParallelTest extends TestCase
 {
-    public function testSequentialRunner(): void
+    public function testParallelRunner(): void
     {
-        $file = fileForPath(__DIR__ . '/_resources/output-sequential');
+        $file = fileForPath(__DIR__ . '/_resources/output-parallel');
         $file->removeIfExists();
         $file->create();
         $file->put('');
-        $action = new TestActionFileWrite();
         $workflow = workflow(
             j1: job(
                 TestActionFileWrite::class,
@@ -37,13 +36,13 @@ final class WorkflowRunnerSequentialTest extends TestCase
             j2: job(
                 TestActionFileWrite::class,
                 file: $file,
-            )->withDepends('j1'),
+            ),
         );
         $arguments = [];
-        $run = workflowRun($workflow, ...$arguments);
+        workflowRun($workflow, ...$arguments);
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
-            str_repeat('^$', 2)
+            '^^$$'
         );
         $file->removeIfExists();
     }

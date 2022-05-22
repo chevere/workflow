@@ -20,12 +20,12 @@ use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use function Chevere\VarSupport\deepCopy;
+use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
-use Chevere\Workflow\Interfaces\WorkflowRunInterface;
 use Ds\Map;
 use Ramsey\Uuid\Uuid;
 
-final class WorkflowRun implements WorkflowRunInterface
+final class Run implements RunInterface
 {
     /**
      * @var Map<string, ResponseInterface>
@@ -64,7 +64,7 @@ final class WorkflowRun implements WorkflowRunInterface
         return $this->arguments;
     }
 
-    public function withJobResponse(string $job, ResponseInterface $response): WorkflowRunInterface
+    public function withJobResponse(string $job, ResponseInterface $response): RunInterface
     {
         $new = clone $this;
         $new->workflow->jobs()->get($job);
