@@ -16,8 +16,8 @@ namespace Chevere\Tests;
 use function Chevere\Filesystem\fileForPath;
 use Chevere\Tests\_resources\src\TestActionFileWrite;
 use function Chevere\Workflow\job;
+use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
-use function Chevere\Workflow\workflowRun;
 use PHPUnit\Framework\TestCase;
 
 final class RunnerSequentialTest extends TestCase
@@ -40,7 +40,7 @@ final class RunnerSequentialTest extends TestCase
             )->withDepends('j1'),
         );
         $arguments = [];
-        $run = workflowRun($workflow, ...$arguments);
+        $run = run($workflow, ...$arguments);
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
             str_repeat('^$', 2)

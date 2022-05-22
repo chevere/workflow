@@ -18,10 +18,10 @@ use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
 use Chevere\Tests\_resources\src\TestActionParamsFooResponse1;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Run;
+use function Chevere\Workflow\run;
 use Chevere\Workflow\Runner;
+use function Chevere\Workflow\runnerForJob;
 use function Chevere\Workflow\workflow;
-use function Chevere\Workflow\workflowRun;
-use function Chevere\Workflow\workflowRunnerForJob;
 use PHPUnit\Framework\TestCase;
 
 final class RunnerTest extends TestCase
@@ -47,14 +47,14 @@ final class RunnerTest extends TestCase
         ];
         $workflowRun = new Run($workflow, ...$arguments);
         $workflowRunner = new Runner($workflowRun, new Container());
-        $workflowRunnerForStep1 = workflowRunnerForJob(
+        $workflowRunnerForStep1 = runnerForJob(
             $workflowRunner,
             'step1'
         );
         $workflowRunner = (new Runner($workflowRun, new Container()))
             ->withRun();
-        workflowRunnerForJob($workflowRunner, 'step1');
-        $workflowRunnerForStep2 = workflowRunnerForJob(
+        runnerForJob($workflowRunner, 'step1');
+        $workflowRunnerForStep2 = runnerForJob(
             $workflowRunner,
             'step2'
         );
@@ -68,7 +68,7 @@ final class RunnerTest extends TestCase
             $workflowRun->get('step2')->data()
         );
         $this->assertSame($workflowRun, $workflowRunner->run());
-        $workflowRunFunction = workflowRun($workflow, $arguments);
+        $workflowRunFunction = run($workflow, $arguments);
         $this->assertEquals(
             $workflowRunFunction->workflow(),
             $workflowRunner->run()->workflow()

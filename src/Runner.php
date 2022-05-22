@@ -53,7 +53,7 @@ final class Runner implements RunnerInterface
         foreach ($jobs->getGraph() as $jobs) {
             foreach ($jobs as $job) {
                 $promises[] = enqueueCallable(
-                    'Chevere\\Workflow\\workflowRunnerForJob',
+                    'Chevere\\Workflow\\runnerForJob',
                     $new,
                     $job,
                 );

@@ -34,7 +34,7 @@ function job(
     return new Job($action, ...$namedArguments);
 }
 
-function workflowRunnerForJob(
+function runnerForJob(
     RunnerInterface $workflowRunner,
     string $job,
 ): RunnerInterface {
@@ -49,7 +49,7 @@ function workflowRunnerForJob(
 /**
  * @param Array<string, mixed> $vars
  */
-function workflowRun(
+function run(
     WorkflowInterface $workflow,
     array $vars = [],
     ?ContainerInterface $container = null
