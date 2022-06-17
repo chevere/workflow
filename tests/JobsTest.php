@@ -31,7 +31,7 @@ final class JobsTest extends TestCase
             [
                 0 => ['j1', 'j2'],
             ],
-            $jobs->getGraph()
+            $jobs->graph()
         );
     }
 
@@ -46,7 +46,7 @@ final class JobsTest extends TestCase
                 0 => ['j1'],
                 1 => ['j2'],
             ],
-            $jobs->getGraph()
+            $jobs->graph()
         );
     }
 
@@ -75,7 +75,7 @@ final class JobsTest extends TestCase
                 0 => ['j1', 'j2'],
                 1 => ['j3'],
             ],
-            $jobs->getGraph()
+            $jobs->graph()
         );
     }
 
@@ -94,7 +94,7 @@ final class JobsTest extends TestCase
                 1 => ['j2'],
                 2 => ['j3'],
             ],
-            $jobs->getGraph()
+            $jobs->graph()
         );
     }
 
@@ -117,10 +117,10 @@ final class JobsTest extends TestCase
                 1 => ['j3', 'j5'],
                 2 => ['j6'],
             ],
-            $jobs->getGraph()
+            $jobs->graph()
         );
     }
-    
+
     public function testWithAdded(): void
     {
         $jobs = new Jobs();

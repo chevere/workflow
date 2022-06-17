@@ -17,10 +17,12 @@ use Chevere\Container\Container;
 use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
 use Chevere\Tests\_resources\src\TestActionParamsFooResponse1;
 use function Chevere\Workflow\job;
+use function Chevere\Workflow\reference;
 use Chevere\Workflow\Run;
 use function Chevere\Workflow\run;
 use Chevere\Workflow\Runner;
 use function Chevere\Workflow\runnerForJob;
+use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
 use PHPUnit\Framework\TestCase;
 
@@ -33,12 +35,12 @@ final class RunnerTest extends TestCase
         $workflow = workflow(
             step1: job(
                 TestActionParamsFooResponse1::class,
-                foo: '${foo}'
+                foo: variable('${foo}')
             ),
             step2: job(
                 TestActionParamsFooBarResponse2::class,
-                foo: '${step1:response1}',
-                bar: '${bar}'
+                foo: reference('${step1:response1}'),
+                bar: variable('${bar}')
             )
         );
         $arguments = [

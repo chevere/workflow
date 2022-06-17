@@ -15,8 +15,10 @@ namespace Chevere\Workflow;
 
 use Chevere\Container\Container;
 use Chevere\Workflow\Interfaces\JobInterface;
+use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
+use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Psr\Container\ContainerInterface;
 
@@ -32,6 +34,16 @@ function job(
     mixed ...$namedArguments
 ): JobInterface {
     return new Job($action, ...$namedArguments);
+}
+
+function reference(string $reference): ReferenceInterface
+{
+    return new Reference($reference);
+}
+
+function variable(string $name): VariableInterface
+{
+    return new Variable($name);
 }
 
 function runnerForJob(

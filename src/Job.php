@@ -21,6 +21,7 @@ use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\UnexpectedValueException;
 use Chevere\Workflow\Interfaces\JobInterface;
+use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Traits\JobDependenciesTrait;
 use Ds\Vector;
 use ReflectionClass;
@@ -177,19 +178,13 @@ final class Job implements JobInterface
 
     private function inferDependencies(mixed $argument): void
     {
-        if (!is_string($argument)) {
+        if (!($argument instanceof ReferenceInterface)) {
             return;
         }
-        preg_match(self::REGEX_JOB_RESPONSE_REFERENCE, $argument, $matches);
-        /** @var string[] $matches */
-        if ($matches === []) {
+        if ($this->dependencies->contains($argument->job())) {
             return;
         }
-        $dependency = strval($matches[1]);
-        if ($this->dependencies->contains($dependency)) {
-            return;
-        }
-        $this->dependencies->push($dependency);
+        $this->dependencies->push($argument->job());
     }
 
     private function addDependencies(string ...$jobs): void

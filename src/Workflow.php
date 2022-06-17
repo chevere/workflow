@@ -25,9 +25,10 @@ use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
+use Chevere\Workflow\Interfaces\ReferenceInterface;
+use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Ds\Map as DsMap;
-use function Safe\preg_match;
 use Throwable;
 
 final class Workflow implements WorkflowInterface
@@ -78,7 +79,7 @@ final class Workflow implements WorkflowInterface
 
         return $new;
     }
-   
+
     public function parameters(): ParametersInterface
     {
         return $this->parameters;
@@ -133,27 +134,20 @@ final class Workflow implements WorkflowInterface
         $this->provided->put($name, $action->responseParameters());
         foreach ($job->arguments() as $argument => $value) {
             try {
-                if (!is_string($value)) {
-                    continue;
-                }
                 $parameter = $parameters->get($argument);
-                if (preg_match(self::REGEX_VARIABLE_REFERENCE, $value, $matches) !== 0) {
-                    /** @var string[] $matches */
-                    if (!$this->parameters->has($matches[1])) {
-                        $this->vars = $this->vars->withPut($value, [$matches[1]]);
+                if ($value instanceof VariableInterface) {
+                    if (!$this->parameters->has($value->name())) {
+                        $this->vars = $this->vars->withPut($value->__toString(), [$value->name()]);
                     }
-                    $this->putParameter($matches[1], $parameter);
-                } elseif (preg_match(JobInterface::REGEX_JOB_RESPONSE_REFERENCE, $value, $matches) !== 0) {
-                    /** @var string[] $matches */
-                    $previousJob = strval($matches[1]);
-                    $previousResponseKey = strval($matches[2]);
-                    $this->assertPreviousReference($parameter, $previousJob, $previousResponseKey);
-                    $expected = $this->expected->get($previousJob, []);
-                    $expected[] = $previousResponseKey;
-                    $this->expected->put($previousJob, $expected);
+                    $this->putParameter($value->name(), $parameter);
+                } elseif ($value instanceof ReferenceInterface) {
+                    $this->assertPreviousReference($parameter, $value->job(), $value->key());
+                    $expected = $this->expected->get($value->job(), []);
+                    $expected[] = $value->key();
+                    $this->expected->put($value->job(), $expected);
                     $this->vars = $this->vars->withPut(
-                        $value,
-                        [$previousJob, $previousResponseKey]
+                        $value->__toString(),
+                        [$value->job(), $value->key()]
                     );
                 }
             } catch (Throwable $e) {

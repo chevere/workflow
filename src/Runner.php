@@ -24,8 +24,10 @@ use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\RuntimeException;
 use function Chevere\VarSupport\deepCopy;
 use Chevere\Workflow\Interfaces\JobInterface;
+use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
+use Chevere\Workflow\Interfaces\VariableInterface;
 use Psr\Container\ContainerInterface;
 use Throwable;
 
@@ -50,7 +52,7 @@ final class Runner implements RunnerInterface
         $new = clone $this;
         $jobs = $new->workflowRun->workflow()->jobs();
         $promises = [];
-        foreach ($jobs->getGraph() as $jobs) {
+        foreach ($jobs->graph() as $jobs) {
             foreach ($jobs as $job) {
                 $promises[] = enqueueCallable(
                     'Chevere\\Workflow\\runnerForJob',
@@ -134,22 +136,18 @@ final class Runner implements RunnerInterface
     {
         $arguments = [];
         foreach ($job->arguments() as $name => $argument) {
-            if (!is_string($argument)
-                || !$this->workflowRun->workflow()->vars()->has($argument)
-            ) {
-                // @codeCoverageIgnoreStart
+            if (!($argument instanceof ReferenceInterface || $argument instanceof VariableInterface)) {
                 $arguments[$name] = $argument;
 
                 continue;
-                // @codeCoverageIgnoreEnd
             }
-            $reference = $this->workflowRun->workflow()->getVar($argument);
+            $lookup = $argument->__toString();
+            $this->workflowRun->workflow()->vars()->assertHas($lookup);
+            $reference = $this->workflowRun->workflow()->getVar($lookup);
             if (isset($reference[1])) {
-                // @codeCoverageIgnoreStart
                 $arguments[$name] = $this->workflowRun
                     ->get($reference[0])
                     ->data()[$reference[1]];
-            // @codeCoverageIgnoreEnd
             } else {
                 $arguments[$name] = $this->workflowRun
                     ->arguments()->get($reference[0]);

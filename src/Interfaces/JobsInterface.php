@@ -35,7 +35,7 @@ interface JobsInterface extends MappedInterface
     public function count(): int;
 
     /** @return Array<int, string[]> */
-    public function getGraph(): array;
+    public function graph(): array;
 
     public function withAdded(JobInterface ...$jobs): JobsInterface;
 

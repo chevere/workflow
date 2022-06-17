@@ -21,6 +21,8 @@ use Chevere\Throwable\Exception;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
+use function Chevere\Workflow\reference;
+use function Chevere\Workflow\variable;
 use PHPUnit\Framework\TestCase;
 use UnexpectedValueException;
 
@@ -117,8 +119,8 @@ final class JobTest extends TestCase
     {
         $job = new Job(
             TestActionParamsAlt::class,
-            foo: '${step1:bar}',
-            bar: '${foo}'
+            foo: reference('${step1:bar}'),
+            bar: variable('${foo}')
         );
         $job = $job->withDepends('step1');
         $this->assertContains('step1', $job->dependencies());

@@ -51,7 +51,7 @@ final class Jobs implements JobsInterface
         return $this->jobs->toArray();
     }
 
-    public function getGraph(): array
+    public function graph(): array
     {
         return $this->graph->toArray();
     }

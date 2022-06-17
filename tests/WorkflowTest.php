@@ -26,6 +26,8 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
+use function Chevere\Workflow\reference;
+use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
@@ -49,7 +51,7 @@ final class WorkflowTest extends TestCase
             ),
             one: job(
                 TestActionParamFooResponseBar::class,
-                foo: '${null:value}'
+                foo: reference('${null:value}')
             )
         );
     }
@@ -63,8 +65,8 @@ final class WorkflowTest extends TestCase
             ),
             two: job(
                 TestActionParams::class,
-                foo: '${one:id}',
-                bar: '${one:id}'
+                foo: reference('${one:id}'),
+                bar: reference('${one:id}')
             )
         );
     }
@@ -111,7 +113,7 @@ final class WorkflowTest extends TestCase
             new Jobs(
                 step1: new Job(
                     TestActionParamFooResponseBar::class,
-                    foo: '${foo}'
+                    foo: variable('${foo}')
                 )
             )
         );
@@ -122,8 +124,8 @@ final class WorkflowTest extends TestCase
             ->withAddedJob(
                 step2: new Job(
                     TestActionParams::class,
-                    foo: '${step1:bar}',
-                    bar: '${foo}'
+                    foo: reference('${step1:bar}'),
+                    bar: variable('${foo}')
                 )
             );
         $this->assertContains('step1', $workflow->jobs()->get('step2')->dependencies());
@@ -136,7 +138,7 @@ final class WorkflowTest extends TestCase
         $workflow->withAddedJob(
             step: new Job(
                 TestActionParamFooResponseBar::class,
-                foo: '${not:found}'
+                foo: reference('${not:found}')
             )
         );
     }
@@ -151,13 +153,13 @@ final class WorkflowTest extends TestCase
         workflow(
             step1: job(
                 TestActionParams::class,
-                foo: '${foo}',
-                bar: '${bar}'
+                foo: variable('${foo}'),
+                bar: variable('${bar}')
             ),
             step2: job(
                 TestActionParamsAlt::class,
-                foo: '${foo}',
-                bar: '${bar}'
+                foo: variable('${foo}'),
+                bar: variable('${bar}')
             )
         );
     }
@@ -172,12 +174,12 @@ final class WorkflowTest extends TestCase
         workflow(
             step1: job(
                 TestActionParamFooResponseBar::class,
-                foo: '${foo}'
+                foo: variable('${foo}')
             ),
             step2: job(
                 TestActionParams::class,
-                foo: '${step1:missing}',
-                bar: '${foo}'
+                foo: reference('${step1:missing}'),
+                bar: variable('${foo}')
             )
         );
     }
@@ -188,12 +190,12 @@ final class WorkflowTest extends TestCase
         workflow(
             step1: job(
                 TestActionParamFooResponseBar::class,
-                foo: '${foo}'
+                foo: variable('${foo}')
             ),
             step2: job(
                 TestActionObjectConflict::class,
-                baz: '${step1:bar}',
-                bar: '${foo}'
+                baz: reference('${step1:bar}'),
+                bar: variable('${foo}')
             )
         );
     }
