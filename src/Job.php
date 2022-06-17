@@ -156,7 +156,6 @@ final class Job implements JobInterface
         $countRequired = count($this->parameters->required());
         if ($countRequired > $countProvided
             || $countRequired === 0
-            && $countProvided > 0
         ) {
             $provided = implode(', ', array_keys($arguments));
             $parameters = implode(

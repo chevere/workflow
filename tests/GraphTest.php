@@ -45,15 +45,15 @@ final class GraphTest extends TestCase
         $this->assertSame([], $graph->toArray());
         $graph = $graph->withPut('j0', $this->getJob()->withDepends('j1'));
         $expected = [
-            0 => ['j1'],
-            1 => ['j0'],
+            ['j1'],
+            ['j0'],
         ];
         $this->assertSame($expected, $graph->toArray());
         $graph = $graph->withPut('j0', $this->getJob()->withDepends('j2'));
         $this->assertSame(
             [
-                0 => ['j1', 'j2'],
-                1 => ['j0'],
+                ['j1', 'j2'],
+                ['j0'],
             ],
             $graph->toArray()
         );
@@ -61,42 +61,42 @@ final class GraphTest extends TestCase
         $graph = $graph->withPut('j2', $this->getJob());
         $this->assertSame(
             [
-                0 => ['j1', 'j2'],
-                1 => ['j0']
+                ['j1', 'j2'],
+                ['j0']
             ],
             $graph->toArray()
         );
         $graph = $graph->withPut('j2', $this->getJob()->withDepends('j0'));
         $this->assertSame(
             [
-                0 => ['j1'],
-                1 => ['j0'],
-                2 => ['j2']
+                ['j1'],
+                ['j0'],
+                ['j2']
             ],
             $graph->toArray()
         );
         $graph = $graph->withPut('j1', $this->getJob()->withDepends('j0'));
         $this->assertSame(
             [
-                0 => ['j0'],
-                1 => ['j1', 'j2'],
+                ['j0'],
+                ['j1', 'j2'],
             ],
             $graph->toArray()
         );
         $graph = $graph->withPut('j0', $this->getJob()->withDepends('j1'));
         $this->assertSame(
             [
-                0 => ['j1'],
-                1 => ['j0'],
-                2 => ['j2'],
+                ['j1'],
+                ['j0'],
+                ['j2'],
             ],
             $graph->toArray()
         );
         $graph = $graph->withPut('j0', $this->getJob()->withDepends('j2'));
         $this->assertSame(
             [
-                0 => ['j1', 'j2'],
-                1 => ['j0'],
+                ['j1', 'j2'],
+                ['j0'],
             ],
             $graph->toArray()
         );
@@ -112,9 +112,27 @@ final class GraphTest extends TestCase
         $graph = $graph->withPut('j1', $this->getJob()->withIsSync());
         $this->assertSame(
             [
-                0 => ['j0'],
-                1 => ['j1'],
-                2 => ['j2'],
+                ['j1'],
+                ['j0'],
+                ['j2'],
+            ],
+            $graph->toArray()
+        );
+    }
+
+    public function testWithPutSyncExtra(): void
+    {
+        $graph = new Graph();
+        $graph = $graph->withPut(
+            'jn',
+            $this->getJob()->withDepends('j1', 'j0', 'j2')
+        );
+        $graph = $graph->withPut('j1', $this->getJob()->withIsSync());
+        $this->assertSame(
+            [
+                ['j1'],
+                ['j0', 'j2'],
+                ['jn'],
             ],
             $graph->toArray()
         );
@@ -130,9 +148,27 @@ final class GraphTest extends TestCase
         $graph = $graph->withPut('j0', $this->getJob()->withIsSync());
         $this->assertSame(
             [
-                0 => ['j0'],
-                1 => ['j1'],
-                2 => ['j2'],
+                ['j0'],
+                ['j1'],
+                ['j2'],
+            ],
+            $graph->toArray()
+        );
+    }
+
+    public function testWithPutSyncLast(): void
+    {
+        $graph = new Graph();
+        $graph = $graph->withPut(
+            'j2',
+            $this->getJob()->withDepends('j0', 'j1')
+        );
+        $graph = $graph->withPut('j1', $this->getJob()->withIsSync());
+        $this->assertSame(
+            [
+                ['j1'],
+                ['j0'],
+                ['j2'],
             ],
             $graph->toArray()
         );
@@ -150,8 +186,8 @@ final class GraphTest extends TestCase
         $this->assertTrue($graph->hasDependencies('j2', 'j0'));
         $this->assertSame(['j0'], $graph->get('j2')->toArray());
         $expected = [
-            0 => ['j0', 'j1'],
-            1 => ['j2'],
+            ['j0', 'j1'],
+            ['j2'],
         ];
         $this->assertSame($expected, $graph->toArray());
     }
@@ -237,20 +273,20 @@ final class GraphTest extends TestCase
                 )
             );
         $expected = [
-            0 => [
+            [
                 'ProcessPodcast',
                 'OptimizePodcast'
             ],
-            1 => [
+            [
                 'CreateAudioTranscription',
                 'ReleaseOnTransistorFM',
                 'ReleaseOnApplePodcasts'
             ],
-            2 => [
+            [
                 'TranslateAudioTranscription',
                 'NotifySubscribers'
             ],
-            3 => [
+            [
                 'SendTweetAboutNewPodcast'
             ],
         ];

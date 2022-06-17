@@ -18,7 +18,7 @@ use Chevere\DataStructure\Interfaces\MappedInterface;
 use Ds\Vector;
 
 /**
- * Describes the component in charge of defining jobs dependencies.
+ * Describes the component in charge of defining jobs dependencies order.
  */
 interface GraphInterface extends MappedInterface, ToArrayInterface
 {

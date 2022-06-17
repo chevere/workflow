@@ -25,6 +25,9 @@ final class Graph implements GraphInterface
 {
     use MapTrait;
 
+    /**
+     * @var Vector<string>
+     */
     private Vector $syncJobs;
 
     public function __construct()
@@ -51,7 +54,7 @@ final class Graph implements GraphInterface
             $existing = $new->map->get($name);
             /** @var Array<string> $array */
             $array = $existing->merge($vector)->toArray();
-            $vector = new Vector(array_unique($array));
+            $vector = new Vector($array);
         }
         $new->handleDependencyUpdate($name, $vector);
         $new->map = $new->map->withPut($name, $vector);
@@ -104,13 +107,15 @@ final class Graph implements GraphInterface
         return $array;
     }
 
+    /**
+     * @return array<int, array<int, string>>
+     */
     public function toArray(): array
     {
-        $return = [];
-        $toIndex = 0;
+        $sort = [];
         $previous = [];
-        // vd($this->getSortAsc());
-        // vdd(array_keys($this->getSortAsc()));
+        $syncPos = [];
+        $toIndex = 0;
         foreach ($this->getSortAsc() as $job => $dependencies) {
             foreach ($dependencies as $dependency) {
                 if (in_array($dependency, $previous)) {
@@ -120,19 +125,37 @@ final class Graph implements GraphInterface
                     break;
                 }
             }
-            if ($this->syncJobs->contains($job)) {
-                $toIndex++;
-                $previous = [];
-            }
-            $return[$toIndex][] = $job;
+            $sort[$toIndex][] = $job;
             $previous[] = $job;
             if ($this->syncJobs->contains($job)) {
-                $toIndex++;
-                $previous = [];
+                $syncPos[$job] = $toIndex;
             }
         }
 
-        return array_values($return);
+        return $this->getSortJobs($sort, $syncPos);
+    }
+
+    /**
+     * @param array<int, array<int, string>> $sort
+     * @param array<string, int> $syncPos
+     * @return array<int, array<int, string>>
+     */
+    private function getSortJobs(array $sort, array $syncPos): array
+    {
+        if (count($this->syncJobs) === 0) {
+            return $sort;
+        }
+        $vector = new Vector($sort);
+        foreach ($syncPos as $syncJob => $indexKey) {
+            $array = $vector->get($indexKey);
+            $key = array_search($syncJob, $array);
+            unset($array[$key]);
+            $array = array_values($array);
+            $vector->offsetSet($indexKey, $array);
+            $vector->insert($indexKey, [$syncJob]);
+        }
+
+        return $vector->toArray();
     }
 
     /**
@@ -159,7 +182,6 @@ final class Graph implements GraphInterface
             $update = $this->map->get($dependency);
             $findJob = $update->find($job);
             if ($findJob !== null) {
-                // @phpstan-ignore-next-line
                 unset($update[$findJob]);
             }
             $this->map = $this->map->withPut($dependency, $update);

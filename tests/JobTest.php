@@ -60,6 +60,16 @@ final class JobTest extends TestCase
         );
     }
 
+    public function testWithIsSync(): void
+    {
+        $action = TestActionParamsAlt::class;
+        $job = new Job($action);
+        $this->assertFalse($job->isSync());
+        $jobWithSync = $job->withIsSync();
+        $this->assertNotSame($job, $jobWithSync);
+        $this->assertTrue($jobWithSync->isSync());
+    }
+
     public function testConstruct(): void
     {
         $action = TestActionParamsAlt::class;
