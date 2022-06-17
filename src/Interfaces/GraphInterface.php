@@ -29,9 +29,15 @@ interface GraphInterface extends MappedInterface, ToArrayInterface
      */
     public function get(string $job): Vector;
 
-    public function hasDependencies(string $job, string ...$dependencies): bool;
+    public function hasDependencies(
+        string $job,
+        string ...$dependencies
+    ): bool;
 
-    public function withPut(string $job, string ...$dependencies): GraphInterface;
+    public function withPut(
+        string $name,
+        JobInterface $job,
+    ): GraphInterface;
 
     /**
      * @return Array<int, string[]>

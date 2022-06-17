@@ -15,7 +15,7 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 
-class TestActionEmpty extends Action
+class TestAction extends Action
 {
     public function run(): array
     {

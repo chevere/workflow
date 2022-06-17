@@ -13,39 +13,51 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\GraphInterface;
-use Chevere\Workflow\Traits\JobDependenciesTrait;
+use Chevere\Workflow\Interfaces\JobInterface;
 use Ds\Vector;
 
 final class Graph implements GraphInterface
 {
-    use JobDependenciesTrait;
     use MapTrait;
 
-    public function withPut(string $job, string ...$dependencies): GraphInterface
+    private Vector $syncJobs;
+
+    public function __construct()
     {
-        $this->assertDependencies(...$dependencies);
-        $vector = new Vector($dependencies);
-        $this->assertNotSelfDependency($job, $vector);
+        $this->map = new Map();
+        $this->syncJobs = new Vector();
+    }
+
+    public function withPut(
+        string $name,
+        JobInterface $job,
+    ): GraphInterface {
+        $vector = new Vector($job->dependencies());
+        $this->assertNotSelfDependency($name, $vector);
         $new = clone $this;
-        foreach ($dependencies as $dependency) {
+        foreach ($job->dependencies() as $dependency) {
             if (!$new->has($dependency)) {
                 $new->map = $new->map
                     ->withPut($dependency, new Vector());
             }
         }
-        if ($new->map->has($job)) {
+        if ($new->map->has($name)) {
             /** @var Vector<string> $existing */
-            $existing = $new->map->get($job);
+            $existing = $new->map->get($name);
             /** @var Array<string> $array */
             $array = $existing->merge($vector)->toArray();
             $vector = new Vector(array_unique($array));
         }
-        $new->handleDependencyUpdate($job, $vector);
-        $new->map = $new->map->withPut($job, $vector);
+        $new->handleDependencyUpdate($name, $vector);
+        $new->map = $new->map->withPut($name, $vector);
+        if ($job->isSync()) {
+            $new->syncJobs->push($name);
+        }
 
         return $new;
     }
@@ -97,6 +109,8 @@ final class Graph implements GraphInterface
         $return = [];
         $toIndex = 0;
         $previous = [];
+        // vd($this->getSortAsc());
+        // vdd(array_keys($this->getSortAsc()));
         foreach ($this->getSortAsc() as $job => $dependencies) {
             foreach ($dependencies as $dependency) {
                 if (in_array($dependency, $previous)) {
@@ -106,12 +120,19 @@ final class Graph implements GraphInterface
                     break;
                 }
             }
-
+            if ($this->syncJobs->contains($job)) {
+                $toIndex++;
+                $previous = [];
+            }
             $return[$toIndex][] = $job;
             $previous[] = $job;
+            if ($this->syncJobs->contains($job)) {
+                $toIndex++;
+                $previous = [];
+            }
         }
 
-        return $return;
+        return array_values($return);
     }
 
     /**
@@ -121,7 +142,7 @@ final class Graph implements GraphInterface
     {
         if ($vector->contains($job)) {
             throw new InvalidArgumentException(
-                message('Cannot declare job %job% as dependency of itself')
+                message('Cannot declare job %job% as a self-dependency')
                     ->code('%job%', $job)
             );
         }

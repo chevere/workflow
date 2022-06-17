@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestActionEmpty;
+use Chevere\Tests\_resources\src\TestAction;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamsAlt;
 use Chevere\Throwable\Errors\ArgumentCountError;
@@ -44,7 +44,7 @@ final class JobTest extends TestCase
         $this->expectExceptionMessage('requires 0 arguments');
         $this->expectExceptionMessage('provided 2 foo, bar');
         new Job(
-            TestActionEmpty::class,
+            TestAction::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );
@@ -54,7 +54,7 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         new Job(
-            TestActionEmpty::class,
+            TestAction::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );

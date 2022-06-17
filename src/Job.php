@@ -42,6 +42,8 @@ final class Job implements JobInterface
 
     private ParametersInterface $parameters;
 
+    private bool $isSync = false;
+
     public function __construct(
         private string $action,
         mixed ...$namedArguments
@@ -80,6 +82,14 @@ final class Job implements JobInterface
         return $new;
     }
 
+    public function withIsSync(): JobInterface
+    {
+        $new = clone $this;
+        $new->isSync = true;
+
+        return $new;
+    }
+
     public function withDepends(string ...$jobs): JobInterface
     {
         $new = clone $this;
@@ -97,10 +107,15 @@ final class Job implements JobInterface
     {
         return $this->arguments;
     }
-    
+
     public function dependencies(): array
     {
         return $this->dependencies->toArray();
+    }
+
+    public function isSync(): bool
+    {
+        return $this->isSync;
     }
 
     private function setArguments(mixed ...$namedArguments): void

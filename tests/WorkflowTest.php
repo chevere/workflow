@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestActionEmpty;
+use Chevere\Tests\_resources\src\TestAction;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionObjectConflict;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
@@ -45,7 +45,7 @@ final class WorkflowTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         workflow(
             zero: job(
-                TestActionEmpty::class
+                TestAction::class
             ),
             one: job(
                 TestActionParamFooResponseBar::class,
@@ -71,7 +71,7 @@ final class WorkflowTest extends TestCase
 
     public function testConstruct(): void
     {
-        $step = new Job(TestActionEmpty::class);
+        $step = new Job(TestAction::class);
         $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
         $this->assertCount(1, $workflow);
@@ -81,7 +81,7 @@ final class WorkflowTest extends TestCase
 
     public function testWithAdded(): void
     {
-        $step = new Job(TestActionEmpty::class);
+        $step = new Job(TestAction::class);
         $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
         $workflowWithAddedStep = $workflow->withAddedJob(step2: $step);
@@ -93,7 +93,7 @@ final class WorkflowTest extends TestCase
         $this->expectException(OverflowException::class);
         $workflowWithAddedStep->withAddedJob(step: $step);
     }
-    
+
     public function testWithAddedStepWithArguments(): void
     {
         $step = new Job(

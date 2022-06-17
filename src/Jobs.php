@@ -116,8 +116,7 @@ final class Jobs implements JobsInterface
             $this->addMap($name, $job);
             $this->jobs->push($name);
             $this->assertJobContainsDependencies($name, $job);
-            $this->graph = $this->graph
-                ->withPut($name, ...$job->dependencies());
+            $this->graph = $this->graph->withPut($name, $job);
         }
     }
 

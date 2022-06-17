@@ -33,6 +33,8 @@ interface JobInterface
 
     public function withArguments(mixed ...$namedArguments): self;
 
+    public function withIsSync(): self;
+
     public function withDepends(string ...$jobs): self;
 
     public function action(): string;
@@ -46,4 +48,6 @@ interface JobInterface
      * @return string[]
      */
     public function dependencies(): array;
+
+    public function isSync(): bool;
 }

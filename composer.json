@@ -17,6 +17,7 @@
         "psr/container": "^1 || ^2"
     },
     "require-dev": {
+        "chevere/var-dump": "^0.4.1",
         "phpstan/phpstan": "^1.5",
         "phpunit/phpunit": "^9.5",
         "symplify/easy-coding-standard": "^10.1"
