@@ -156,19 +156,24 @@ final class GraphTest extends TestCase
         );
     }
 
-    public function testWithPutSyncLast(): void
+    public function testWithPutSyncComplex(): void
     {
         $graph = new Graph();
         $graph = $graph->withPut(
-            'j2',
+            'jn',
             $this->getJob()->withDepends('j0', 'j1')
         );
+        $graph = $graph->withPut(
+            'jx',
+            $this->getJob()->withDepends('j0', 'j1')
+        );
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync());
         $graph = $graph->withPut('j1', $this->getJob()->withIsSync());
         $this->assertSame(
             [
-                ['j1'],
                 ['j0'],
-                ['j2'],
+                ['j1'],
+                ['jn', 'jx'],
             ],
             $graph->toArray()
         );

@@ -145,17 +145,20 @@ final class Graph implements GraphInterface
         if (count($this->syncJobs) === 0) {
             return $sort;
         }
+        $aux = 0;
         $vector = new Vector($sort);
         foreach ($syncPos as $syncJob => $indexKey) {
-            $array = $vector->get($indexKey);
+            $auxIndexKey = $indexKey + $aux;
+            $array = $vector->get($auxIndexKey);
             $key = array_search($syncJob, $array);
             unset($array[$key]);
             $array = array_values($array);
-            $vector->offsetSet($indexKey, $array);
-            $vector->insert($indexKey, [$syncJob]);
+            $vector->offsetSet($auxIndexKey, $array);
+            $vector->insert($auxIndexKey, [$syncJob]);
+            $aux++;
         }
 
-        return $vector->toArray();
+        return array_values(array_filter($vector->toArray()));
     }
 
     /**
