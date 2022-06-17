@@ -23,9 +23,6 @@ use Countable;
  */
 interface WorkflowInterface extends Countable
 {
-    /** ${key} */
-    public const REGEX_VARIABLE_REFERENCE = '/^\${([\w]*)}$/';
-
     public function __construct(JobsInterface $jobs);
 
     public function jobs(): JobsInterface;
