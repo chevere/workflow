@@ -114,7 +114,7 @@ final class Graph implements GraphInterface
     {
         $sort = [];
         $previous = [];
-        $syncPos = [];
+        $sync = [];
         $toIndex = 0;
         foreach ($this->getSortAsc() as $job => $dependencies) {
             foreach ($dependencies as $dependency) {
@@ -128,26 +128,26 @@ final class Graph implements GraphInterface
             $sort[$toIndex][] = $job;
             $previous[] = $job;
             if ($this->syncJobs->contains($job)) {
-                $syncPos[$job] = $toIndex;
+                $sync[$job] = $toIndex;
             }
         }
 
-        return $this->getSortJobs($sort, $syncPos);
+        return $this->getSortJobs($sort, $sync);
     }
 
     /**
      * @param array<int, array<int, string>> $sort
-     * @param array<string, int> $syncPos
+     * @param array<string, int> $sync
      * @return array<int, array<int, string>>
      */
-    private function getSortJobs(array $sort, array $syncPos): array
+    private function getSortJobs(array $sort, array $sync): array
     {
         if (count($this->syncJobs) === 0) {
             return $sort;
         }
         $aux = 0;
         $vector = new Vector($sort);
-        foreach ($syncPos as $syncJob => $indexKey) {
+        foreach ($sync as $syncJob => $indexKey) {
             $auxIndexKey = $indexKey + $aux;
             $array = $vector->get($auxIndexKey);
             $key = array_search($syncJob, $array);

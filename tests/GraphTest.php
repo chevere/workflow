@@ -106,60 +106,6 @@ final class GraphTest extends TestCase
     {
         $graph = new Graph();
         $graph = $graph->withPut(
-            'j2',
-            $this->getJob()->withDepends('j0', 'j1')
-        );
-        $graph = $graph->withPut('j1', $this->getJob()->withIsSync());
-        $this->assertSame(
-            [
-                ['j1'],
-                ['j0'],
-                ['j2'],
-            ],
-            $graph->toArray()
-        );
-    }
-
-    public function testWithPutSyncExtra(): void
-    {
-        $graph = new Graph();
-        $graph = $graph->withPut(
-            'jn',
-            $this->getJob()->withDepends('j1', 'j0', 'j2')
-        );
-        $graph = $graph->withPut('j1', $this->getJob()->withIsSync());
-        $this->assertSame(
-            [
-                ['j1'],
-                ['j0', 'j2'],
-                ['jn'],
-            ],
-            $graph->toArray()
-        );
-    }
-
-    public function testWithPutSyncFirst(): void
-    {
-        $graph = new Graph();
-        $graph = $graph->withPut(
-            'j2',
-            $this->getJob()->withDepends('j0', 'j1')
-        );
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync());
-        $this->assertSame(
-            [
-                ['j0'],
-                ['j1'],
-                ['j2'],
-            ],
-            $graph->toArray()
-        );
-    }
-
-    public function testWithPutSyncComplex(): void
-    {
-        $graph = new Graph();
-        $graph = $graph->withPut(
             'jn',
             $this->getJob()->withDepends('j0', 'j1')
         );
@@ -174,6 +120,36 @@ final class GraphTest extends TestCase
                 ['j0'],
                 ['j1'],
                 ['jn', 'jx'],
+            ],
+            $graph->toArray()
+        );
+    }
+
+    public function testWithPutSyncComplex(): void
+    {
+        $graph = new Graph();
+        $graph = $graph->withPut(
+            'jn',
+            $this->getJob()->withDepends('j0', 'j1')
+        );
+        $graph = $graph->withPut(
+            'jx',
+            $this->getJob()->withDepends('j2', 'j3')
+        );
+        $graph = $graph->withPut(
+            'jy',
+            $this->getJob()->withDepends('j2', 'j3', 'j4')
+        );
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync());
+        $graph = $graph->withPut('j2', $this->getJob()->withIsSync());
+        $graph = $graph->withPut('jy', $this->getJob()->withIsSync());
+        $this->assertSame(
+            [
+                ['j0'],
+                ['j2'],
+                ['j1', 'j3', 'j4'],
+                ['jy'],
+                ['jn', 'jx']
             ],
             $graph->toArray()
         );
