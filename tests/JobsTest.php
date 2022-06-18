@@ -13,23 +13,39 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Tests\_resources\src\TestActionNoParams;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
+use function Chevere\Workflow\reference;
 use PHPUnit\Framework\TestCase;
 
 final class JobsTest extends TestCase
 {
-    public function testParallel(): void
+    public function testAsync(): void
     {
         $jobs = new Jobs(
-            j1: job(TestActionNoParamsIntegerResponse::class),
-            j2: job(TestActionNoParamsIntegerResponse::class),
+            j1: job(TestActionNoParams::class),
+            j2: job(TestActionNoParams::class),
         );
         $this->assertSame(
             [
-                0 => ['j1', 'j2'],
+                ['j1', 'j2'],
+            ],
+            $jobs->graph()
+        );
+    }
+
+    public function testSync(): void
+    {
+        $jobs = new Jobs(
+            j1: job(TestActionNoParams::class)->withIsSync(),
+            j2: job(TestActionNoParams::class)->withIsSync(),
+        );
+        $this->assertSame(
+            [
+                ['j1'],
+                ['j2'],
             ],
             $jobs->graph()
         );
@@ -38,13 +54,13 @@ final class JobsTest extends TestCase
     public function testWithDependsOnJob(): void
     {
         $jobs = new Jobs(
-            j1: job(TestActionNoParamsIntegerResponse::class),
-            j2: job(TestActionNoParamsIntegerResponse::class)->withDepends('j1'),
+            j1: job(TestActionNoParams::class),
+            j2: job(TestActionNoParams::class)->withDepends('j1'),
         );
         $this->assertSame(
             [
-                0 => ['j1'],
-                1 => ['j2'],
+                ['j1'],
+                ['j2'],
             ],
             $jobs->graph()
         );
@@ -52,11 +68,11 @@ final class JobsTest extends TestCase
 
     public function testWithDependsMissing(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessageMatches('/undeclared dependencies\: j0$/');
         new Jobs(
-            j1: job(TestActionNoParamsIntegerResponse::class),
-            j2: job(TestActionNoParamsIntegerResponse::class)
+            j1: job(TestActionNoParams::class),
+            j2: job(TestActionNoParams::class)
                     ->withDepends('j0', 'j1'),
         );
     }
@@ -64,16 +80,16 @@ final class JobsTest extends TestCase
     public function testWithDependsOnPreviousChain(): void
     {
         $jobs = new Jobs(
-            j1: job(TestActionNoParamsIntegerResponse::class),
-            j2: job(TestActionNoParamsIntegerResponse::class),
-            j3: job(TestActionNoParamsIntegerResponse::class)
+            j1: job(TestActionNoParams::class),
+            j2: job(TestActionNoParams::class),
+            j3: job(TestActionNoParams::class)
                 ->withDepends('j2')
                 ->withDepends('j1'),
         );
         $this->assertSame(
             [
-                0 => ['j1', 'j2'],
-                1 => ['j3'],
+                ['j1', 'j2'],
+                ['j3'],
             ],
             $jobs->graph()
         );
@@ -82,17 +98,17 @@ final class JobsTest extends TestCase
     public function testWithDependsOnPreviousFunction(): void
     {
         $jobs = new Jobs(
-            j1: job(TestActionNoParamsIntegerResponse::class),
-            j2: job(TestActionNoParamsIntegerResponse::class)
+            j1: job(TestActionNoParams::class),
+            j2: job(TestActionNoParams::class)
                     ->withDepends('j1'),
-            j3: job(TestActionNoParamsIntegerResponse::class)
+            j3: job(TestActionNoParams::class)
                     ->withDepends('j2'),
         );
         $this->assertSame(
             [
-                0 => ['j1'],
-                1 => ['j2'],
-                2 => ['j3'],
+                ['j1'],
+                ['j2'],
+                ['j3'],
             ],
             $jobs->graph()
         );
@@ -101,21 +117,21 @@ final class JobsTest extends TestCase
     public function testWithDependsMix(): void
     {
         $jobs = new Jobs(
-            j1: job(TestActionNoParamsIntegerResponse::class),
-            j2: job(TestActionNoParamsIntegerResponse::class),
-            j3: job(TestActionNoParamsIntegerResponse::class)
+            j1: job(TestActionNoParams::class),
+            j2: job(TestActionNoParams::class),
+            j3: job(TestActionNoParams::class)
                     ->withDepends('j1', 'j2'),
-            j4: job(TestActionNoParamsIntegerResponse::class),
-            j5: job(TestActionNoParamsIntegerResponse::class)
+            j4: job(TestActionNoParams::class),
+            j5: job(TestActionNoParams::class)
                     ->withDepends('j4'),
-            j6: job(TestActionNoParamsIntegerResponse::class)
+            j6: job(TestActionNoParams::class)
                     ->withDepends('j5'),
         );
         $this->assertSame(
             [
-                0 => ['j1', 'j2', 'j4'],
-                1 => ['j3', 'j5'],
-                2 => ['j6'],
+                ['j1', 'j2', 'j4'],
+                ['j3', 'j5'],
+                ['j6'],
             ],
             $jobs->graph()
         );
@@ -126,9 +142,32 @@ final class JobsTest extends TestCase
         $jobs = new Jobs();
         $this->assertFalse($jobs->has('j1'));
         $withAdded = $jobs->withAdded(
-            j1: job(TestActionNoParamsIntegerResponse::class),
+            j1: job(TestActionNoParams::class),
         );
         $this->assertNotSame($jobs, $withAdded);
         $this->assertTrue($withAdded->has('j1'));
     }
+
+    public function testWithRunIfUndeclaredJob(): void
+    {
+        $this->expectException(OutOfBoundsException::class);
+        new Jobs(
+            j1: job(TestActionNoParams::class)
+                ->withRunIf(
+                    reference('${j0:key}')
+                ),
+        );
+    }
+
+    // public function testWithRunIfUndeclaredJobKey(): void
+    // {
+    //     $this->expectException(OutOfBoundsException::class);
+    //     new Jobs(
+    //         j0: job(TestActionNoParams::class),
+    //         j1: job(TestActionNoParams::class)
+    //             ->withRunIf(
+    //                 reference('${j0:key}')
+    //             ),
+    //     );
+    // }
 }

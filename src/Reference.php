@@ -31,8 +31,8 @@ final class Reference implements ReferenceInterface
         if ($match === []) {
             throw new InvalidArgumentException(
                 message('Invalid job reference %reference% (%regex%)')
-                    ->code('%reference%', $reference)
-                    ->code('%regex%', $regex->__toString())
+                    ->withCode('%reference%', $reference)
+                    ->withCode('%regex%', $regex->__toString())
             );
         }
         $this->job = strval($match[1]);

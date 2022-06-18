@@ -15,7 +15,6 @@ namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Map;
-use Chevere\Message\Message;
 use function Chevere\Message\message;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
@@ -100,8 +99,8 @@ final class Workflow implements WorkflowInterface
         // @codeCoverageIgnoreEnd
         catch (\OutOfBoundsException $e) {
             throw new OutOfBoundsException(
-                (new Message('Variable %variable% not found'))
-                    ->code('%variable%', $variable)
+                message('Variable %variable% not found')
+                    ->withCode('%variable%', $variable)
             );
         }
     }
@@ -118,8 +117,8 @@ final class Workflow implements WorkflowInterface
             throw new TypeError(previous: $e);
         } catch (\OutOfBoundsException $e) {
             throw new OutOfBoundsException(
-                (new Message('Job %job% not found'))
-                    ->code('%job%', $job)
+                message('Job %job% not found')
+                    ->withCode('%job%', $job)
             );
         }
         // @codeCoverageIgnoreEnd
@@ -127,9 +126,8 @@ final class Workflow implements WorkflowInterface
 
     private function setParameters(string $name, JobInterface $job): void
     {
-        $action = $job->action();
         /** @var ActionInterface $action */
-        $action = new $action();
+        $action = new ($job->action());
         $parameters = $action->parameters();
         $this->provided->put($name, $action->responseParameters());
         foreach ($job->arguments() as $argument => $value) {
@@ -139,9 +137,9 @@ final class Workflow implements WorkflowInterface
                     if (!$this->parameters->has($value->name())) {
                         $this->vars = $this->vars->withPut($value->__toString(), [$value->name()]);
                     }
-                    $this->putParameter($value->name(), $parameter);
+                    $this->putVariable($value, $parameter);
                 } elseif ($value instanceof ReferenceInterface) {
-                    $this->assertPreviousReference($parameter, $value->job(), $value->key());
+                    $this->assertPreviousReference($parameter, $value);
                     $expected = $this->expected->get($value->job(), []);
                     $expected[] = $value->key();
                     $this->expected->put($value->job(), $expected);
@@ -153,9 +151,9 @@ final class Workflow implements WorkflowInterface
             } catch (Throwable $e) {
                 throw new InvalidArgumentException(
                     message('Incompatible declaration on Job %name% (%arg%) [%message%]')
-                        ->strong('%name%', $name)
-                        ->strong('%arg%', "argument@${argument}")
-                        ->strtr('%message%', $e->getMessage()),
+                        ->withStrong('%name%', $name)
+                        ->withStrong('%arg%', "argument@${argument}")
+                        ->withStrtr('%message%', $e->getMessage()),
                     previous: $e,
                 );
             }
@@ -170,22 +168,22 @@ final class Workflow implements WorkflowInterface
         if ($existent::class !== $parameter::class) {
             throw new TypeError(
                 message("Reference %name% of type %type% doesn't match type %provided%")
-                    ->strong('%name%', $name)
-                    ->code('%type%', $existent::class)
-                    ->code('%provided%', $parameter::class),
+                    ->withStrong('%name%', $name)
+                    ->withCode('%type%', $existent::class)
+                    ->withCode('%provided%', $parameter::class),
             );
         }
     }
 
-    private function putParameter(
-        string $name,
+    private function putVariable(
+        VariableInterface $variable,
         ParameterInterface $parameter
     ): void {
-        if ($this->parameters->has($name)) {
-            $existent = $this->parameters->get($name);
+        if ($this->parameters->has($variable->name())) {
+            $existent = $this->parameters->get($variable->name());
             $this->assertMatchesExistingParameter(
                 // @infection-ignore-all
-                '${' . $name . '}',
+                $variable->__toString(),
                 $existent,
                 $parameter
             );
@@ -194,29 +192,27 @@ final class Workflow implements WorkflowInterface
         }
         $this->parameters = $this->parameters
             ->withAdded(...[
-                $name => $parameter,
+                $variable->name() => $parameter,
             ]);
     }
 
     private function assertPreviousReference(
         ParameterInterface $parameter,
-        string $previousJob,
-        string $responseKey
+        ReferenceInterface $reference
     ): void {
-        $reference = '${' . "${previousJob}:${responseKey}" . '}';
         /** @var ParametersInterface $responseParameters */
-        $responseParameters = $this->provided->get($previousJob);
-        if (!$responseParameters->has($responseKey)) {
+        $responseParameters = $this->provided->get($reference->job());
+        if (!$responseParameters->has($reference->key())) {
             throw new OutOfBoundsException(
-                message('Reference %reference% not found, response parameter %parameter% is not declared by %job%')
-                    ->code('%reference%', $reference)
-                    ->strong('%parameter%', $responseKey)
-                    ->strong('%job%', $previousJob),
+                message('Reference %reference% not found, response key %parameter% is not declared by %job%')
+                    ->withCode('%reference%', $reference->__toString())
+                    ->withStrong('%parameter%', $reference->key())
+                    ->withStrong('%job%', $reference->job()),
             );
         }
         $this->assertMatchesExistingParameter(
-            $reference,
-            $responseParameters->get($responseKey),
+            $reference->__toString(),
+            $responseParameters->get($reference->key()),
             $parameter
         );
     }

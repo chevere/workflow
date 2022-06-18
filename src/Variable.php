@@ -29,8 +29,8 @@ final class Variable implements VariableInterface
         if ($match === []) {
             throw new InvalidArgumentException(
                 message('Invalid Workflow variable %variable% (%regex%)')
-                    ->code('%variable%', $variable)
-                    ->code('%regex%', $regex->__toString())
+                    ->withCode('%variable%', $variable)
+                    ->withCode('%regex%', $regex->__toString())
             );
         }
         $this->name = $match[1];

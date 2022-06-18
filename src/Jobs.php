@@ -13,19 +13,20 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
-use Chevere\Message\Message;
 use function Chevere\Message\message;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
+use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Ds\Vector;
 use Iterator;
+use Throwable;
 
 final class Jobs implements JobsInterface
 {
@@ -71,8 +72,8 @@ final class Jobs implements JobsInterface
         // @codeCoverageIgnoreEnd
         catch (\OutOfBoundsException $e) {
             throw new OutOfBoundsException(
-                (new Message('Job %name% not found'))
-                    ->code('%name%', $job)
+                message('Job %name% not found')
+                    ->withCode('%name%', $job)
             );
         }
     }
@@ -102,8 +103,8 @@ final class Jobs implements JobsInterface
     {
         if ($this->map->has($name)) {
             throw new OverflowException(
-                (new Message('Job name %name% has been already added.'))
-                    ->code('%name%', $name)
+                message('Job name %name% has been already added.')
+                    ->withCode('%name%', $name)
             );
         }
         $this->map = $this->map->withPut($name, $job);
@@ -124,16 +125,37 @@ final class Jobs implements JobsInterface
         string $name,
         JobInterface $job
     ): void {
-        if (!$this->jobs->contains(...$job->dependencies())) {
+        $dependencies = $job->dependencies();
+        foreach ($job->runIf() as $runIf) {
+            if ($runIf instanceof ReferenceInterface) {
+                $dependencies[] = $runIf->job();
+                // /** @var JobInterface $runIfJob */
+                // $runIfJob = $this->map->get($runIf->job());
+                // /** @var ActionInterface $action */
+                // $action = new ($runIfJob->action());
+
+                // try {
+                //     $parameter = $action->getResponseParameters()
+                //         ->get($runIf->key());
+                //     vdd($parameter);
+                // } catch (Throwable $e) {
+                //     throw new OutOfBoundsException(
+                //         message('')
+                //     );
+                // }
+            }
+        }
+        $dependencies = array_filter($dependencies);
+        if (!$this->jobs->contains(...$dependencies)) {
             $missing = array_diff(
-                $job->dependencies(),
+                $dependencies,
                 $this->jobs->toArray()
             );
 
-            throw new InvalidArgumentException(
+            throw new OutOfBoundsException(
                 message('Job %job% has undeclared dependencies: %dependencies%')
-                    ->code('%job%', $name)
-                    ->code(
+                    ->withCode('%job%', $name)
+                    ->withCode(
                         '%dependencies%',
                         implode(', ', $missing)
                     )

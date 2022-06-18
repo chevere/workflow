@@ -14,23 +14,23 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\Message\Message;
+use function Chevere\Message\message;
 use Chevere\Parameter\Interfaces\ParametersInterface;
+use Chevere\Str\StrAssert;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Throwable\Exceptions\UnexpectedValueException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
-use Chevere\Workflow\Traits\JobDependenciesTrait;
+use Chevere\Workflow\Interfaces\VariableInterface;
 use Ds\Vector;
 use ReflectionClass;
 use ReflectionException;
 
 final class Job implements JobInterface
 {
-    use JobDependenciesTrait;
-
     /**
      * @var Array<string, mixed>
      */
@@ -45,24 +45,31 @@ final class Job implements JobInterface
 
     private bool $isSync = false;
 
+    /**
+     * @var Vector<ReferenceInterface|VariableInterface>
+     */
+    private Vector $runIf;
+
     public function __construct(
         private string $action,
         mixed ...$namedArguments
     ) {
+        $this->runIf = new Vector();
+
         try {
             // @phpstan-ignore-next-line
             $reflection = new ReflectionClass($this->action);
         } catch (ReflectionException $e) {
             throw new InvalidArgumentException(
-                (new Message("Class %action% doesn't exists"))
-                    ->code('%action%', $this->action)
+                message("Class %action% doesn't exists")
+                    ->withCode('%action%', $this->action)
             );
         }
         if (!$reflection->implementsInterface(ActionInterface::class)) {
             throw new UnexpectedValueException(
-                (new Message('Action %action% must implement %interface% interface'))
-                    ->code('%action%', $this->action)
-                    ->code('%interface%', ActionInterface::class)
+                message('Action %action% must implement %interface% interface')
+                    ->withCode('%action%', $this->action)
+                    ->withCode('%interface%', ActionInterface::class)
             );
         }
         $this->dependencies = new Vector();
@@ -79,6 +86,25 @@ final class Job implements JobInterface
     {
         $new = clone $this;
         $new->setArguments(...$namedArguments);
+
+        return $new;
+    }
+
+    public function withRunIf(ReferenceInterface|VariableInterface ...$context): JobInterface
+    {
+        $new = clone $this;
+        $new->runIf = new Vector();
+        $known = new Vector();
+        foreach ($context as $item) {
+            if ($known->contains($item->__toString())) {
+                throw new InvalidArgumentException(
+                    message('Condition %condition% is already defined')
+                        ->withCode('%condition%', $item->__toString())
+                );
+            }
+            $new->runIf->push($item);
+            $known->push($item->__toString());
+        }
 
         return $new;
     }
@@ -114,6 +140,14 @@ final class Job implements JobInterface
         return $this->dependencies->toArray();
     }
 
+    /**
+     * @return Vector<ReferenceInterface|VariableInterface>
+     */
+    public function runIf(): Vector
+    {
+        return $this->runIf;
+    }
+
     public function isSync(): bool
     {
         return $this->isSync;
@@ -141,8 +175,8 @@ final class Job implements JobInterface
         }
         if ($missing !== []) {
             throw new BadMethodCallException(
-                (new Message('Missing argument(s) [%arguments%]'))
-                    ->code('%arguments%', implode(', ', $missing))
+                message('Missing argument(s) [%arguments%]')
+                    ->withCode('%arguments%', implode(', ', $missing))
             );
         }
         $this->arguments = $store;
@@ -161,17 +195,17 @@ final class Job implements JobInterface
             $provided = implode(', ', array_keys($arguments));
             $parameters = implode(
                 ', ',
-                $this->parameters->required()->toArray()
+                $this->parameters->required()
             );
 
             throw new ArgumentCountError(
-                (new Message('Method %method% of %action% requires %countRequired% arguments %parameters% (provided %countProvided% %provided%)'))
-                    ->strong('%method%', 'run')
-                    ->strong('%action%', $this->action)
-                    ->code('%countRequired%', strval($countRequired))
-                    ->code('%provided%', $provided)
-                    ->code('%countProvided%', strval($countProvided))
-                    ->code('%parameters%', $parameters)
+                message('Method %method% of %action% requires %countRequired% arguments %parameters% (provided %countProvided% %provided%)')
+                    ->withStrong('%method%', 'run')
+                    ->withStrong('%action%', $this->action)
+                    ->withCode('%countRequired%', strval($countRequired))
+                    ->withCode('%provided%', $provided)
+                    ->withCode('%countProvided%', strval($countProvided))
+                    ->withCode('%parameters%', $parameters)
             );
         }
     }
@@ -195,6 +229,26 @@ final class Job implements JobInterface
                 continue;
             }
             $this->dependencies->push($job);
+        }
+    }
+
+    private function assertDependencies(string ...$dependencies): void
+    {
+        $uniques = array_unique($dependencies);
+        if ($uniques !== $dependencies) {
+            throw new OverflowException(
+                message('Job dependencies must be unique (repeated %dependencies%)')
+                    ->withCode(
+                        '%dependencies%',
+                        implode(', ', array_diff_assoc($dependencies, $uniques))
+                    )
+            );
+        }
+        foreach ($dependencies as $dependency) {
+            (new StrAssert($dependency))
+                ->notEmpty()
+                ->notCtypeDigit()
+                ->notCtypeSpace();
         }
     }
 }

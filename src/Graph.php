@@ -169,7 +169,7 @@ final class Graph implements GraphInterface
         if ($vector->contains($job)) {
             throw new InvalidArgumentException(
                 message('Cannot declare job %job% as a self-dependency')
-                    ->code('%job%', $job)
+                    ->withCode('%job%', $job)
             );
         }
     }

@@ -18,7 +18,6 @@ use function Amp\Promise\all;
 use function Amp\Promise\wait;
 use Chevere\Action\Interfaces\ActionInterface;
 use function Chevere\Message\message;
-use Chevere\Message\Message;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\RuntimeException;
@@ -71,8 +70,8 @@ final class Runner implements RunnerInterface
             catch (Throwable $e) {
                 throw new RuntimeException(
                     message('Error running job %job% [%message%]')
-                        ->code('%job%', $job ?? ':before')
-                        ->strtr('%message%', $e->getMessage()),
+                        ->withCode('%job%', $job ?? ':before')
+                        ->withStrtr('%message%', $e->getMessage()),
                     previous: $e
                 );
             }
@@ -120,10 +119,10 @@ final class Runner implements RunnerInterface
 
             throw new InvalidArgumentException(
                 previous: $e,
-                message: (new Message('%message% at %fileLine% for action %action%'))
-                    ->strtr('%message%', $e->getMessage())
-                    ->code('%fileLine%', $fileLine)
-                    ->code('%action%', $action::class)
+                message: message('%message% at %fileLine% for action %action%')
+                    ->withStrtr('%message%', $e->getMessage())
+                    ->withCode('%fileLine%', $fileLine)
+                    ->withCode('%action%', $action::class)
             );
         }
         // @codeCoverageIgnoreEnd

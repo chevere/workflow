@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Message\Message;
+use function Chevere\Message\message;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
@@ -101,8 +101,8 @@ final class Run implements RunInterface
         // @codeCoverageIgnoreEnd
         catch (\OutOfBoundsException $e) {
             throw new OutOfBoundsException(
-                (new Message('Job %name% not found'))
-                    ->code('%name%', $name)
+                message('Job %name% not found')
+                    ->withCode('%name%', $name)
             );
         }
     }

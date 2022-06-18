@@ -14,21 +14,23 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
+use function Chevere\Parameter\booleanParameter;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use function Chevere\Parameter\parameters;
-use function Chevere\Parameter\stringParameter;
 
-class TestActionParamFooResponseBar extends Action
+final class TestActionNoParamsFalseResponse extends Action
 {
     public function getResponseParameters(): ParametersInterface
     {
         return parameters(
-            bar: stringParameter()
+            key: booleanParameter()
         );
     }
 
-    public function run(string $foo): array
+    public function run(): array
     {
-        return [];
+        return [
+            'key' => false
+        ];
     }
 }

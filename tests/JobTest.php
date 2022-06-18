@@ -107,7 +107,7 @@ final class JobTest extends TestCase
         $job->withDepends('foo', 'foo');
     }
 
-    public function testWithWrongDeps(): void
+    public function testWithWrongDepends(): void
     {
         $job = new Job(TestActionNoParamsIntegerResponse::class);
         $this->assertSame([], $job->dependencies());
@@ -124,5 +124,20 @@ final class JobTest extends TestCase
         );
         $job = $job->withDepends('step1');
         $this->assertContains('step1', $job->dependencies());
+    }
+
+    public function testWithRunIf(): void
+    {
+        $job = new Job(TestAction::class);
+        $variable = variable('${wea}');
+        $job = $job->withRunIf($variable);
+        $this->assertSame(
+            [
+                $variable,
+            ],
+            $job->runIf()->toArray()
+        );
+        $this->expectException(InvalidArgumentException::class);
+        $job = $job->withRunIf($variable, $variable);
     }
 }

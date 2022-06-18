@@ -44,7 +44,7 @@ final class WorkflowTest extends TestCase
 
     public function testMissingReference(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(OutOfBoundsException::class);
         workflow(
             zero: job(
                 TestAction::class
@@ -134,7 +134,7 @@ final class WorkflowTest extends TestCase
         $this->assertTrue($workflow->parameters()->has('foo'));
         $this->assertSame(['foo'], $workflow->getVar('${foo}'));
         $this->assertSame(['step1', 'bar'], $workflow->getVar('${step1:bar}'));
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(OutOfBoundsException::class);
         $workflow->withAddedJob(
             step: new Job(
                 TestActionParamFooResponseBar::class,
