@@ -13,7 +13,7 @@
     ],
     "require": {
         "amphp/parallel": "^1.4",
-        "chevere/chevere": "^0.8.x-dev",
+        "chevere/chevere": "^0.8",
         "psr/container": "^1 || ^2"
     },
     "require-dev": {
