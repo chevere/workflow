@@ -13,23 +13,30 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Str\Exceptions\StrCtypeSpaceException;
+use Chevere\Str\Exceptions\StrEmptyException;
 use Chevere\Workflow\Variable;
 use PHPUnit\Framework\TestCase;
 
 final class VariableTest extends TestCase
 {
-    public function testInvalidArgument(): void
+    public function testInvalidArgumentEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        new Variable('duh');
+        $this->expectException(StrEmptyException::class);
+        new Variable('');
+    }
+
+    public function testInvalidArgumentSpaces(): void
+    {
+        $this->expectException(StrCtypeSpaceException::class);
+        new Variable(' ');
     }
 
     public function testConstruct(): void
     {
         $name = 'variable';
         $string = '${' . $name . '}';
-        $variable = new Variable($string);
+        $variable = new Variable($name);
         $this->assertSame($string, $variable->__toString());
         $this->assertSame($name, $variable->name());
     }

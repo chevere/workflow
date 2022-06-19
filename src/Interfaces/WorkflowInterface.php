@@ -44,13 +44,13 @@ interface WorkflowInterface extends Countable
     /**
      * Provides access to the variable mapping for job variables.
      *
-     * Case `${foo}` (workflow variables):
+     * Case `foo}` (workflow variables):
      *
      * ```php
      * return ['foo'];
      * ```
      *
-     * Case `${step:var}` (named job response):
+     * Case `step:var}` (named job response):
      *
      * ```php
      * return ['step', 'var'];

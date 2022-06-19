@@ -33,7 +33,7 @@ final class RunTest extends TestCase
             ->withAddedJob(
                 jobs: new Job(
                     WorkflowRunTestStep1::class,
-                    foo: variable('${foo}'),
+                    foo: variable('foo'),
                 )
             );
         $arguments = [
@@ -56,12 +56,12 @@ final class RunTest extends TestCase
             ->withAddedJob(
                 step0: new Job(
                     WorkflowRunTestStep1::class,
-                    foo: variable('${foo}')
+                    foo: variable('foo')
                 ),
                 step1: new Job(
                     WorkflowRunTestStep2::class,
-                    foo: variable('${baz}'),
-                    bar: variable('${bar}')
+                    foo: variable('baz'),
+                    bar: variable('bar')
                 )
             );
         $arguments = [
@@ -88,7 +88,7 @@ final class RunTest extends TestCase
             ->withAddedJob(
                 step0: new Job(
                     WorkflowRunTestStep1::class,
-                    foo: variable('${foo}')
+                    foo: variable('foo')
                 )
             );
         $arguments = [
@@ -109,7 +109,7 @@ final class RunTest extends TestCase
                 step0: new Job(WorkflowRunTestStep0::class),
                 step1: new Job(
                     WorkflowRunTestStep1::class,
-                    foo: variable('${foo}')
+                    foo: variable('foo')
                 )
             );
         $this->expectException(ArgumentCountError::class);

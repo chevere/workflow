@@ -13,32 +13,19 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use function Chevere\Message\message;
-use Chevere\Regex\Regex;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Str\StrAssert;
 use Chevere\Workflow\Interfaces\VariableInterface;
 
 final class Variable implements VariableInterface
 {
-    private string $name;
-
-    public function __construct(private string $variable)
+    public function __construct(private string $name)
     {
-        $regex = new Regex(self::REGEX_VARIABLE);
-        $match = $regex->match($variable);
-        if ($match === []) {
-            throw new InvalidArgumentException(
-                message('Invalid Workflow variable %variable% (%regex%)')
-                    ->withCode('%variable%', $variable)
-                    ->withCode('%regex%', $regex->__toString())
-            );
-        }
-        $this->name = $match[1];
+        (new StrAssert($name))->notCtypeSpace()->notEmpty();
     }
 
     public function __toString(): string
     {
-        return $this->variable;
+        return '${' . $this->name . '}';
     }
 
     public function name(): string

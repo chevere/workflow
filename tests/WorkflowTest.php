@@ -51,7 +51,7 @@ final class WorkflowTest extends TestCase
             ),
             one: job(
                 TestActionParamFooResponseBar::class,
-                foo: reference('${null:value}')
+                foo: reference(job: 'null', key: 'key')
             )
         );
     }
@@ -65,8 +65,8 @@ final class WorkflowTest extends TestCase
             ),
             two: job(
                 TestActionParams::class,
-                foo: reference('${one:id}'),
-                bar: reference('${one:id}')
+                foo: reference(job: 'one', key: 'id'),
+                bar: reference(job: 'one', key: 'id')
             )
         );
     }
@@ -113,7 +113,7 @@ final class WorkflowTest extends TestCase
             new Jobs(
                 step1: new Job(
                     TestActionParamFooResponseBar::class,
-                    foo: variable('${foo}')
+                    foo: variable('foo')
                 )
             )
         );
@@ -124,8 +124,8 @@ final class WorkflowTest extends TestCase
             ->withAddedJob(
                 step2: new Job(
                     TestActionParams::class,
-                    foo: reference('${step1:bar}'),
-                    bar: variable('${foo}')
+                    foo: reference(job: 'step1', key: 'bar'),
+                    bar: variable('foo')
                 )
             );
         $this->assertContains('step1', $workflow->jobs()->get('step2')->dependencies());
@@ -138,7 +138,7 @@ final class WorkflowTest extends TestCase
         $workflow->withAddedJob(
             step: new Job(
                 TestActionParamFooResponseBar::class,
-                foo: reference('${not:found}')
+                foo: reference(job: 'not', key: 'found')
             )
         );
     }
@@ -153,13 +153,13 @@ final class WorkflowTest extends TestCase
         workflow(
             step1: job(
                 TestActionParams::class,
-                foo: variable('${foo}'),
-                bar: variable('${bar}')
+                foo: variable('foo'),
+                bar: variable('bar')
             ),
             step2: job(
                 TestActionParamsAlt::class,
-                foo: variable('${foo}'),
-                bar: variable('${bar}')
+                foo: variable('foo'),
+                bar: variable('bar')
             )
         );
     }
@@ -174,12 +174,12 @@ final class WorkflowTest extends TestCase
         workflow(
             step1: job(
                 TestActionParamFooResponseBar::class,
-                foo: variable('${foo}')
+                foo: variable('foo')
             ),
             step2: job(
                 TestActionParams::class,
-                foo: reference('${step1:missing}'),
-                bar: variable('${foo}')
+                foo: reference(job: 'step1', key: 'missing'),
+                bar: variable('foo')
             )
         );
     }
@@ -190,12 +190,12 @@ final class WorkflowTest extends TestCase
         workflow(
             step1: job(
                 TestActionParamFooResponseBar::class,
-                foo: variable('${foo}')
+                foo: variable('foo')
             ),
             step2: job(
                 TestActionObjectConflict::class,
-                baz: reference('${step1:bar}'),
-                bar: variable('${foo}')
+                baz: reference(job: 'step1', key: 'bar'),
+                bar: variable('foo')
             )
         );
     }

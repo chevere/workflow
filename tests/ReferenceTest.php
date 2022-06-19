@@ -13,16 +13,23 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Str\Exceptions\StrCtypeSpaceException;
+use Chevere\Str\Exceptions\StrEmptyException;
 use Chevere\Workflow\Reference;
 use PHPUnit\Framework\TestCase;
 
 final class ReferenceTest extends TestCase
 {
-    public function testInvalidArgument(): void
+    public function testInvalidArgumentEmpty(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        new Reference('duh');
+        $this->expectException(StrEmptyException::class);
+        new Reference('', '');
+    }
+
+    public function testInvalidArgumentSpaces(): void
+    {
+        $this->expectException(StrCtypeSpaceException::class);
+        new Reference(' ', ' ');
     }
 
     public function testConstruct(): void
@@ -30,7 +37,7 @@ final class ReferenceTest extends TestCase
         $job = 'job';
         $key = 'key';
         $string = '${' . $job . ':' . $key . '}';
-        $reference = new Reference($string);
+        $reference = new Reference($job, $key);
         $this->assertSame($string, $reference->__toString());
         $this->assertSame($job, $reference->job());
         $this->assertSame($key, $reference->key());

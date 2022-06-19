@@ -119,8 +119,8 @@ final class JobTest extends TestCase
     {
         $job = new Job(
             TestActionParamsAlt::class,
-            foo: reference('${step1:bar}'),
-            bar: variable('${foo}')
+            foo: reference(job: 'step1', key: 'bar'),
+            bar: variable('foo')
         );
         $job = $job->withDepends('step1');
         $this->assertContains('step1', $job->dependencies());
@@ -129,7 +129,7 @@ final class JobTest extends TestCase
     public function testWithRunIf(): void
     {
         $job = new Job(TestAction::class);
-        $variable = variable('${wea}');
+        $variable = variable('wea');
         $job = $job->withRunIf($variable);
         $this->assertSame(
             [

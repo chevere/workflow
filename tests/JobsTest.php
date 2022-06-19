@@ -154,7 +154,7 @@ final class JobsTest extends TestCase
         new Jobs(
             j1: job(TestActionNoParams::class)
                 ->withRunIf(
-                    reference('${j0:key}')
+                    reference(job: 'j0', key: 'key')
                 ),
         );
     }

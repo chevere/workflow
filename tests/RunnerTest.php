@@ -35,12 +35,12 @@ final class RunnerTest extends TestCase
         $workflow = workflow(
             step1: job(
                 TestActionParamsFooResponse1::class,
-                foo: variable('${foo}')
+                foo: variable('foo')
             ),
             step2: job(
                 TestActionParamsFooBarResponse2::class,
-                foo: reference('${step1:response1}'),
-                bar: variable('${bar}')
+                foo: reference(job: 'step1', key: 'response1'),
+                bar: variable('bar')
             )
         );
         $arguments = [
