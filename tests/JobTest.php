@@ -131,10 +131,12 @@ final class JobTest extends TestCase
         $job = new Job(TestAction::class);
         $variable = variable('wea');
         $job = $job->withRunIf($variable);
-        $this->assertSame(
-            [
-                $variable,
-            ],
+        $this->assertEquals(
+            [$variable, ],
+            $job->runIf()->toArray()
+        );
+        $this->assertNotSame(
+            [$variable, ],
             $job->runIf()->toArray()
         );
         $this->expectException(InvalidArgumentException::class);

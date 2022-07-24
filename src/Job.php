@@ -25,6 +25,7 @@ use Chevere\Throwable\Exceptions\UnexpectedValueException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use function DeepCopy\deep_copy;
 use Ds\Vector;
 use ReflectionClass;
 use ReflectionException;
@@ -145,7 +146,7 @@ final class Job implements JobInterface
      */
     public function runIf(): Vector
     {
-        return $this->runIf;
+        return deep_copy($this->runIf);
     }
 
     public function isSync(): bool
