@@ -141,11 +141,11 @@ final class Workflow implements WorkflowInterface
                 } elseif ($value instanceof ReferenceInterface) {
                     $this->assertPreviousReference($parameter, $value);
                     $expected = $this->expected->get($value->job(), []);
-                    $expected[] = $value->key();
+                    $expected[] = $value->parameter();
                     $this->expected->put($value->job(), $expected);
                     $this->vars = $this->vars->withPut(
                         $value->__toString(),
-                        [$value->job(), $value->key()]
+                        [$value->job(), $value->parameter()]
                     );
                 }
             } catch (Throwable $e) {
@@ -202,17 +202,17 @@ final class Workflow implements WorkflowInterface
     ): void {
         /** @var ParametersInterface $responseParameters */
         $responseParameters = $this->provided->get($reference->job());
-        if (!$responseParameters->has($reference->key())) {
+        if (!$responseParameters->has($reference->parameter())) {
             throw new OutOfBoundsException(
                 message('Reference %reference% not found, response key %parameter% is not declared by %job%')
                     ->withCode('%reference%', $reference->__toString())
-                    ->withStrong('%parameter%', $reference->key())
+                    ->withStrong('%parameter%', $reference->parameter())
                     ->withStrong('%job%', $reference->job()),
             );
         }
         $this->assertMatchesExistingParameter(
             $reference->__toString(),
-            $responseParameters->get($reference->key()),
+            $responseParameters->get($reference->parameter()),
             $parameter
         );
     }

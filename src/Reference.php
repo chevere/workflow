@@ -18,15 +18,19 @@ use Chevere\Workflow\Interfaces\ReferenceInterface;
 
 final class Reference implements ReferenceInterface
 {
-    public function __construct(private string $job, private string $key)
+    /**
+     * @param string $job Job name
+     * @param string $parameter Response parameter name
+     */
+    public function __construct(private string $job, private string $parameter)
     {
         (new StrAssert($job))->notCtypeSpace()->notEmpty();
-        (new StrAssert($key))->notCtypeSpace()->notEmpty();
+        (new StrAssert($parameter))->notCtypeSpace()->notEmpty();
     }
 
     public function __toString(): string
     {
-        return '${' . $this->job . ':' . $this->key . '}';
+        return '${' . $this->job . ':' . $this->parameter . '}';
     }
 
     public function job(): string
@@ -34,8 +38,8 @@ final class Reference implements ReferenceInterface
         return $this->job;
     }
 
-    public function key(): string
+    public function parameter(): string
     {
-        return $this->key;
+        return $this->parameter;
     }
 }

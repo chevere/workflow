@@ -25,5 +25,5 @@ interface ReferenceInterface extends Stringable
 
     public function job(): string;
 
-    public function key(): string;
+    public function parameter(): string;
 }

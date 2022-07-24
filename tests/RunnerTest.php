@@ -39,7 +39,7 @@ final class RunnerTest extends TestCase
             ),
             step2: job(
                 TestActionParamsFooBarResponse2::class,
-                foo: reference(job: 'step1', key: 'response1'),
+                foo: reference(job: 'step1', parameter: 'response1'),
                 bar: variable('bar')
             )
         );

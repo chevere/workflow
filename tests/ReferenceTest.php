@@ -40,6 +40,6 @@ final class ReferenceTest extends TestCase
         $reference = new Reference($job, $key);
         $this->assertSame($string, $reference->__toString());
         $this->assertSame($job, $reference->job());
-        $this->assertSame($key, $reference->key());
+        $this->assertSame($key, $reference->parameter());
     }
 }

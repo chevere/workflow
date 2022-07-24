@@ -151,23 +151,25 @@ final class JobsTest extends TestCase
     public function testWithRunIfUndeclaredJob(): void
     {
         $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessage('Job job not found');
         new Jobs(
             j1: job(TestActionNoParams::class)
                 ->withRunIf(
-                    reference(job: 'j0', key: 'key')
+                    reference('job', 'parameter')
                 ),
         );
     }
 
-    // public function testWithRunIfUndeclaredJobKey(): void
-    // {
-    //     $this->expectException(OutOfBoundsException::class);
-    //     new Jobs(
-    //         j0: job(TestActionNoParams::class),
-    //         j1: job(TestActionNoParams::class)
-    //             ->withRunIf(
-    //                 reference('${j0:key}')
-    //             ),
-    //     );
-    // }
+    public function testWithRunIfUndeclaredJobKey(): void
+    {
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessage('Parameter parameter not found');
+        new Jobs(
+            j0: job(TestActionNoParams::class),
+            j1: job(TestActionNoParams::class)
+                ->withRunIf(
+                    reference('j0', 'parameter')
+                ),
+        );
+    }
 }

@@ -51,7 +51,7 @@ final class WorkflowTest extends TestCase
             ),
             one: job(
                 TestActionParamFooResponseBar::class,
-                foo: reference(job: 'null', key: 'key')
+                foo: reference(job: 'null', parameter: 'key')
             )
         );
     }
@@ -65,8 +65,8 @@ final class WorkflowTest extends TestCase
             ),
             two: job(
                 TestActionParams::class,
-                foo: reference(job: 'one', key: 'id'),
-                bar: reference(job: 'one', key: 'id')
+                foo: reference(job: 'one', parameter: 'id'),
+                bar: reference(job: 'one', parameter: 'id')
             )
         );
     }
@@ -124,7 +124,7 @@ final class WorkflowTest extends TestCase
             ->withAddedJob(
                 step2: new Job(
                     TestActionParams::class,
-                    foo: reference(job: 'step1', key: 'bar'),
+                    foo: reference(job: 'step1', parameter: 'bar'),
                     bar: variable('foo')
                 )
             );
@@ -138,7 +138,7 @@ final class WorkflowTest extends TestCase
         $workflow->withAddedJob(
             step: new Job(
                 TestActionParamFooResponseBar::class,
-                foo: reference(job: 'not', key: 'found')
+                foo: reference(job: 'not', parameter: 'found')
             )
         );
     }
@@ -178,7 +178,7 @@ final class WorkflowTest extends TestCase
             ),
             step2: job(
                 TestActionParams::class,
-                foo: reference(job: 'step1', key: 'missing'),
+                foo: reference(job: 'step1', parameter: 'missing'),
                 bar: variable('foo')
             )
         );
@@ -194,7 +194,7 @@ final class WorkflowTest extends TestCase
             ),
             step2: job(
                 TestActionObjectConflict::class,
-                baz: reference(job: 'step1', key: 'bar'),
+                baz: reference(job: 'step1', parameter: 'bar'),
                 bar: variable('foo')
             )
         );

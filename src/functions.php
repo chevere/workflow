@@ -36,9 +36,13 @@ function job(
     return new Job($action, ...$namedArguments);
 }
 
-function reference(string $job, string $key): ReferenceInterface
+/**
+ * @param string $job Job name
+ * @param string $parameter Response parameter name
+ */
+function reference(string $job, string $parameter): ReferenceInterface
 {
-    return new Reference($job, $key);
+    return new Reference($job, $parameter);
 }
 
 function variable(string $name): VariableInterface

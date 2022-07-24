@@ -26,7 +26,6 @@ use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Ds\Vector;
 use Iterator;
-use Throwable;
 
 final class Jobs implements JobsInterface
 {
@@ -129,20 +128,18 @@ final class Jobs implements JobsInterface
         foreach ($job->runIf() as $runIf) {
             if ($runIf instanceof ReferenceInterface) {
                 $dependencies[] = $runIf->job();
-                // /** @var JobInterface $runIfJob */
-                // $runIfJob = $this->map->get($runIf->job());
-                // /** @var ActionInterface $action */
-                // $action = new ($runIfJob->action());
-
-                // try {
-                //     $parameter = $action->getResponseParameters()
-                //         ->get($runIf->key());
-                //     vdd($parameter);
-                // } catch (Throwable $e) {
-                //     throw new OutOfBoundsException(
-                //         message('')
-                //     );
-                // }
+                /** @var JobInterface $runIfJob */
+                try {
+                    $runIfJob = $this->map->get($runIf->job());
+                } catch (OutOfBoundsException $e) {
+                    throw new OutOfBoundsException(
+                        message('Job %job% not found')
+                            ->withCode('%job%', $runIf->job())
+                    );
+                }
+                /** @var ActionInterface $action */
+                $action = new ($runIfJob->action());
+                $action->getResponseParameters()->get($runIf->parameter());
             }
         }
         $dependencies = array_filter($dependencies);

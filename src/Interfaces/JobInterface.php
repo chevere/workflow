@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Ds\Vector;
 
 /**
  * Describes the component in charge of defining a job.
@@ -52,7 +51,7 @@ interface JobInterface
     public function isSync(): bool;
 
     /**
-     * @return Vector<ReferenceInterface|VariableInterface>
+     * @return array<ReferenceInterface|VariableInterface>
      */
-    public function runIf(): Vector;
+    public function runIf(): array;
 }

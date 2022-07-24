@@ -119,7 +119,7 @@ final class JobTest extends TestCase
     {
         $job = new Job(
             TestActionParamsAlt::class,
-            foo: reference(job: 'step1', key: 'bar'),
+            foo: reference(job: 'step1', parameter: 'bar'),
             bar: variable('foo')
         );
         $job = $job->withDepends('step1');
@@ -133,11 +133,11 @@ final class JobTest extends TestCase
         $job = $job->withRunIf($variable);
         $this->assertEquals(
             [$variable, ],
-            $job->runIf()->toArray()
+            $job->runIf()
         );
-        $this->assertNotSame(
+        $this->assertSame(
             [$variable, ],
-            $job->runIf()->toArray()
+            $job->runIf()
         );
         $this->expectException(InvalidArgumentException::class);
         $job = $job->withRunIf($variable, $variable);
