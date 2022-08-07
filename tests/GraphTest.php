@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Str\Exceptions\StrCtypeDigitException;
-use Chevere\Str\Exceptions\StrCtypeSpaceException;
-use Chevere\Str\Exceptions\StrEmptyException;
+use Chevere\String\Exceptions\CtypeDigitException;
+use Chevere\String\Exceptions\CtypeSpaceException;
+use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\_resources\src\TestAction;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -190,21 +190,21 @@ final class GraphTest extends TestCase
     public function testWithPutEmpty(): void
     {
         $graph = new Graph();
-        $this->expectException(StrEmptyException::class);
+        $this->expectException(EmptyException::class);
         $graph->withPut('job', $this->getJob()->withDepends(''));
     }
 
     public function testWithPutSpace(): void
     {
         $graph = new Graph();
-        $this->expectException(StrCtypeSpaceException::class);
+        $this->expectException(CtypeSpaceException::class);
         $graph->withPut('job', $this->getJob()->withDepends(' '));
     }
 
     public function testWithPutDigit(): void
     {
         $graph = new Graph();
-        $this->expectException(StrCtypeDigitException::class);
+        $this->expectException(CtypeDigitException::class);
         $graph->withPut('job', $this->getJob()->withDepends('123'));
     }
 

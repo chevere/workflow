@@ -13,11 +13,11 @@
     ],
     "require": {
         "amphp/parallel": "^1.4",
-        "chevere/chevere": "^0.8",
+        "chevere/chevere": "^1.0",
         "psr/container": "^1 || ^2"
     },
     "require-dev": {
-        "chevere/var-dump": "^0.5.1",
+        "chevere/var-dump": "^0.6",
         "phpstan/phpstan": "^1.5",
         "phpunit/phpunit": "^9.5",
         "symplify/easy-coding-standard": "^10.3"

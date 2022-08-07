@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Str\StrAssert;
+use Chevere\String\AssertString;
 use Chevere\Workflow\Interfaces\VariableInterface;
 
 final class Variable implements VariableInterface
 {
     public function __construct(private string $name)
     {
-        (new StrAssert($name))->notCtypeSpace()->notEmpty();
+        (new AssertString($name))->notCtypeSpace()->notEmpty();
     }
 
     public function __toString(): string

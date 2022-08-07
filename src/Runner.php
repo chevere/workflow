@@ -21,7 +21,7 @@ use function Chevere\Message\message;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\RuntimeException;
-use function Chevere\VarSupport\deepCopy;
+use function Chevere\VariableSupport\deepCopy;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;

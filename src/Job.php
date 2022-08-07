@@ -16,7 +16,7 @@ namespace Chevere\Workflow;
 use Chevere\Action\Interfaces\ActionInterface;
 use function Chevere\Message\message;
 use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Str\StrAssert;
+use Chevere\String\AssertString;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
@@ -245,7 +245,7 @@ final class Job implements JobInterface
             );
         }
         foreach ($dependencies as $dependency) {
-            (new StrAssert($dependency))
+            (new AssertString($dependency))
                 ->notEmpty()
                 ->notCtypeDigit()
                 ->notCtypeSpace();

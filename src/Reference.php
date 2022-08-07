@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Str\StrAssert;
+use Chevere\String\AssertString;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 
 final class Reference implements ReferenceInterface
@@ -24,8 +24,8 @@ final class Reference implements ReferenceInterface
      */
     public function __construct(private string $job, private string $parameter)
     {
-        (new StrAssert($job))->notCtypeSpace()->notEmpty();
-        (new StrAssert($parameter))->notCtypeSpace()->notEmpty();
+        (new AssertString($job))->notCtypeSpace()->notEmpty();
+        (new AssertString($parameter))->notCtypeSpace()->notEmpty();
     }
 
     public function __toString(): string
