@@ -63,14 +63,14 @@ function runnerForJob(
 }
 
 /**
- * @param Array<string, mixed> $vars
+ * @param Array<string, mixed> $variables
  */
 function run(
     WorkflowInterface $workflow,
-    array $vars = [],
+    array $variables = [],
     ?ContainerInterface $container = null
 ): RunInterface {
-    $workflowRun = new Run($workflow, ...$vars);
+    $workflowRun = new Run($workflow, ...$variables);
 
     return (new Runner(
         $workflowRun,

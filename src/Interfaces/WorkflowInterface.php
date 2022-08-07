@@ -27,7 +27,7 @@ interface WorkflowInterface extends Countable
 
     public function jobs(): JobsInterface;
 
-    public function vars(): Map;
+    public function variables(): Map;
 
     /**
      * Return an instance with the specified `$job`.
@@ -58,7 +58,7 @@ interface WorkflowInterface extends Countable
      *
      * @return string[]
      */
-    public function getVar(string $var): array;
+    public function getVariable(string $variable): array;
 
     /**
      * Provides access to the expected return arguments for the given `$job`.

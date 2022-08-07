@@ -23,9 +23,9 @@ use Chevere\Throwable\Errors\ArgumentCountError;
 interface RunInterface
 {
     /**
-     * @param mixed ...$vars Workflow variables.
+     * @param mixed ...$variables Workflow variables.
      */
-    public function __construct(WorkflowInterface $workflow, mixed ...$vars);
+    public function __construct(WorkflowInterface $workflow, mixed ...$variables);
 
     /**
      * Provides access to workflow uuid V4 (RFC 4122).

@@ -34,7 +34,7 @@ final class Workflow implements WorkflowInterface
 {
     private ParametersInterface $parameters;
 
-    private Map $vars;
+    private Map $variables;
 
     /**
      * @var DsMap<string, string[]>
@@ -49,7 +49,7 @@ final class Workflow implements WorkflowInterface
     public function __construct(private JobsInterface $jobs)
     {
         $this->parameters = new Parameters();
-        $this->vars = new Map();
+        $this->variables = new Map();
         $this->expected = new DsMap();
         $this->provided = new DsMap();
         $this->putAdded(...iterator_to_array($jobs->getIterator()));
@@ -65,9 +65,9 @@ final class Workflow implements WorkflowInterface
         return $this->jobs->count();
     }
 
-    public function vars(): Map
+    public function variables(): Map
     {
-        return $this->vars;
+        return $this->variables;
     }
 
     public function withAddedJob(JobInterface ...$jobs): WorkflowInterface
@@ -84,11 +84,11 @@ final class Workflow implements WorkflowInterface
         return $this->parameters;
     }
 
-    public function getVar(string $variable): array
+    public function getVariable(string $variable): array
     {
         try {
             // @phpstan-ignore-next-line
-            return $this->vars->get($variable);
+            return $this->variables->get($variable);
         }
         // @codeCoverageIgnoreStart
         // @infection-ignore-all
@@ -135,7 +135,7 @@ final class Workflow implements WorkflowInterface
                 $parameter = $parameters->get($argument);
                 if ($value instanceof VariableInterface) {
                     if (!$this->parameters->has($value->name())) {
-                        $this->vars = $this->vars->withPut($value->__toString(), [$value->name()]);
+                        $this->variables = $this->variables->withPut($value->__toString(), [$value->name()]);
                     }
                     $this->putVariable($value, $parameter);
                 } elseif ($value instanceof ReferenceInterface) {
@@ -143,7 +143,7 @@ final class Workflow implements WorkflowInterface
                     $expected = $this->expected->get($value->job(), []);
                     $expected[] = $value->parameter();
                     $this->expected->put($value->job(), $expected);
-                    $this->vars = $this->vars->withPut(
+                    $this->variables = $this->variables->withPut(
                         $value->__toString(),
                         [$value->job(), $value->parameter()]
                     );

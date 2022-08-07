@@ -73,8 +73,8 @@ final class RunTest extends TestCase
         $workflowRunWithStepResponse = $workflowRun
             ->withJobResponse('step0', new Response());
         $this->assertNotSame($workflowRun, $workflowRunWithStepResponse);
-        $this->assertTrue($workflow->vars()->has('${foo}'));
-        $this->assertTrue($workflow->vars()->has('${baz}'));
+        $this->assertTrue($workflow->variables()->has('${foo}'));
+        $this->assertTrue($workflow->variables()->has('${baz}'));
         $this->assertTrue($workflowRunWithStepResponse->has('step0'));
         $this->assertSame([], $workflowRunWithStepResponse->get('step0')->data());
         $this->expectException(ArgumentCountError::class);

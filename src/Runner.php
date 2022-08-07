@@ -141,8 +141,8 @@ final class Runner implements RunnerInterface
                 continue;
             }
             $lookup = $argument->__toString();
-            $this->workflowRun->workflow()->vars()->assertHas($lookup);
-            $reference = $this->workflowRun->workflow()->getVar($lookup);
+            $this->workflowRun->workflow()->variables()->assertHas($lookup);
+            $reference = $this->workflowRun->workflow()->getVariable($lookup);
             if (isset($reference[1])) {
                 $arguments[$name] = $this->workflowRun
                     ->get($reference[0])

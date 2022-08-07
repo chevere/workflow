@@ -39,7 +39,7 @@ final class WorkflowTest extends TestCase
         $workflow = new Workflow(new Jobs());
         $this->assertCount(0, $workflow);
         $this->expectException(OutOfBoundsException::class);
-        $workflow->getVar('not-found');
+        $workflow->getVariable('not-found');
     }
 
     public function testMissingReference(): void
@@ -117,9 +117,9 @@ final class WorkflowTest extends TestCase
                 )
             )
         );
-        $this->assertTrue($workflow->vars()->has('${foo}'));
+        $this->assertTrue($workflow->variables()->has('${foo}'));
         $this->assertTrue($workflow->parameters()->has('foo'));
-        $this->assertSame(['foo'], $workflow->getVar('${foo}'));
+        $this->assertSame(['foo'], $workflow->getVariable('${foo}'));
         $workflow = $workflow
             ->withAddedJob(
                 step2: new Job(
@@ -129,11 +129,11 @@ final class WorkflowTest extends TestCase
                 )
             );
         $this->assertContains('step1', $workflow->jobs()->get('step2')->dependencies());
-        $this->assertTrue($workflow->vars()->has('${foo}'));
-        $this->assertTrue($workflow->vars()->has('${step1:bar}'));
+        $this->assertTrue($workflow->variables()->has('${foo}'));
+        $this->assertTrue($workflow->variables()->has('${step1:bar}'));
         $this->assertTrue($workflow->parameters()->has('foo'));
-        $this->assertSame(['foo'], $workflow->getVar('${foo}'));
-        $this->assertSame(['step1', 'bar'], $workflow->getVar('${step1:bar}'));
+        $this->assertSame(['foo'], $workflow->getVariable('${foo}'));
+        $this->assertSame(['step1', 'bar'], $workflow->getVariable('${step1:bar}'));
         $this->expectException(OutOfBoundsException::class);
         $workflow->withAddedJob(
             step: new Job(
