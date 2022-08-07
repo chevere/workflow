@@ -97,7 +97,7 @@ final class Job implements JobInterface
         $known = new Vector();
         foreach ($context as $item) {
             if ($known->contains($item->__toString())) {
-                throw new InvalidArgumentException(
+                throw new OverflowException(
                     message('Condition %condition% is already defined')
                         ->withCode('%condition%', $item->__toString())
                 );

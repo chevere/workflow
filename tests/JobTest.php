@@ -119,10 +119,9 @@ final class JobTest extends TestCase
     {
         $job = new Job(
             TestActionParamsAlt::class,
-            foo: reference(job: 'step1', parameter: 'bar'),
+            foo: reference('step1', 'bar'),
             bar: variable('foo')
         );
-        $job = $job->withDepends('step1');
         $this->assertContains('step1', $job->dependencies());
     }
 
@@ -139,7 +138,7 @@ final class JobTest extends TestCase
             [$variable, ],
             $job->runIf()
         );
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(OverflowException::class);
         $job = $job->withRunIf($variable, $variable);
     }
 }

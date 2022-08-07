@@ -21,7 +21,7 @@ use Psr\Container\ContainerInterface;
 interface RunnerInterface
 {
     public function __construct(
-        RunInterface $workflowRun,
+        RunInterface $run,
         ContainerInterface $container
     );
 

@@ -22,10 +22,10 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Psr\Container\ContainerInterface;
 
-function workflow(JobInterface ...$namedSteps): WorkflowInterface
+function workflow(JobInterface ...$job): WorkflowInterface
 {
     return new Workflow(
-        new Jobs(...$namedSteps)
+        new Jobs(...$job)
     );
 }
 
@@ -50,16 +50,13 @@ function variable(string $name): VariableInterface
     return new Variable($name);
 }
 
-function runnerForJob(
-    RunnerInterface $workflowRunner,
-    string $job,
-): RunnerInterface {
-    $run = $workflowRunner->run();
-    if ($run->has($job)) {
-        return $workflowRunner;
+function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
+{
+    if ($runner->run()->has($job)) {
+        return $runner;
     }
 
-    return $workflowRunner->withRunJob($job);
+    return $runner->withRunJob($job);
 }
 
 /**

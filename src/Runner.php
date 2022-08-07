@@ -36,27 +36,27 @@ final class Runner implements RunnerInterface
     private array $responses;
 
     public function __construct(
-        private RunInterface $workflowRun,
+        private RunInterface $run,
         private ContainerInterface $container
     ) {
     }
 
     public function run(): RunInterface
     {
-        return $this->workflowRun;
+        return $this->run;
     }
 
     public function withRun(): RunnerInterface
     {
         $new = clone $this;
-        $jobs = $new->workflowRun->workflow()->jobs();
+        $jobs = $new->run->workflow()->jobs();
         $promises = [];
-        foreach ($jobs->graph() as $jobs) {
-            foreach ($jobs as $job) {
+        foreach ($jobs->graph() as $queue) {
+            foreach ($queue as $jobName) {
                 $promises[] = enqueueCallable(
                     'Chevere\\Workflow\\runnerForJob',
                     $new,
-                    $job,
+                    $jobName,
                 );
             }
 
@@ -70,7 +70,7 @@ final class Runner implements RunnerInterface
             catch (Throwable $e) {
                 throw new RuntimeException(
                     message('Error running job %job% [%message%]')
-                        ->withCode('%job%', $job ?? ':before')
+                        ->withCode('%job%', $jobName ?? ':before')
                         ->withStrtr('%message%', $e->getMessage()),
                     previous: $e
                 );
@@ -141,14 +141,14 @@ final class Runner implements RunnerInterface
                 continue;
             }
             $lookup = $argument->__toString();
-            $this->workflowRun->workflow()->variables()->assertHas($lookup);
-            $reference = $this->workflowRun->workflow()->getVariable($lookup);
+            $this->run->workflow()->variables()->assertHas($lookup);
+            $reference = $this->run->workflow()->getVariable($lookup);
             if (isset($reference[1])) {
-                $arguments[$name] = $this->workflowRun
+                $arguments[$name] = $this->run
                     ->get($reference[0])
                     ->data()[$reference[1]];
             } else {
-                $arguments[$name] = $this->workflowRun
+                $arguments[$name] = $this->run
                     ->arguments()->get($reference[0]);
             }
         }
@@ -158,7 +158,7 @@ final class Runner implements RunnerInterface
 
     private function addJob(string $name, ResponseInterface $response): void
     {
-        $this->workflowRun = $this->workflowRun
+        $this->run = $this->run
             ->withJobResponse($name, $response);
     }
 }
