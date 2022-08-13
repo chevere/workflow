@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestAction;
+use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionObjectConflict;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
@@ -47,7 +47,7 @@ final class WorkflowTest extends TestCase
         $this->expectException(OutOfBoundsException::class);
         workflow(
             zero: job(
-                TestAction::class
+                TestActionNoParams::class
             ),
             one: job(
                 TestActionParamFooResponseBar::class,
@@ -73,7 +73,7 @@ final class WorkflowTest extends TestCase
 
     public function testConstruct(): void
     {
-        $step = new Job(TestAction::class);
+        $step = new Job(TestActionNoParams::class);
         $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
         $this->assertCount(1, $workflow);
@@ -83,7 +83,7 @@ final class WorkflowTest extends TestCase
 
     public function testWithAdded(): void
     {
-        $step = new Job(TestAction::class);
+        $step = new Job(TestActionNoParams::class);
         $steps = new Jobs(step: $step);
         $workflow = new Workflow($steps);
         $workflowWithAddedStep = $workflow->withAddedJob(step2: $step);

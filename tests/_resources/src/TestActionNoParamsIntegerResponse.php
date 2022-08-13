@@ -18,6 +18,12 @@ use function Chevere\Parameter\integerParameter;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 
+/**
+ * @method array run()
+ *     return [
+ *        'id' => (int) The id,
+ *     ]
+ */
 final class TestActionNoParamsIntegerResponse extends Action
 {
     public function getDescription(): string

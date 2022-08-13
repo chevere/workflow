@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestAction;
+use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamsAlt;
 use Chevere\Throwable\Errors\ArgumentCountError;
@@ -46,7 +46,7 @@ final class JobTest extends TestCase
         $this->expectExceptionMessage('requires 0 arguments');
         $this->expectExceptionMessage('provided 2 foo, bar');
         new Job(
-            TestAction::class,
+            TestActionNoParams::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );
@@ -56,7 +56,7 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         new Job(
-            TestAction::class,
+            TestActionNoParams::class,
             foo: 'foo',
             bar: 'invalid extra argument'
         );
@@ -127,7 +127,7 @@ final class JobTest extends TestCase
 
     public function testWithRunIf(): void
     {
-        $job = new Job(TestAction::class);
+        $job = new Job(TestActionNoParams::class);
         $variable = variable('wea');
         $job = $job->withRunIf($variable);
         $this->assertEquals(

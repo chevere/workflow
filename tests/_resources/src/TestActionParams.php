@@ -15,6 +15,10 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 
+/**
+ * @method array run(string $foo, string $bar)
+ *    return []
+ */
 class TestActionParams extends Action
 {
     public function run(string $foo, string $bar): array

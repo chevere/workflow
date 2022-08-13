@@ -16,7 +16,7 @@ namespace Chevere\Tests;
 use Chevere\String\Exceptions\CtypeDigitException;
 use Chevere\String\Exceptions\CtypeSpaceException;
 use Chevere\String\Exceptions\EmptyException;
-use Chevere\Tests\_resources\src\TestAction;
+use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
@@ -29,7 +29,7 @@ final class GraphTest extends TestCase
 {
     private function getJob(): JobInterface
     {
-        return job(TestAction::class);
+        return job(TestActionNoParams::class);
     }
 
     public function testEmpty(): void

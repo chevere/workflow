@@ -14,10 +14,14 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
+use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\_resources\src\TestActionParams;
+use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use function Chevere\Workflow\reference;
+use function Chevere\Workflow\variable;
 use PHPUnit\Framework\TestCase;
 
 final class JobsTest extends TestCase
@@ -165,10 +169,40 @@ final class JobsTest extends TestCase
         $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessage('Parameter parameter not found');
         new Jobs(
-            j0: job(TestActionNoParams::class),
-            j1: job(TestActionNoParams::class)
+            j1: job(TestActionNoParams::class),
+            j2: job(TestActionNoParams::class)
                 ->withRunIf(
-                    reference('j0', 'parameter')
+                    reference('j1', 'parameter')
+                ),
+        );
+    }
+
+    public function testWithRunIfInvalidJobKeyType(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Reference ${j1:id} must be of type boolean');
+        new Jobs(
+            j1: job(TestActionNoParamsIntegerResponse::class),
+            j2: job(TestActionNoParams::class)
+                ->withRunIf(
+                    reference('j1', 'id')
+                ),
+        );
+    }
+
+    public function testWithRunIfInvalidVariableType(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Variable theFoo is not of type boolean');
+        new Jobs(
+            j1: job(
+                TestActionParams::class,
+                foo: variable('theFoo'),
+                bar: 'bar'
+            ),
+            j2: job(TestActionNoParams::class)
+                ->withRunIf(
+                    variable('theFoo')
                 ),
         );
     }
