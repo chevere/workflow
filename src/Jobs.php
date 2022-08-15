@@ -27,7 +27,6 @@ use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
-use Ds\Map as DsMap;
 use Ds\Vector;
 use Iterator;
 
@@ -42,17 +41,22 @@ final class Jobs implements JobsInterface
 
     private GraphInterface $graph;
 
-    private DsMap $variables;
+    private Map $variables;
 
-    private DsMap $references;
+    private Map $references;
+
+    /**
+     * @var Vector<string>
+     */
+    private Vector $jobDependencies;
 
     public function __construct(JobInterface ...$jobs)
     {
         $this->map = new Map();
         $this->jobs = new Vector();
         $this->graph = new Graph();
-        $this->variables = new DsMap();
-        $this->references = new DsMap();
+        $this->variables = new Map();
+        $this->references = new Map();
         $this->putAdded(...$jobs);
     }
 
@@ -68,12 +72,12 @@ final class Jobs implements JobsInterface
 
     public function variables(): array
     {
-        return $this->variables->toArray();
+        return iterator_to_array($this->variables->getIterator());
     }
 
     public function references(): array
     {
-        return $this->references->toArray();
+        return iterator_to_array($this->references->getIterator());
     }
 
     public function get(string $job): JobInterface
@@ -132,12 +136,17 @@ final class Jobs implements JobsInterface
     private function putAdded(JobInterface ...$jobs): void
     {
         foreach ($jobs as $name => $job) {
+            $this->jobDependencies = new Vector($job->dependencies());
             $name = strval($name);
             $this->addMap($name, $job);
             $this->jobs->push($name);
             $this->handleArguments($name, $job);
-            $this->handleRunIf($name, $job);
+            foreach ($job->runIf() as $runIf) {
+                $this->handleRunIfReference($name, $runIf);
+                $this->handleRunIfVariable($name, $runIf);
+            }
             $this->storeReferences($name, $job);
+            $this->assertDependencies($name);
             $this->graph = $this->graph->withPut($name, $job);
         }
     }
@@ -147,7 +156,8 @@ final class Jobs implements JobsInterface
         /** @var ActionInterface $action */
         $action = new ($job->action());
         foreach ($action->responseParameters()->getIterator() as $key => $parameter) {
-            $this->references->put(strval(reference($name, $key)), $parameter->type());
+            $this->references = $this->references
+                ->withPut(strval(reference($name, $key)), $parameter->type());
         }
     }
 
@@ -158,15 +168,21 @@ final class Jobs implements JobsInterface
             $action = new ($job->action());
             /** @var TypeInterface $type */
             $type = $action->parameters()->get($parameter)->type();
+            $property = match (true) {
+                $argument instanceof VariableInterface => 'variables',
+                $argument instanceof ReferenceInterface => 'references',
+                default => false
+            };
+            if (!$property) {
+                continue;
+            }
 
             try {
-                if ($argument instanceof VariableInterface
-                    || $argument instanceof ReferenceInterface) {
-                    $subjectArguments = $argument instanceof VariableInterface
-                        ? ['Variable', $this->variables, $argument->name(), $type]
-                        : ['Reference', $this->references, strval($argument), $type];
-                    $this->handleSubjectType(...$subjectArguments);
-                }
+                $this->{$property} = $this->mapSubjectType(
+                    $argument,
+                    $this->{$property},
+                    $type
+                );
             } catch (TypeError $e) {
                 throw new TypeError(
                     message($e->getMessage())
@@ -177,57 +193,64 @@ final class Jobs implements JobsInterface
         }
     }
 
-    private function handleSubjectType(string $subject, DsMap $map, string $key, TypeInterface $type): void
-    {
-        if ($map->hasKey($key)) {
-            /** @var TypeInterface $typeStored */
-            $typeStored = $map->get($key);
-            if ($typeStored->primitive() !== $type->primitive()) {
-                throw new TypeError(
-                    message('%subject% %key% is of type %type%, parameter %parameter% expects %typeExpected% on job %job%.')
-                        ->withCode('%type%', $typeStored->primitive())
-                        ->withCode('%typeExpected%', $type->primitive())
-                        ->withStrtr('%subject%', $subject)
-                        ->withStrtr('%key%', $key)
-                );
-            }
-        } else {
-            $map->put($key, $type);
+    private function mapSubjectType(
+        VariableInterface|ReferenceInterface $argument,
+        Map $map,
+        TypeInterface $type
+    ): Map {
+        $subject = 'Reference';
+        $key = strval($argument);
+        if ($argument instanceof VariableInterface) {
+            $subject = 'Variable';
+            $key = $argument->name();
         }
+        if (!$map->has($key)) {
+            return $map->withPut($key, $type);
+        }
+        /** @var TypeInterface $typeStored */
+        $typeStored = $map->get($key);
+        if ($typeStored->primitive() !== $type->primitive()) {
+            throw new TypeError(
+                message('%subject% %key% is of type %type%, parameter %parameter% expects %typeExpected% on job %job%.')
+                    ->withCode('%type%', $typeStored->primitive())
+                    ->withCode('%typeExpected%', $type->primitive())
+                    ->withStrtr('%subject%', $subject)
+                    ->withStrtr('%key%', $key)
+            );
+        }
+
+        return $map;
     }
 
-    private function handleRunIf(
-        string $name,
-        JobInterface $job
-    ): void {
-        $dependencies = $job->dependencies();
-        foreach ($job->runIf() as $runIf) {
-            if ($runIf instanceof ReferenceInterface) {
-                $dependencies[] = $runIf->job();
-                /** @var JobInterface $runIfJob */
-                try {
-                    $runIfJob = $this->map->get($runIf->job());
-                } catch (OutOfBoundsException $e) {
-                    throw new OutOfBoundsException(
-                        message('Job %job% not found')
-                            ->withCode('%job%', $runIf->job())
-                    );
-                }
-                /** @var ActionInterface $action */
-                $action = new ($runIfJob->action());
-                $parameter = $action
-                    ->getResponseParameters()->get($runIf->parameter());
-                if ($parameter->type()->primitive() !== 'boolean') {
-                    throw new TypeError(
-                        message('Reference %reference% must be of type boolean')
-                            ->withCode('%reference%', $runIf->__toString())
-                    );
-                }
-            }
-            $this->handleRunIfVariable($name, $runIf);
+    private function handleRunIfReference(string $job, $runIf): void
+    {
+        if (!$runIf instanceof ReferenceInterface) {
+            return;
         }
-        $dependencies = array_filter($dependencies);
-        $this->assertDependencies($name, ...$dependencies);
+        if ($runIf instanceof ReferenceInterface) {
+            if (!$this->jobDependencies->contains($runIf->job())) {
+                $this->jobDependencies->push($runIf->job());
+            }
+            /** @var JobInterface $runIfJob */
+            try {
+                $runIfJob = $this->map->get($runIf->job());
+            } catch (OutOfBoundsException $e) {
+                throw new OutOfBoundsException(
+                    message('Job %job% not found')
+                        ->withCode('%job%', $runIf->job())
+                );
+            }
+            /** @var ActionInterface $action */
+            $action = new ($runIfJob->action());
+            $parameter = $action
+                ->getResponseParameters()->get($runIf->parameter());
+            if ($parameter->type()->primitive() !== 'boolean') {
+                throw new TypeError(
+                    message('Reference %reference% must be of type boolean')
+                        ->withCode('%reference%', $runIf->__toString())
+                );
+            }
+        }
     }
 
     private function handleRunIfVariable(string $job, $runIf): void
@@ -235,8 +258,9 @@ final class Jobs implements JobsInterface
         if (!$runIf instanceof VariableInterface) {
             return;
         }
-        if (!$this->variables->hasKey($runIf->name())) {
-            $this->variables->put($runIf->name(), typeBoolean());
+        if (!$this->variables->has($runIf->name())) {
+            $this->variables = $this->variables
+                ->withPut($runIf->name(), typeBoolean());
 
             return;
         }
@@ -252,18 +276,16 @@ final class Jobs implements JobsInterface
         }
     }
 
-    private function assertDependencies(string $job, string ...$dependencies): void
+    private function assertDependencies(string $job): void
     {
+        $dependencies = $this->jobDependencies->toArray();
         if (!$this->jobs->contains(...$dependencies)) {
             $missing = array_diff($dependencies, $this->jobs->toArray());
 
             throw new OutOfBoundsException(
                 message('Job %job% has undeclared dependencies: %dependencies%')
                     ->withCode('%job%', $job)
-                    ->withCode(
-                        '%dependencies%',
-                        implode(', ', $missing)
-                    )
+                    ->withCode('%dependencies%', implode(', ', $missing))
             );
         }
     }
