@@ -157,7 +157,7 @@ final class Job implements JobInterface
     {
         /** @var array<string, mixed> $namedArguments */
         $this->assertArgumentsCount($namedArguments);
-        $store = [];
+        $values = [];
         $missing = [];
         $iterator = $this->parameters->getIterator();
         $iterator->rewind();
@@ -165,7 +165,7 @@ final class Job implements JobInterface
             $name = $iterator->key();
             $argument = $namedArguments[$name] ?? null;
             if ($argument !== null) {
-                $store[$name] = $argument;
+                $values[$name] = $argument;
                 $this->inferDependencies($argument);
             } elseif ($this->parameters->isRequired($name)) {
                 $missing[] = $name;
@@ -179,7 +179,7 @@ final class Job implements JobInterface
                     ->withCode('%arguments%', implode(', ', $missing))
             );
         }
-        $this->arguments = $store;
+        $this->arguments = $values;
     }
 
     /**
