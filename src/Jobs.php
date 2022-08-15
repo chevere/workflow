@@ -128,7 +128,7 @@ final class Jobs implements JobsInterface
             $this->addMap($name, $job);
             $this->jobs->push($name);
             $this->handleDependencies($name, $job);
-            $this->handleVariables($name, $job);
+            $this->handleVariables($job);
             $this->graph = $this->graph->withPut($name, $job);
         }
     }
@@ -169,10 +169,8 @@ final class Jobs implements JobsInterface
         $this->assertDependencies($name, ...$dependencies);
     }
 
-    private function handleVariables(
-        string $name,
-        JobInterface $job
-    ): void {
+    private function handleVariables(JobInterface $job): void
+    {
         foreach ($job->arguments() as $parameter => $argument) {
             if (!$argument instanceof VariableInterface) {
                 continue;
