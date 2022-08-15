@@ -15,6 +15,7 @@ namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -138,6 +139,37 @@ final class JobsTest extends TestCase
                 ['j6'],
             ],
             $jobs->graph()
+        );
+    }
+
+    public function testMissingReference(): void
+    {
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessage('Job two has undeclared dependencies: zero');
+        new Jobs(
+            one: job(
+                TestActionNoParams::class
+            ),
+            two: job(
+                TestActionParamFooResponseBar::class,
+                foo: reference('zero', 'key')
+            )
+        );
+    }
+
+    public function testWrongReferenceType(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Reference ${one:id} is of type integer, parameter foo expects string on job two');
+        new Jobs(
+            one: job(
+                TestActionNoParamsIntegerResponse::class,
+            ),
+            two: job(
+                TestActionParams::class,
+                foo: reference('one', 'id'),
+                bar: reference('one', 'id')
+            )
         );
     }
 

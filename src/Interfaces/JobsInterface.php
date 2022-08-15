@@ -29,6 +29,8 @@ interface JobsInterface extends MappedInterface
 
     public function variables(): array;
 
+    public function references(): array;
+
     /**
      * @return string[]
      */

@@ -14,11 +14,9 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
-use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionObjectConflict;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
-use Chevere\Tests\_resources\src\TestActionParamsAlt;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -40,35 +38,6 @@ final class WorkflowTest extends TestCase
         $this->assertCount(0, $workflow);
         $this->expectException(OutOfBoundsException::class);
         $workflow->getVariable('not-found');
-    }
-
-    public function testMissingReference(): void
-    {
-        $this->expectException(OutOfBoundsException::class);
-        workflow(
-            zero: job(
-                TestActionNoParams::class
-            ),
-            one: job(
-                TestActionParamFooResponseBar::class,
-                foo: reference(job: 'null', parameter: 'key')
-            )
-        );
-    }
-
-    public function testWrongType(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        workflow(
-            one: job(
-                TestActionNoParamsIntegerResponse::class,
-            ),
-            two: job(
-                TestActionParams::class,
-                foo: reference(job: 'one', parameter: 'id'),
-                bar: reference(job: 'one', parameter: 'id')
-            )
-        );
     }
 
     public function testConstruct(): void
@@ -139,27 +108,6 @@ final class WorkflowTest extends TestCase
             step: new Job(
                 TestActionParamFooResponseBar::class,
                 foo: reference(job: 'not', parameter: 'found')
-            )
-        );
-    }
-
-    public function testConflictingParameterType(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Incompatible declaration');
-        $this->expectExceptionMessage('(argument@bar)');
-        $this->expectExceptionMessage('Reference ${bar}');
-        $this->expectExceptionMessage("doesn't match type");
-        workflow(
-            step1: job(
-                TestActionParams::class,
-                foo: variable('foo'),
-                bar: variable('bar')
-            ),
-            step2: job(
-                TestActionParamsAlt::class,
-                foo: variable('foo'),
-                bar: variable('bar')
             )
         );
     }
