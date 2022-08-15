@@ -193,7 +193,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidVariableType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Variable theFoo is not of type boolean');
+        $this->expectExceptionMessage('Variable theFoo (previously declared as string) is not of type boolean at job j2');
         new Jobs(
             j1: job(
                 TestActionParams::class,

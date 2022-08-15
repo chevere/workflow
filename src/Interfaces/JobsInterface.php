@@ -27,6 +27,8 @@ interface JobsInterface extends MappedInterface
 
     public function get(string $job): JobInterface;
 
+    public function variables(): array;
+
     /**
      * @return string[]
      */

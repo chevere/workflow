@@ -20,10 +20,14 @@ use function Chevere\Message\message;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
+use Chevere\Type\Interfaces\TypeInterface;
+use function Chevere\Type\typeBoolean;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
+use Chevere\Workflow\Interfaces\VariableInterface;
+use Ds\Map as DsMap;
 use Ds\Vector;
 use Iterator;
 
@@ -38,12 +42,20 @@ final class Jobs implements JobsInterface
 
     private GraphInterface $graph;
 
+    private DsMap $variables;
+
     public function __construct(JobInterface ...$jobs)
     {
         $this->map = new Map();
         $this->jobs = new Vector();
         $this->graph = new Graph();
+        $this->variables = new DsMap();
         $this->putAdded(...$jobs);
+    }
+
+    public function variables(): array
+    {
+        return $this->variables->toArray();
     }
 
     public function keys(): array
@@ -115,12 +127,13 @@ final class Jobs implements JobsInterface
             $name = strval($name);
             $this->addMap($name, $job);
             $this->jobs->push($name);
-            $this->assertJobContainsDependencies($name, $job);
+            $this->handleDependencies($name, $job);
+            $this->handleVariables($name, $job);
             $this->graph = $this->graph->withPut($name, $job);
         }
     }
 
-    private function assertJobContainsDependencies(
+    private function handleDependencies(
         string $name,
         JobInterface $job
     ): void {
@@ -139,19 +152,66 @@ final class Jobs implements JobsInterface
                 }
                 /** @var ActionInterface $action */
                 $action = new ($runIfJob->action());
-                $action->getResponseParameters()->get($runIf->parameter());
+                $parameter = $action
+                    ->getResponseParameters()->get($runIf->parameter());
+                if ($parameter->type()->primitive() !== 'boolean') {
+                    throw new TypeError(
+                        message('Reference %reference% must be of type boolean')
+                            ->withCode('%reference%', $runIf->__toString())
+                    );
+                }
+            }
+            if ($runIf instanceof VariableInterface) {
+                $this->handleRunIfVariable($name, $runIf);
             }
         }
         $dependencies = array_filter($dependencies);
-        if (!$this->jobs->contains(...$dependencies)) {
-            $missing = array_diff(
-                $dependencies,
-                $this->jobs->toArray()
+        $this->assertDependencies($name, ...$dependencies);
+    }
+
+    private function handleVariables(
+        string $name,
+        JobInterface $job
+    ): void {
+        foreach ($job->arguments() as $parameter => $argument) {
+            if (!$argument instanceof VariableInterface) {
+                continue;
+            }
+            /** @var ActionInterface $action */
+            $action = new ($job->action());
+            /** @var TypeInterface $type */
+            $type = $action->parameters()->get($parameter)->type();
+            $this->variables->put($argument->name(), $type);
+        }
+    }
+
+    private function handleRunIfVariable(string $job, VariableInterface $runIf): void
+    {
+        if (!$this->variables->hasKey($runIf->name())) {
+            $this->variables->put($runIf->name(), typeBoolean());
+
+            return;
+        }
+        /** @var TypeInterface $type */
+        $type = $this->variables->get($runIf->name());
+        if ($type->primitive() !== 'boolean') {
+            throw new TypeError(
+                message('Variable %variable% (previously declared as %type%) is not of type boolean at job %job%')
+                    ->withCode('%variable%', $runIf->name())
+                    ->withCode('%type%', $type->primitive())
+                    ->withCode('%job%', $job)
             );
+        }
+    }
+
+    private function assertDependencies(string $job, string ...$dependencies): void
+    {
+        if (!$this->jobs->contains(...$dependencies)) {
+            $missing = array_diff($dependencies, $this->jobs->toArray());
 
             throw new OutOfBoundsException(
                 message('Job %job% has undeclared dependencies: %dependencies%')
-                    ->withCode('%job%', $name)
+                    ->withCode('%job%', $job)
                     ->withCode(
                         '%dependencies%',
                         implode(', ', $missing)
