@@ -13,14 +13,23 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\String\AssertString;
+use function Chevere\Message\message;
+use Chevere\Regex\Regex;
+use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\VariableInterface;
 
 final class Variable implements VariableInterface
 {
     public function __construct(private string $name)
     {
-        (new AssertString($name))->notCtypeSpace()->notEmpty();
+        $matches = (new Regex('/^[a-zA-Z_]\w+$/'))
+            ->match($name);
+        if ($matches === []) {
+            throw new InvalidArgumentException(
+                message('Invalid variable name %name%')
+                    ->withCode('%name%', $name)
+            );
+        }
     }
 
     public function __toString(): string
