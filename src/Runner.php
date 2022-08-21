@@ -140,17 +140,16 @@ final class Runner implements RunnerInterface
 
                 continue;
             }
-            $lookup = $argument->__toString();
-            $this->run->workflow()->variables()->assertHas($lookup);
-            $reference = $this->run->workflow()->getVariable($lookup);
-            if (isset($reference[1])) {
-                $arguments[$name] = $this->run
-                    ->get($reference[0])
-                    ->data()[$reference[1]];
-            } else {
-                $arguments[$name] = $this->run
-                    ->arguments()->get($reference[0]);
+            if ($argument instanceof VariableInterface) {
+                // in_array($argument->__toString(), $this->run->workflow()->jobs()->variables());
+                $arguments[$name] = $this->run->arguments()
+                    ->get($argument->__toString());
+
+                continue;
             }
+            // in_array($argument->__toString(), $this->run->workflow()->jobs()->references());
+            $arguments[$name] = $this->run->get($argument->job())
+                ->data()[$argument->parameter()];
         }
 
         return $arguments;

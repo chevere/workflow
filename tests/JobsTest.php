@@ -160,7 +160,7 @@ final class JobsTest extends TestCase
     public function testWrongReferenceType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference ${one:id} is of type integer, parameter foo expects string on job two');
+        $this->expectExceptionMessage('Reference one:id is of type integer, parameter foo expects string on job two');
         new Jobs(
             one: job(
                 TestActionNoParamsIntegerResponse::class,
@@ -212,7 +212,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference ${j1:id} must be of type boolean');
+        $this->expectExceptionMessage('Reference j1:id must be of type boolean');
         new Jobs(
             j1: job(TestActionNoParamsIntegerResponse::class),
             j2: job(TestActionNoParams::class)

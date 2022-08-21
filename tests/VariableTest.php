@@ -35,9 +35,7 @@ final class VariableTest extends TestCase
     public function testConstruct(): void
     {
         $name = 'variable';
-        $string = '${' . $name . '}';
         $variable = new Variable($name);
-        $this->assertSame($string, $variable->__toString());
-        $this->assertSame($name, $variable->name());
+        $this->assertSame($name, $variable->__toString());
     }
 }

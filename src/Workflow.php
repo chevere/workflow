@@ -65,11 +65,6 @@ final class Workflow implements WorkflowInterface
         return $this->jobs->count();
     }
 
-    public function variables(): Map
-    {
-        return $this->variables;
-    }
-
     public function withAddedJob(JobInterface ...$jobs): WorkflowInterface
     {
         $new = clone $this;
@@ -82,27 +77,6 @@ final class Workflow implements WorkflowInterface
     public function parameters(): ParametersInterface
     {
         return $this->parameters;
-    }
-
-    public function getVariable(string $variable): array
-    {
-        try {
-            // @phpstan-ignore-next-line
-            return $this->variables->get($variable);
-        }
-        // @codeCoverageIgnoreStart
-        // @infection-ignore-all
-        // @phpstan-ignore-next-line
-        catch (\TypeError $e) {
-            throw new TypeError(previous: $e);
-        }
-        // @codeCoverageIgnoreEnd
-        catch (\OutOfBoundsException $e) {
-            throw new OutOfBoundsException(
-                message('Variable %variable% not found')
-                    ->withCode('%variable%', $variable)
-            );
-        }
     }
 
     public function getJobReturnArguments(string $job): ParametersInterface
@@ -134,8 +108,8 @@ final class Workflow implements WorkflowInterface
             try {
                 $parameter = $parameters->get($argument);
                 if ($value instanceof VariableInterface) {
-                    if (!$this->parameters->has($value->name())) {
-                        $this->variables = $this->variables->withPut($value->__toString(), [$value->name()]);
+                    if (!$this->parameters->has($value->__toString())) {
+                        $this->variables = $this->variables->withPut($value->__toString(), [$value->__toString()]);
                     }
                     $this->putVariable($value, $parameter);
                 } elseif ($value instanceof ReferenceInterface) {
@@ -179,8 +153,8 @@ final class Workflow implements WorkflowInterface
         VariableInterface $variable,
         ParameterInterface $parameter
     ): void {
-        if ($this->parameters->has($variable->name())) {
-            $existent = $this->parameters->get($variable->name());
+        if ($this->parameters->has($variable->__toString())) {
+            $existent = $this->parameters->get($variable->__toString());
             $this->assertMatchesExistingParameter(
                 // @infection-ignore-all
                 $variable->__toString(),
@@ -192,7 +166,7 @@ final class Workflow implements WorkflowInterface
         }
         $this->parameters = $this->parameters
             ->withAdded(...[
-                $variable->name() => $parameter,
+                $variable->__toString() => $parameter,
             ]);
     }
 

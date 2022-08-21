@@ -25,11 +25,6 @@ final class Variable implements VariableInterface
 
     public function __toString(): string
     {
-        return '${' . $this->name . '}';
-    }
-
-    public function name(): string
-    {
         return $this->name;
     }
 }

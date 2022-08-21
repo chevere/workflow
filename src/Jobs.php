@@ -70,14 +70,14 @@ final class Jobs implements JobsInterface
         return $this->graph->toArray();
     }
 
-    public function variables(): array
+    public function variables(): Map
     {
-        return iterator_to_array($this->variables->getIterator());
+        return $this->variables;
     }
 
-    public function references(): array
+    public function references(): Map
     {
-        return iterator_to_array($this->references->getIterator());
+        return $this->references;
     }
 
     public function get(string $job): JobInterface
@@ -202,7 +202,7 @@ final class Jobs implements JobsInterface
         $key = strval($argument);
         if ($argument instanceof VariableInterface) {
             $subject = 'Variable';
-            $key = $argument->name();
+            $key = $argument->__toString();
         }
         if (!$map->has($key)) {
             return $map->withPut($key, $type);
@@ -258,18 +258,18 @@ final class Jobs implements JobsInterface
         if (!$runIf instanceof VariableInterface) {
             return;
         }
-        if (!$this->variables->has($runIf->name())) {
+        if (!$this->variables->has($runIf->__toString())) {
             $this->variables = $this->variables
-                ->withPut($runIf->name(), typeBoolean());
+                ->withPut($runIf->__toString(), typeBoolean());
 
             return;
         }
         /** @var TypeInterface $type */
-        $type = $this->variables->get($runIf->name());
+        $type = $this->variables->get($runIf->__toString());
         if ($type->primitive() !== 'boolean') {
             throw new TypeError(
                 message('Variable %variable% (previously declared as %type%) is not of type boolean at job %job%')
-                    ->withCode('%variable%', $runIf->name())
+                    ->withCode('%variable%', $runIf->__toString())
                     ->withCode('%type%', $type->primitive())
                     ->withCode('%job%', $job)
             );

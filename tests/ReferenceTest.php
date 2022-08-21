@@ -36,7 +36,7 @@ final class ReferenceTest extends TestCase
     {
         $job = 'job';
         $key = 'key';
-        $string = '${' . $job . ':' . $key . '}';
+        $string = $job . ':' . $key;
         $reference = new Reference($job, $key);
         $this->assertSame($string, $reference->__toString());
         $this->assertSame($job, $reference->job());

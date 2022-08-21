@@ -20,8 +20,4 @@ use Stringable;
  */
 interface VariableInterface extends Stringable
 {
-    /** ${key} */
-    public const REGEX_VARIABLE = '/^\${([\w]*)}$/';
-
-    public function name(): string;
 }

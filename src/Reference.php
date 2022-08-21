@@ -30,7 +30,7 @@ final class Reference implements ReferenceInterface
 
     public function __toString(): string
     {
-        return '${' . $this->job . ':' . $this->parameter . '}';
+        return $this->job . ':' . $this->parameter;
     }
 
     public function job(): string

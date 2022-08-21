@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
-use Chevere\DataStructure\Map;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Countable;
@@ -27,8 +26,6 @@ interface WorkflowInterface extends Countable
 
     public function jobs(): JobsInterface;
 
-    public function variables(): Map;
-
     /**
      * Return an instance with the specified `$job`.
      *
@@ -40,25 +37,6 @@ interface WorkflowInterface extends Countable
     public function withAddedJob(JobInterface ...$jobs): self;
 
     public function parameters(): ParametersInterface;
-
-    /**
-     * Provides access to the variable mapping for job variables.
-     *
-     * Case `foo}` (workflow variables):
-     *
-     * ```php
-     * return ['foo'];
-     * ```
-     *
-     * Case `step:var}` (named job response):
-     *
-     * ```php
-     * return ['step', 'var'];
-     * ```
-     *
-     * @return string[]
-     */
-    public function getVariable(string $variable): array;
 
     /**
      * Provides access to the expected return arguments for the given `$job`.
