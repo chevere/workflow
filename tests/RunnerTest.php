@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Container\Container;
+use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
 use Chevere\Tests\_resources\src\TestActionParamsFooResponse1;
 use function Chevere\Workflow\job;
@@ -28,7 +29,7 @@ use PHPUnit\Framework\TestCase;
 
 final class RunnerTest extends TestCase
 {
-    public function testWorkflowRunner(): void
+    public function testRunner(): void
     {
         $foo = 'hola';
         $bar = 'mundo';
@@ -47,40 +48,40 @@ final class RunnerTest extends TestCase
             'foo' => $foo,
             'bar' => $bar,
         ];
-        $workflowRun = new Run($workflow, ...$arguments);
-        $workflowRunner = new Runner($workflowRun, new Container());
-        $workflowRunnerForStep1 = runnerForJob(
-            $workflowRunner,
+        $run = new Run($workflow, ...$arguments);
+        $runner = new Runner($run, new Container());
+        $runnerForStep1 = runnerForJob(
+            $runner,
             'step1'
         );
-        $workflowRunner = (new Runner($workflowRun, new Container()))
+        $runner = (new Runner($run, new Container()))
             ->withRun();
-        runnerForJob($workflowRunner, 'step1');
+        runnerForJob($runner, 'step1');
         $workflowRunnerForStep2 = runnerForJob(
-            $workflowRunner,
+            $runner,
             'step2'
         );
-        $workflowRun = $workflowRunner->run();
+        $run = $runner->run();
         $this->assertSame(
-            $workflowRunnerForStep1->run()->get('step1')->data(),
-            $workflowRun->get('step1')->data()
+            $runnerForStep1->run()->get('step1')->data(),
+            $run->get('step1')->data()
         );
         $this->assertSame(
             $workflowRunnerForStep2->run()->get('step2')->data(),
-            $workflowRun->get('step2')->data()
+            $run->get('step2')->data()
         );
-        $this->assertSame($workflowRun, $workflowRunner->run());
-        $workflowRunFunction = run($workflow, $arguments);
+        $this->assertSame($run, $runner->run());
+        $runFunction = run($workflow, $arguments);
         $this->assertEquals(
-            $workflowRunFunction->workflow(),
-            $workflowRunner->run()->workflow()
+            $runFunction->workflow(),
+            $runner->run()->workflow()
         );
         $action1 = new TestActionParamsFooResponse1();
         $this->assertSame(
             $action1->run(foo: $foo),
-            $workflowRun->get('step1')->data()
+            $run->get('step1')->data()
         );
-        $foo = $workflowRun->get('step1')->data()['response1'];
+        $foo = $run->get('step1')->data()['response1'];
         $action2 = new TestActionParamsFooBarResponse2();
         $this->assertSame(
             $action2
@@ -88,7 +89,26 @@ final class RunnerTest extends TestCase
                     foo: $foo,
                     bar: $bar,
                 ),
-            $workflowRun->get('step2')->data()
+            $run->get('step2')->data()
         );
+    }
+
+    public function testWithRunIf(): void
+    {
+        $name = 'variable';
+        $workflow = workflow(
+            j1: job(
+                TestActionNoParams::class,
+            )
+            ->withRunIf(
+                variable($name)
+            ),
+        );
+        $this->assertCount(1, $workflow->parameters());
+        $arguments = [
+            $name => true,
+        ];
+        $run = new Run($workflow, ...$arguments);
+        $runner = new Runner($run, new Container());
     }
 }
