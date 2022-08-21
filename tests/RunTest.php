@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Action\Action;
-use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Response\Response;
+use Chevere\Tests\_resources\src\TestActionNoParams;
+use Chevere\Tests\_resources\src\TestActionParam;
+use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Job;
@@ -32,7 +33,7 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 jobs: new Job(
-                    WorkflowRunTestStep1::class,
+                    TestActionParam::class,
                     foo: variable('foo'),
                 )
             );
@@ -55,11 +56,11 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 step0: new Job(
-                    WorkflowRunTestStep1::class,
+                    TestActionParam::class,
                     foo: variable('foo')
                 ),
                 step1: new Job(
-                    WorkflowRunTestStep2::class,
+                    TestActionParams::class,
                     foo: variable('baz'),
                     bar: variable('bar')
                 )
@@ -73,8 +74,6 @@ final class RunTest extends TestCase
         $workflowRunWithStepResponse = $workflowRun
             ->withJobResponse('step0', new Response());
         $this->assertNotSame($workflowRun, $workflowRunWithStepResponse);
-        $this->assertTrue($workflow->jobs()->variables()->has('foo'));
-        $this->assertTrue($workflow->jobs()->variables()->has('baz'));
         $this->assertTrue($workflowRunWithStepResponse->has('step0'));
         $this->assertSame([], $workflowRunWithStepResponse->get('step0')->data());
         $this->expectException(ArgumentCountError::class);
@@ -87,7 +86,7 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 step0: new Job(
-                    WorkflowRunTestStep1::class,
+                    TestActionParam::class,
                     foo: variable('foo')
                 )
             );
@@ -106,9 +105,9 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                step0: new Job(WorkflowRunTestStep0::class),
+                step0: new Job(TestActionNoParams::class),
                 step1: new Job(
-                    WorkflowRunTestStep1::class,
+                    TestActionParam::class,
                     foo: variable('foo')
                 )
             );
@@ -118,29 +117,5 @@ final class RunTest extends TestCase
                 'step0',
                 new Response()
             );
-    }
-}
-
-class WorkflowRunTestStep0 extends Action
-{
-    public function run(): ResponseInterface
-    {
-        return $this->getResponse();
-    }
-}
-
-class WorkflowRunTestStep1 extends Action
-{
-    public function run(string $foo): ResponseInterface
-    {
-        return $this->getResponse();
-    }
-}
-
-class WorkflowRunTestStep2 extends Action
-{
-    public function run(string $foo, string $bar): ResponseInterface
-    {
-        return $this->getResponse();
     }
 }
