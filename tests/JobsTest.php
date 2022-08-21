@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
+use Chevere\Tests\_resources\src\TestActionNoParamsFalseResponse;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
@@ -237,5 +238,35 @@ final class JobsTest extends TestCase
                     variable('theFoo')
                 ),
         );
+    }
+
+    public function testWithRunIfVariable(): void
+    {
+        $name = 'the_variable';
+        $jobs = new Jobs(
+            j1: job(
+                TestActionNoParams::class,
+            )
+            ->withRunIf(
+                variable($name)
+            ),
+        );
+        $this->assertTrue($jobs->variables()->has($name));
+        $this->assertSame('boolean', $jobs->variables()->get($name)->primitive());
+    }
+
+    public function testWithRunIfReference(): void
+    {
+        $reference = reference('j1', 'key');
+        $jobs = new Jobs(
+            j1: job(
+                TestActionNoParamsFalseResponse::class,
+            ),
+            j2: job(
+                TestActionNoParams::class,
+            )
+            ->withRunIf($reference),
+        );
+        $this->assertTrue($jobs->references()->has($reference->__toString()));
     }
 }
