@@ -64,7 +64,7 @@ final class JobTest extends TestCase
 
     public function testWithIsSync(): void
     {
-        $action = TestActionParamsAlt::class;
+        $action = TestActionNoParams::class;
         $job = new Job($action);
         $this->assertFalse($job->isSync());
         $jobWithSync = $job->withIsSync();
@@ -75,13 +75,17 @@ final class JobTest extends TestCase
     public function testConstruct(): void
     {
         $action = TestActionParamsAlt::class;
+        $parameters = [
+            'foo' => variable('foo'),
+            'bar' => variable('bar'),
+        ];
         $arguments = [
             'foo' => '1',
             'bar' => 123,
         ];
-        $job = new Job($action);
+        $job = new Job($action, ...$parameters);
         $this->assertSame($action, $job->action());
-        $this->assertSame([], $job->arguments());
+        $this->assertSame($parameters, $job->arguments());
         $taskWithArgument = $job->withArguments(...$arguments);
         $this->assertNotSame($job, $taskWithArgument);
         $this->assertSame($arguments, $taskWithArgument->arguments());
@@ -131,11 +135,11 @@ final class JobTest extends TestCase
         $variable = variable('wea');
         $job = $job->withRunIf($variable);
         $this->assertEquals(
-            [$variable, ],
+            [$variable],
             $job->runIf()
         );
         $this->assertSame(
-            [$variable, ],
+            [$variable],
             $job->runIf()
         );
         $this->expectException(OverflowException::class);

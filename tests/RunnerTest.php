@@ -96,14 +96,9 @@ final class RunnerTest extends TestCase
     public function testWithRunIf(): void
     {
         $name = 'variable';
-        $workflow = workflow(
-            j1: job(
-                TestActionNoParams::class,
-            )
-            ->withRunIf(
-                variable($name)
-            ),
-        );
+        $job = job(TestActionNoParams::class)
+            ->withRunIf(variable($name));
+        $workflow = workflow(j1: $job);
         $this->assertCount(1, $workflow->parameters());
         $arguments = [
             $name => true,

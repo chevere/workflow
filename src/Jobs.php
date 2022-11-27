@@ -142,7 +142,7 @@ final class Jobs implements JobsInterface
             $this->jobs->push($name);
             $this->handleArguments($name, $job);
             foreach ($job->runIf() as $runIf) {
-                $this->handleRunIfReference($name, $runIf);
+                $this->handleRunIfReference($runIf);
                 $this->handleRunIfVariable($name, $runIf);
             }
             $this->storeReferences($name, $job);
@@ -173,10 +173,10 @@ final class Jobs implements JobsInterface
                 $argument instanceof ReferenceInterface => 'references',
                 default => false
             };
-            if (!$property) {
+            if (! $property) {
                 continue;
             }
-
+            /** @var VariableInterface|ReferenceInterface $argument */
             try {
                 $this->{$property} = $this->mapSubjectType(
                     $argument,
@@ -204,7 +204,7 @@ final class Jobs implements JobsInterface
             $subject = 'Variable';
             $key = $argument->__toString();
         }
-        if (!$map->has($key)) {
+        if (! $map->has($key)) {
             return $map->withPut($key, $type);
         }
         /** @var TypeInterface $typeStored */
@@ -222,17 +222,18 @@ final class Jobs implements JobsInterface
         return $map;
     }
 
-    private function handleRunIfReference(string $job, $runIf): void
+    private function handleRunIfReference(mixed $runIf): void
     {
-        if (!$runIf instanceof ReferenceInterface) {
+        if (! $runIf instanceof ReferenceInterface) {
             return;
         }
         if ($runIf instanceof ReferenceInterface) {
-            if (!$this->jobDependencies->contains($runIf->job())) {
+            if (! $this->jobDependencies->contains($runIf->job())) {
                 $this->jobDependencies->push($runIf->job());
             }
-            /** @var JobInterface $runIfJob */
+
             try {
+                /** @var JobInterface $runIfJob */
                 $runIfJob = $this->map->get($runIf->job());
             } catch (OutOfBoundsException $e) {
                 throw new OutOfBoundsException(
@@ -253,12 +254,12 @@ final class Jobs implements JobsInterface
         }
     }
 
-    private function handleRunIfVariable(string $job, $runIf): void
+    private function handleRunIfVariable(string $name, mixed $runIf): void
     {
-        if (!$runIf instanceof VariableInterface) {
+        if (! $runIf instanceof VariableInterface) {
             return;
         }
-        if (!$this->variables->has($runIf->__toString())) {
+        if (! $this->variables->has($runIf->__toString())) {
             $this->variables = $this->variables
                 ->withPut($runIf->__toString(), typeBoolean());
 
@@ -271,7 +272,7 @@ final class Jobs implements JobsInterface
                 message('Variable %variable% (previously declared as %type%) is not of type boolean at job %job%')
                     ->withCode('%variable%', $runIf->__toString())
                     ->withCode('%type%', $type->primitive())
-                    ->withCode('%job%', $job)
+                    ->withCode('%job%', $name)
             );
         }
     }
@@ -279,7 +280,7 @@ final class Jobs implements JobsInterface
     private function assertDependencies(string $job): void
     {
         $dependencies = $this->jobDependencies->toArray();
-        if (!$this->jobs->contains(...$dependencies)) {
+        if (! $this->jobs->contains(...$dependencies)) {
             $missing = array_diff($dependencies, $this->jobs->toArray());
 
             throw new OutOfBoundsException(

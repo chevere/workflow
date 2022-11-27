@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\DataStructure\Map;
 use function Chevere\Message\message;
+use function Chevere\Parameter\booleanParameter;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
@@ -34,8 +34,6 @@ final class Workflow implements WorkflowInterface
 {
     private ParametersInterface $parameters;
 
-    private Map $variables;
-
     /**
      * @var DsMap<string, string[]>
      */
@@ -46,10 +44,10 @@ final class Workflow implements WorkflowInterface
      */
     private DsMap $provided;
 
-    public function __construct(private JobsInterface $jobs)
-    {
+    public function __construct(
+        private JobsInterface $jobs
+    ) {
         $this->parameters = new Parameters();
-        $this->variables = new Map();
         $this->expected = new DsMap();
         $this->provided = new DsMap();
         $this->putAdded(...iterator_to_array($jobs->getIterator()));
@@ -98,7 +96,7 @@ final class Workflow implements WorkflowInterface
         // @codeCoverageIgnoreEnd
     }
 
-    private function setParameters(string $name, JobInterface $job): void
+    private function putParameters(string $name, JobInterface $job): void
     {
         /** @var ActionInterface $action */
         $action = new ($job->action());
@@ -107,21 +105,7 @@ final class Workflow implements WorkflowInterface
         foreach ($job->arguments() as $argument => $value) {
             try {
                 $parameter = $parameters->get($argument);
-                if ($value instanceof VariableInterface) {
-                    if (!$this->parameters->has($value->__toString())) {
-                        $this->variables = $this->variables->withPut($value->__toString(), [$value->__toString()]);
-                    }
-                    $this->putVariable($value, $parameter);
-                } elseif ($value instanceof ReferenceInterface) {
-                    $this->assertPreviousReference($parameter, $value);
-                    $expected = $this->expected->get($value->job(), []);
-                    $expected[] = $value->parameter();
-                    $this->expected->put($value->job(), $expected);
-                    $this->variables = $this->variables->withPut(
-                        $value->__toString(),
-                        [$value->job(), $value->parameter()]
-                    );
-                }
+                $this->putVariableReference($value, $parameter);
             } catch (Throwable $e) {
                 throw new InvalidArgumentException(
                     message('Incompatible declaration on Job %name% (%arg%) [%message%]')
@@ -176,7 +160,7 @@ final class Workflow implements WorkflowInterface
     ): void {
         /** @var ParametersInterface $responseParameters */
         $responseParameters = $this->provided->get($reference->job());
-        if (!$responseParameters->has($reference->parameter())) {
+        if (! $responseParameters->has($reference->parameter())) {
             throw new OutOfBoundsException(
                 message('Reference %reference% not found, response key %parameter% is not declared by %job%')
                     ->withCode('%reference%', $reference->__toString())
@@ -195,7 +179,31 @@ final class Workflow implements WorkflowInterface
     {
         foreach ($jobs as $name => $job) {
             $name = strval($name);
-            $this->setParameters($name, $job);
+            $this->putJobConditions($job);
+            $this->putParameters($name, $job);
+        }
+    }
+
+    private function putJobConditions(JobInterface $job): void
+    {
+        $parameter = booleanParameter();
+        foreach ($job->runIf() as $value) {
+            $this->putVariableReference($value, $parameter);
+        }
+    }
+
+    private function putVariableReference(
+        mixed $value,
+        ParameterInterface $parameter
+    ): void {
+        if ($value instanceof VariableInterface) {
+            $this->putVariable($value, $parameter);
+        }
+        if ($value instanceof ReferenceInterface) {
+            $this->assertPreviousReference($parameter, $value);
+            $expected = $this->expected->get($value->job(), []);
+            $expected[] = $value->parameter();
+            $this->expected->put($value->job(), $expected);
         }
     }
 }

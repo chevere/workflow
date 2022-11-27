@@ -32,7 +32,7 @@ use ReflectionException;
 final class Job implements JobInterface
 {
     /**
-     * @var Array<string, mixed>
+     * @var array<string, mixed>
      */
     private array $arguments;
 
@@ -52,7 +52,7 @@ final class Job implements JobInterface
 
     public function __construct(
         private string $action,
-        mixed ...$namedArguments
+        mixed ...$actionParameters
     ) {
         $this->runIf = new Vector();
 
@@ -65,7 +65,7 @@ final class Job implements JobInterface
                     ->withCode('%action%', $this->action)
             );
         }
-        if (!$reflection->implementsInterface(ActionInterface::class)) {
+        if (! $reflection->implementsInterface(ActionInterface::class)) {
             throw new UnexpectedValueException(
                 message('Action %action% must implement %interface% interface')
                     ->withCode('%action%', $this->action)
@@ -77,9 +77,7 @@ final class Job implements JobInterface
         $instance = $reflection->newInstance();
         $this->parameters = $instance->parameters();
         $this->arguments = [];
-        if ($namedArguments !== []) {
-            $this->setArguments(...$namedArguments);
-        }
+        $this->setArguments(...$actionParameters);
     }
 
     public function withArguments(mixed ...$namedArguments): JobInterface
@@ -190,7 +188,7 @@ final class Job implements JobInterface
         $countProvided = count($arguments);
         $countRequired = count($this->parameters->required());
         if ($countRequired > $countProvided
-            || $countRequired === 0
+            || $countRequired !== $countProvided
         ) {
             $provided = implode(', ', array_keys($arguments));
             $parameters = implode(
@@ -212,7 +210,7 @@ final class Job implements JobInterface
 
     private function inferDependencies(mixed $argument): void
     {
-        if (!($argument instanceof ReferenceInterface)) {
+        if (! ($argument instanceof ReferenceInterface)) {
             return;
         }
         if ($this->dependencies->contains($argument->job())) {

@@ -29,10 +29,14 @@ interface JobsInterface extends MappedInterface
 
     public function get(string $job): JobInterface;
 
-    /** @return Map<string, TypeInterface> */
+    /**
+     * @return Map [string => TypeInterface]
+     */
     public function variables(): Map;
 
-    /** @return Map<string, TypeInterface> */
+    /**
+     * @return Map [string => TypeInterface]
+     */
     public function references(): Map;
 
     /**
@@ -42,10 +46,12 @@ interface JobsInterface extends MappedInterface
 
     public function count(): int;
 
-    /** @return Array<int, string[]> */
+    /**
+     * @return array<int, string[]>
+     */
     public function graph(): array;
 
-    public function withAdded(JobInterface ...$jobs): JobsInterface;
+    public function withAdded(JobInterface ...$jobs): self;
 
     /**
      * @return Iterator<string, JobInterface>
