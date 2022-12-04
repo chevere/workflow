@@ -60,7 +60,7 @@ function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 }
 
 /**
- * @param Array<string, mixed> $variables
+ * @param array<string, mixed> $variables
  */
 function run(
     WorkflowInterface $workflow,

@@ -37,10 +37,10 @@ interface GraphInterface extends MappedInterface, ToArrayInterface
     public function withPut(
         string $name,
         JobInterface $job,
-    ): GraphInterface;
+    ): self;
 
     /**
-     * @return Array<int, string[]>
+     * @return array<int, string[]>
      */
     public function toArray(): array;
 }

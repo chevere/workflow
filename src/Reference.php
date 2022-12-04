@@ -22,8 +22,10 @@ final class Reference implements ReferenceInterface
      * @param string $job Job name
      * @param string $parameter Response parameter name
      */
-    public function __construct(private string $job, private string $parameter)
-    {
+    public function __construct(
+        private string $job,
+        private string $parameter
+    ) {
         (new AssertString($job))->notCtypeSpace()->notEmpty();
         (new AssertString($parameter))->notCtypeSpace()->notEmpty();
     }

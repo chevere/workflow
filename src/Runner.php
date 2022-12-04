@@ -32,7 +32,9 @@ use Throwable;
 
 final class Runner implements RunnerInterface
 {
-    /** @var RunnerInterface[] */
+    /**
+     * @var RunnerInterface[]
+     */
     private array $responses;
 
     public function __construct(
@@ -100,7 +102,7 @@ final class Runner implements RunnerInterface
     }
 
     /**
-     * @param Array<string, mixed> $arguments
+     * @param array<string, mixed> $arguments
      */
     private function getActionResponse(
         ActionInterface $action,
@@ -129,25 +131,23 @@ final class Runner implements RunnerInterface
     }
 
     /**
-     * @return Array<string, mixed>
+     * @return array<string, mixed>
      */
     private function getJobArguments(JobInterface $job): array
     {
         $arguments = [];
         foreach ($job->arguments() as $name => $argument) {
-            if (!($argument instanceof ReferenceInterface || $argument instanceof VariableInterface)) {
+            if (! ($argument instanceof ReferenceInterface || $argument instanceof VariableInterface)) {
                 $arguments[$name] = $argument;
 
                 continue;
             }
             if ($argument instanceof VariableInterface) {
-                // in_array($argument->__toString(), $this->run->workflow()->jobs()->variables());
                 $arguments[$name] = $this->run->arguments()
                     ->get($argument->__toString());
 
                 continue;
             }
-            // in_array($argument->__toString(), $this->run->workflow()->jobs()->references());
             $arguments[$name] = $this->run->get($argument->job())
                 ->data()[$argument->parameter()];
         }

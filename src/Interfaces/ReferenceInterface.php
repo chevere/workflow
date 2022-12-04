@@ -20,7 +20,9 @@ use Stringable;
  */
 interface ReferenceInterface extends Stringable
 {
-    /** ${job:key} */
+    /**
+     * ${job:key}
+     */
     public const REGEX_REFERENCE = '/^\${([\w]*)\:([\w-]*)}$/';
 
     public function job(): string;

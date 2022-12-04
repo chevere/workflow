@@ -79,7 +79,7 @@ final class JobsTest extends TestCase
         new Jobs(
             j1: job(TestActionNoParams::class),
             j2: job(TestActionNoParams::class)
-                    ->withDepends('j0', 'j1'),
+                ->withDepends('j0', 'j1'),
         );
     }
 
@@ -106,9 +106,9 @@ final class JobsTest extends TestCase
         $jobs = new Jobs(
             j1: job(TestActionNoParams::class),
             j2: job(TestActionNoParams::class)
-                    ->withDepends('j1'),
+                ->withDepends('j1'),
             j3: job(TestActionNoParams::class)
-                    ->withDepends('j2'),
+                ->withDepends('j2'),
         );
         $this->assertSame(
             [
@@ -126,12 +126,12 @@ final class JobsTest extends TestCase
             j1: job(TestActionNoParams::class),
             j2: job(TestActionNoParams::class),
             j3: job(TestActionNoParams::class)
-                    ->withDepends('j1', 'j2'),
+                ->withDepends('j1', 'j2'),
             j4: job(TestActionNoParams::class),
             j5: job(TestActionNoParams::class)
-                    ->withDepends('j4'),
+                ->withDepends('j4'),
             j6: job(TestActionNoParams::class)
-                    ->withDepends('j5'),
+                ->withDepends('j5'),
         );
         $this->assertSame(
             [
@@ -247,9 +247,9 @@ final class JobsTest extends TestCase
             j1: job(
                 TestActionNoParams::class,
             )
-            ->withRunIf(
-                variable($name)
-            ),
+                ->withRunIf(
+                    variable($name)
+                ),
         );
         $this->assertTrue($jobs->variables()->has($name));
         $this->assertSame('boolean', $jobs->variables()->get($name)->primitive());
@@ -265,7 +265,7 @@ final class JobsTest extends TestCase
             j2: job(
                 TestActionNoParams::class,
             )
-            ->withRunIf($reference),
+                ->withRunIf($reference),
         );
         $this->assertTrue($jobs->references()->has($reference->__toString()));
     }

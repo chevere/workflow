@@ -20,8 +20,9 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 
 final class Variable implements VariableInterface
 {
-    public function __construct(private string $name)
-    {
+    public function __construct(
+        private string $name
+    ) {
         $matches = (new Regex('/^[a-zA-Z_]\w+$/'))
             ->match($name);
         if ($matches === []) {

@@ -28,7 +28,7 @@ class TestActionParamsFooResponse1 extends Action
     public function run(string $foo): array
     {
         return [
-            'response1' => $foo
+            'response1' => $foo,
         ];
     }
 }

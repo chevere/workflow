@@ -27,7 +27,7 @@ interface RunnerInterface
 
     public function run(): RunInterface;
 
-    public function withRun(): RunnerInterface;
+    public function withRun(): self;
 
-    public function withRunJob(string $name): RunnerInterface;
+    public function withRunJob(string $name): self;
 }

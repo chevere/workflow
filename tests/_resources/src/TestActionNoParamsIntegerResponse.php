@@ -39,7 +39,7 @@ final class TestActionNoParamsIntegerResponse extends Action
     public function run(): array
     {
         return [
-            'id' => 123
+            'id' => 123,
         ];
     }
 }

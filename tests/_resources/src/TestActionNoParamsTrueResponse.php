@@ -30,7 +30,7 @@ final class TestActionNoParamsTrueResponse extends Action
     public function run(): array
     {
         return [
-            'key' => true
+            'key' => true,
         ];
     }
 }

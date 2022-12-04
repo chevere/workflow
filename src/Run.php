@@ -36,8 +36,10 @@ final class Run implements RunInterface
 
     private ArgumentsInterface $arguments;
 
-    public function __construct(private WorkflowInterface $workflow, mixed ...$variables)
-    {
+    public function __construct(
+        private WorkflowInterface $workflow,
+        mixed ...$variables
+    ) {
         $this->uuid = Uuid::uuid4()->toString();
         $this->arguments = new Arguments($workflow->parameters(), ...$variables);
         $this->jobs = new Map();

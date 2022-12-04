@@ -27,11 +27,6 @@ use PHPUnit\Framework\TestCase;
 
 final class GraphTest extends TestCase
 {
-    private function getJob(): JobInterface
-    {
-        return job(TestActionNoParams::class);
-    }
-
     public function testEmpty(): void
     {
         $graph = new Graph();
@@ -62,7 +57,7 @@ final class GraphTest extends TestCase
         $this->assertSame(
             [
                 ['j1', 'j2'],
-                ['j0']
+                ['j0'],
             ],
             $graph->toArray()
         );
@@ -71,7 +66,7 @@ final class GraphTest extends TestCase
             [
                 ['j1'],
                 ['j0'],
-                ['j2']
+                ['j2'],
             ],
             $graph->toArray()
         );
@@ -149,7 +144,7 @@ final class GraphTest extends TestCase
                 ['j2'],
                 ['j1', 'j3', 'j4'],
                 ['jy'],
-                ['jn', 'jx']
+                ['jn', 'jx'],
             ],
             $graph->toArray()
         );
@@ -256,21 +251,26 @@ final class GraphTest extends TestCase
         $expected = [
             [
                 'ProcessPodcast',
-                'OptimizePodcast'
+                'OptimizePodcast',
             ],
             [
                 'CreateAudioTranscription',
                 'ReleaseOnTransistorFM',
-                'ReleaseOnApplePodcasts'
+                'ReleaseOnApplePodcasts',
             ],
             [
                 'TranslateAudioTranscription',
-                'NotifySubscribers'
+                'NotifySubscribers',
             ],
             [
-                'SendTweetAboutNewPodcast'
+                'SendTweetAboutNewPodcast',
             ],
         ];
         $this->assertSame($expected, $graph->toArray());
+    }
+
+    private function getJob(): JobInterface
+    {
+        return job(TestActionNoParams::class);
     }
 }

@@ -44,7 +44,7 @@ final class Graph implements GraphInterface
         $this->assertNotSelfDependency($name, $vector);
         $new = clone $this;
         foreach ($job->dependencies() as $dependency) {
-            if (!$new->has($dependency)) {
+            if (! $new->has($dependency)) {
                 $new->map = $new->map
                     ->withPut($dependency, new Vector());
             }
@@ -52,7 +52,7 @@ final class Graph implements GraphInterface
         if ($new->map->has($name)) {
             /** @var Vector<string> $existing */
             $existing = $new->map->get($name);
-            /** @var Array<string> $array */
+            /** @var array<string> $array */
             $array = $existing->merge($vector)->toArray();
             $vector = new Vector($array);
         }
@@ -88,7 +88,35 @@ final class Graph implements GraphInterface
     }
 
     /**
-     * @return Array<string, Vector<string>>
+     * @return array<int, array<int, string>>
+     */
+    public function toArray(): array
+    {
+        $sort = [];
+        $previous = [];
+        $sync = [];
+        $toIndex = 0;
+        foreach ($this->getSortAsc() as $job => $dependencies) {
+            foreach ($dependencies as $dependency) {
+                if (in_array($dependency, $previous, true)) {
+                    $toIndex++;
+                    $previous = [];
+
+                    break;
+                }
+            }
+            $sort[$toIndex][] = $job;
+            $previous[] = $job;
+            if ($this->syncJobs->contains($job)) {
+                $sync[$job] = $toIndex;
+            }
+        }
+
+        return $this->getSortJobs($sort, $sync);
+    }
+
+    /**
+     * @return array<string, Vector<string>>
      */
     private function getSortAsc(): array
     {
@@ -108,34 +136,6 @@ final class Graph implements GraphInterface
     }
 
     /**
-     * @return array<int, array<int, string>>
-     */
-    public function toArray(): array
-    {
-        $sort = [];
-        $previous = [];
-        $sync = [];
-        $toIndex = 0;
-        foreach ($this->getSortAsc() as $job => $dependencies) {
-            foreach ($dependencies as $dependency) {
-                if (in_array($dependency, $previous)) {
-                    $toIndex++;
-                    $previous = [];
-
-                    break;
-                }
-            }
-            $sort[$toIndex][] = $job;
-            $previous[] = $job;
-            if ($this->syncJobs->contains($job)) {
-                $sync[$job] = $toIndex;
-            }
-        }
-
-        return $this->getSortJobs($sort, $sync);
-    }
-
-    /**
      * @param array<int, array<int, string>> $sort
      * @param array<string, int> $sync
      * @return array<int, array<int, string>>
@@ -150,7 +150,7 @@ final class Graph implements GraphInterface
         foreach ($sync as $syncJob => $indexKey) {
             $auxIndexKey = $indexKey + $aux;
             $array = $vector->get($auxIndexKey);
-            $key = array_search($syncJob, $array);
+            $key = array_search($syncJob, $array, true);
             unset($array[$key]);
             $array = array_values($array);
             $vector->offsetSet($auxIndexKey, $array);

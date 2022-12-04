@@ -30,7 +30,7 @@ interface JobInterface
 
     public function withArguments(mixed ...$namedArguments): self;
 
-    public function withRunIf(ReferenceInterface|VariableInterface ...$context): JobInterface;
+    public function withRunIf(ReferenceInterface|VariableInterface ...$context): self;
 
     public function withIsSync(): self;
 
@@ -39,7 +39,7 @@ interface JobInterface
     public function action(): string;
 
     /**
-     * @return Array<string, mixed>
+     * @return array<string, mixed>
      */
     public function arguments(): array;
 
