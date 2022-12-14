@@ -26,21 +26,20 @@ final class Graph implements GraphInterface
     use MapTrait;
 
     /**
-     * @var Vector<string>
+     * @var array<string>
      */
-    private Vector $syncJobs;
+    private array $syncJobs = [];
 
     public function __construct()
     {
         $this->map = new Map();
-        $this->syncJobs = new Vector();
     }
 
     public function withPut(
         string $name,
         JobInterface $job,
     ): GraphInterface {
-        $vector = new Vector($job->dependencies());
+        $vector = $job->dependencies();
         $this->assertNotSelfDependency($name, $vector);
         $new = clone $this;
         foreach ($job->dependencies() as $dependency) {
@@ -146,7 +145,7 @@ final class Graph implements GraphInterface
             return $sort;
         }
         $aux = 0;
-        $vector = new Vector($sort);
+        $vector = $sort;
         foreach ($sync as $syncJob => $indexKey) {
             $auxIndexKey = $indexKey + $aux;
             $array = $vector->get($auxIndexKey);
@@ -158,30 +157,32 @@ final class Graph implements GraphInterface
             $aux++;
         }
 
-        return array_values(array_filter($vector->toArray()));
+        return array_values(array_filter($vector));
     }
 
     /**
-     * @param Vector<string> $vector
+     * @param array<string> $vector
      */
-    private function assertNotSelfDependency(string $job, Vector $vector): void
+    private function assertNotSelfDependency(string $job, array $vector): void
     {
-        if ($vector->contains($job)) {
-            throw new InvalidArgumentException(
-                message('Cannot declare job %job% as a self-dependency')
-                    ->withCode('%job%', $job)
-            );
+        if (! in_array($job, $vector, true)) {
+            return;
         }
+
+        throw new InvalidArgumentException(
+            message('Cannot declare job %job% as a self-dependency')
+                ->withCode('%job%', $job)
+        );
     }
 
     /**
-     * @param Vector<string> $vector
+     * @param array<string> $vector
      */
-    private function handleDependencyUpdate(string $job, Vector $vector): void
+    private function handleDependencyUpdate(string $job, array $vector): void
     {
         /** @var string $dependency */
         foreach ($vector as $dependency) {
-            /** @var Vector<string> $update */
+            /** @var array<string> $update */
             $update = $this->map->get($dependency);
             $findJob = $update->find($job);
             if ($findJob !== null) {

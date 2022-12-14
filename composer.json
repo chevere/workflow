@@ -13,12 +13,11 @@
     ],
     "require": {
         "amphp/parallel": "^1.4",
-        "chevere/chevere": "^1.0",
+        "chevere/chevere": "^2.0",
         "psr/container": "^1 || ^2"
     },
     "require-dev": {
-        "chevere/var-dump": "^0.6.0",
-        "phpstan/phpstan": "^1.5",
+        "phpstan/phpstan": "^1.9",
         "phpunit/phpunit": "^9.5",
         "symplify/easy-coding-standard": "^11.1"
     },
@@ -40,7 +39,7 @@
         "sort-packages": true
     },
     "scripts": {
-        "check": [
+        "all": [
             "composer phpstan",
             "composer test-rep",
             "composer infection"
@@ -52,7 +51,7 @@
         "update-cs": "mkdir -p .ecs && cd .ecs && curl -O https://raw.githubusercontent.com/chevere/code-style/main/.ecs/ecs-chevere.php"
     },
     "scripts-descriptions": {
-        "check": "Runs all checks",
+        "all": "Runs all checks",
         "infection": "Runs infection",
         "phpstan": "Runs phpstan",
         "test": "Run test suite",

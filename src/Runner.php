@@ -73,7 +73,7 @@ final class Runner implements RunnerInterface
                 throw new RuntimeException(
                     message('Error running job %job% [%message%]')
                         ->withCode('%job%', $jobName ?? ':before')
-                        ->withStrtr('%message%', $e->getMessage()),
+                        ->withTranslate('%message%', $e->getMessage()),
                     previous: $e
                 );
             }
@@ -122,7 +122,7 @@ final class Runner implements RunnerInterface
             throw new InvalidArgumentException(
                 previous: $e,
                 message: message('%message% at %fileLine% for action %action%')
-                    ->withStrtr('%message%', $e->getMessage())
+                    ->withTranslate('%message%', $e->getMessage())
                     ->withCode('%fileLine%', $fileLine)
                     ->withCode('%action%', $action::class)
             );

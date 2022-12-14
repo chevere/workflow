@@ -111,7 +111,7 @@ final class Workflow implements WorkflowInterface
                     message('Incompatible declaration on Job %name% (%arg%) [%message%]')
                         ->withStrong('%name%', $name)
                         ->withStrong('%arg%', "argument@${argument}")
-                        ->withStrtr('%message%', $e->getMessage()),
+                        ->withTranslate('%message%', $e->getMessage()),
                     previous: $e,
                 );
             }
@@ -149,7 +149,7 @@ final class Workflow implements WorkflowInterface
             return;
         }
         $this->parameters = $this->parameters
-            ->withAdded(...[
+            ->withAddedRequired(...[
                 $variable->__toString() => $parameter,
             ]);
     }

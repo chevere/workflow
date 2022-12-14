@@ -85,11 +85,7 @@ final class Jobs implements JobsInterface
         try {
             // @phpstan-ignore-next-line
             return $this->map->get($job);
-        }
-        // @codeCoverageIgnoreStart
-        // @infection-ignore-all
-        // @phpstan-ignore-next-line
-        catch (\TypeError $e) {
+        } catch (\TypeError $e) { // @codeCoverageIgnoreStart
             throw new TypeError(previous: $e);
         }
         // @codeCoverageIgnoreEnd
@@ -186,8 +182,8 @@ final class Jobs implements JobsInterface
             } catch (TypeError $e) {
                 throw new TypeError(
                     message($e->getMessage())
-                        ->withStrtr('%parameter%', $parameter)
-                        ->withStrtr('%job%', $name)
+                        ->withTranslate('%parameter%', $parameter)
+                        ->withTranslate('%job%', $name)
                 );
             }
         }
@@ -214,8 +210,8 @@ final class Jobs implements JobsInterface
                 message('%subject% %key% is of type %type%, parameter %parameter% expects %typeExpected% on job %job%.')
                     ->withCode('%type%', $typeStored->primitive())
                     ->withCode('%typeExpected%', $type->primitive())
-                    ->withStrtr('%subject%', $subject)
-                    ->withStrtr('%key%', $key)
+                    ->withTranslate('%subject%', $subject)
+                    ->withTranslate('%key%', $key)
             );
         }
 
