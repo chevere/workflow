@@ -14,14 +14,13 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use function Amp\Parallel\Worker\enqueueCallable;
+use Amp\Promise;
 use function Amp\Promise\all;
 use function Amp\Promise\wait;
 use Chevere\Action\Interfaces\ActionInterface;
 use function Chevere\Message\message;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\RuntimeException;
-use function Chevere\VariableSupport\deepCopy;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -32,11 +31,6 @@ use Throwable;
 
 final class Runner implements RunnerInterface
 {
-    /**
-     * @var RunnerInterface[]
-     */
-    private array $responses;
-
     public function __construct(
         private RunInterface $run,
         private ContainerInterface $container
@@ -52,32 +46,18 @@ final class Runner implements RunnerInterface
     {
         $new = clone $this;
         $jobs = $new->run->workflow()->jobs();
-        $promises = [];
         foreach ($jobs->graph() as $queue) {
-            foreach ($queue as $jobName) {
-                $promises[] = enqueueCallable(
-                    'Chevere\\Workflow\\runnerForJob',
-                    $new,
-                    $jobName,
-                );
-            }
+            $promises = $new->getPromises($queue);
+            /** @var RunnerInterface[] $responses */
+            $responses = wait(all($promises));
+            /** @var self $end */
+            $end = end($responses);
+            if ($end->run()->has(...$queue)) {
+                $new = $end;
 
-            try {
-                /** @var RunnerInterface[] $responses */
-                $responses = wait(all($promises));
-                // @phpstan-ignore-next-line
-                $new->responses = $responses;
-            } catch (Throwable $e) { // @codeCoverageIgnoreStart
-                throw new RuntimeException(
-                    message('Error running job %job% [%message%]')
-                        ->withCode('%job%', $jobName ?? ':before')
-                        ->withTranslate('%message%', $e->getMessage()),
-                    previous: $e
-                );
+                continue;
             }
-            // @codeCoverageIgnoreEnd
-            /** @var RunnerInterface $new */
-            $new = end($new->responses);
+            $new->mergeRunner($new, ...$responses);
         }
 
         return $new;
@@ -85,18 +65,16 @@ final class Runner implements RunnerInterface
 
     public function withRunJob(string $name): RunnerInterface
     {
+        // $new = clone $this;
         $job = $this->run()->workflow()->jobs()->get($name);
-        $actionName = $job->action();
         /** @var ActionInterface $action */
-        $action = new $actionName();
-        $action = $action->withContainer($this->container);
+        $action = $job->getAction()
+            ->withContainer($this->container);
         $arguments = $this->getJobArguments($job);
         $response = $this->getActionResponse($action, $arguments);
-        deepCopy($response);
-        $new = clone $this;
-        $new->addJob($name, $response);
+        $this->addJob($name, $response);
 
-        return $new;
+        return $this;
     }
 
     /**
@@ -155,5 +133,32 @@ final class Runner implements RunnerInterface
     {
         $this->run = $this->run
             ->withJobResponse($name, $response);
+    }
+
+    /**
+     * @param array<string> $queue
+     * @return array<Promise<mixed>>
+     */
+    private function getPromises(array $queue): array
+    {
+        $promises = [];
+        foreach ($queue as $job) {
+            $promises[] = enqueueCallable(
+                'Chevere\\Workflow\\runnerForJob',
+                $this,
+                $job,
+            );
+        }
+
+        return $promises;
+    }
+
+    private function mergeRunner(self $stock, RunnerInterface ...$merge): void
+    {
+        foreach ($merge as $runner) {
+            foreach ($runner->run()->getIterator() as $name => $response) {
+                $stock->addJob($name, $response);
+            }
+        }
     }
 }

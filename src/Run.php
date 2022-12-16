@@ -15,7 +15,7 @@ namespace Chevere\Workflow;
 
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Map;
-use function Chevere\Message\message;
+use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
@@ -27,10 +27,12 @@ use Ramsey\Uuid\Uuid;
 
 final class Run implements RunInterface
 {
+    use MapTrait;
+
     /**
      * @var MapInterface<string, ResponseInterface>
      */
-    private MapInterface $jobs;
+    private MapInterface $map;
 
     private string $uuid;
 
@@ -45,13 +47,13 @@ final class Run implements RunInterface
             $workflow->parameters(),
             ...$variables
         );
-        $this->jobs = new Map();
+        $this->map = new Map();
     }
 
     public function __clone()
     {
         // @phpstan-ignore-next-line
-        $this->jobs = deepCopy($this->jobs);
+        $this->map = deepCopy($this->map);
     }
 
     public function uuid(): string
@@ -78,16 +80,16 @@ final class Run implements RunInterface
             ...$response->data()
         );
         $tryArguments->parameters();
-        $new->jobs = $new->jobs->withPut(...[
+        $new->map = $new->map->withPut(...[
             $job => $response,
         ]);
 
         return $new;
     }
 
-    public function has(string $name): bool
+    public function has(string ...$name): bool
     {
-        return $this->jobs->has($name);
+        return $this->map->has(...$name);
     }
 
     /**
@@ -96,14 +98,7 @@ final class Run implements RunInterface
      */
     public function get(string $name): ResponseInterface
     {
-        try {
-            /** @var ResponseInterface */
-            return $this->jobs->get($name);
-        } catch (OutOfRangeException $e) {
-            throw new OutOfRangeException(
-                message('Job %name% not found')
-                    ->withCode('%name%', $name)
-            );
-        }
+        /** @var ResponseInterface */
+        return $this->map->get($name);
     }
 }

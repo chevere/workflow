@@ -13,19 +13,23 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
+use Chevere\DataStructure\Interfaces\MappedInterface;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Errors\ArgumentCountError;
+use Iterator;
 
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
  */
-interface RunInterface
+interface RunInterface extends MappedInterface
 {
     /**
      * @param mixed ...$variables Workflow variables.
      */
     public function __construct(WorkflowInterface $workflow, mixed ...$variables);
+
+    public function keys(): array;
 
     /**
      * Provides access to workflow uuid V4 (RFC 4122).
@@ -51,10 +55,15 @@ interface RunInterface
     /**
      * Indicates whether the instance has the given `$job`. Will return `true` if job has ran.
      */
-    public function has(string $job): bool;
+    public function has(string ...$job): bool;
 
     /**
      * Provides access to the ResponseInterface instance for the given `$job`.
      */
     public function get(string $job): ResponseInterface;
+
+    /**
+     * @return Iterator<string, ResponseInterface>
+     */
+    public function getIterator(): Iterator;
 }

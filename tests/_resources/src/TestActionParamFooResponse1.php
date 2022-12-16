@@ -18,7 +18,7 @@ use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Parameter\StringParameter;
 
-class TestActionParamsFooResponse1 extends Action
+class TestActionParamFooResponse1 extends Action
 {
     public function getResponseParameters(): ParametersInterface
     {
