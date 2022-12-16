@@ -19,7 +19,7 @@ use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use function Chevere\Workflow\reference;
@@ -74,7 +74,7 @@ final class JobsTest extends TestCase
 
     public function testWithDependsMissing(): void
     {
-        $this->expectException(OutOfBoundsException::class);
+        $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessageMatches('/undeclared dependencies\: j0$/');
         new Jobs(
             j1: job(TestActionNoParams::class),
@@ -145,7 +145,7 @@ final class JobsTest extends TestCase
 
     public function testMissingReference(): void
     {
-        $this->expectException(OutOfBoundsException::class);
+        $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Job two has undeclared dependencies: zero');
         new Jobs(
             one: job(
@@ -187,7 +187,7 @@ final class JobsTest extends TestCase
 
     public function testWithRunIfUndeclaredJob(): void
     {
-        $this->expectException(OutOfBoundsException::class);
+        $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Job job not found');
         new Jobs(
             j1: job(TestActionNoParams::class)
@@ -199,7 +199,7 @@ final class JobsTest extends TestCase
 
     public function testWithRunIfUndeclaredJobKey(): void
     {
-        $this->expectException(OutOfBoundsException::class);
+        $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Parameter parameter not found');
         new Jobs(
             j1: job(TestActionNoParams::class),

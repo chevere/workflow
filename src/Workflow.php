@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\DataStructure\Interfaces\MapInterface;
+use Chevere\DataStructure\Map;
 use function Chevere\Message\message;
 use function Chevere\Parameter\booleanParameter;
 use Chevere\Parameter\Interfaces\ParameterInterface;
@@ -22,12 +24,12 @@ use Chevere\Parameter\Parameters;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
-use Ds\Map as DsMap;
 use Throwable;
 
 final class Workflow implements WorkflowInterface
@@ -35,21 +37,21 @@ final class Workflow implements WorkflowInterface
     private ParametersInterface $parameters;
 
     /**
-     * @var DsMap<string, string[]>
+     * @var MapInterface<string, string[]>
      */
-    private DsMap $expected;
+    private MapInterface $expected;
 
     /**
-     * @var DsMap<string, ParametersInterface>
+     * @var MapInterface<string, ParametersInterface>
      */
-    private DsMap $provided;
+    private MapInterface $provided;
 
     public function __construct(
         private JobsInterface $jobs
     ) {
         $this->parameters = new Parameters();
-        $this->expected = new DsMap();
-        $this->provided = new DsMap();
+        $this->expected = new Map();
+        $this->provided = new Map();
         $this->putAdded(...iterator_to_array($jobs->getIterator()));
     }
 
@@ -87,8 +89,8 @@ final class Workflow implements WorkflowInterface
         // @phpstan-ignore-next-line
         catch (\TypeError $e) {
             throw new TypeError(previous: $e);
-        } catch (\OutOfBoundsException $e) {
-            throw new OutOfBoundsException(
+        } catch (OutOfRangeException $e) {
+            throw new OutOfRangeException(
                 message('Job %job% not found')
                     ->withCode('%job%', $job)
             );
@@ -101,7 +103,11 @@ final class Workflow implements WorkflowInterface
         /** @var ActionInterface $action */
         $action = new ($job->action());
         $parameters = $action->parameters();
-        $this->provided->put($name, $action->responseParameters());
+        $this->provided = $this->provided->withPut(
+            ...[
+                $name => $action->responseParameters(),
+            ]
+        );
         foreach ($job->arguments() as $argument => $value) {
             try {
                 $parameter = $parameters->get($argument);
@@ -110,7 +116,7 @@ final class Workflow implements WorkflowInterface
                 throw new InvalidArgumentException(
                     message('Incompatible declaration on Job %name% (%arg%) [%message%]')
                         ->withStrong('%name%', $name)
-                        ->withStrong('%arg%', "argument@${argument}")
+                        ->withStrong('%arg%', "argument@{$argument}")
                         ->withTranslate('%message%', $e->getMessage()),
                     previous: $e,
                 );
@@ -175,12 +181,12 @@ final class Workflow implements WorkflowInterface
         );
     }
 
-    private function putAdded(JobInterface ...$jobs): void
+    private function putAdded(JobInterface ...$job): void
     {
-        foreach ($jobs as $name => $job) {
+        foreach ($job as $name => $item) {
             $name = strval($name);
-            $this->putJobConditions($job);
-            $this->putParameters($name, $job);
+            $this->putJobConditions($item);
+            $this->putParameters($name, $item);
         }
     }
 
@@ -203,7 +209,10 @@ final class Workflow implements WorkflowInterface
             $this->assertPreviousReference($parameter, $value);
             $expected = $this->expected->get($value->job(), []);
             $expected[] = $value->parameter();
-            $this->expected->put($value->job(), $expected);
+            $this->expected = $this->expected
+                ->withPut(...[
+                    $value->job() => $expected,
+                ]);
         }
     }
 }

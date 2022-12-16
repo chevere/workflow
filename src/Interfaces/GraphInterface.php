@@ -15,7 +15,7 @@ namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Common\Interfaces\ToArrayInterface;
 use Chevere\DataStructure\Interfaces\MappedInterface;
-use Ds\Vector;
+use Chevere\DataStructure\Interfaces\VectorInterface;
 
 /**
  * Describes the component in charge of defining jobs dependencies order.
@@ -25,9 +25,9 @@ interface GraphInterface extends MappedInterface, ToArrayInterface
     public function has(string $job): bool;
 
     /**
-     * @return Vector<string>
+     * @return VectorInterface<string>
      */
-    public function get(string $job): Vector;
+    public function get(string $job): VectorInterface;
 
     public function hasDependencies(
         string $job,

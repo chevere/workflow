@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
+use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\MappedInterface;
-use Chevere\DataStructure\Map;
 use Chevere\Type\Interfaces\TypeInterface;
 use Iterator;
 
@@ -30,14 +30,14 @@ interface JobsInterface extends MappedInterface
     public function get(string $job): JobInterface;
 
     /**
-     * @return Map [string => TypeInterface]
+     * @return MapInterface [string => TypeInterface]
      */
-    public function variables(): Map;
+    public function variables(): MapInterface;
 
     /**
-     * @return Map [string => TypeInterface]
+     * @return MapInterface [string => TypeInterface]
      */
-    public function references(): Map;
+    public function references(): MapInterface;
 
     /**
      * @return string[]

@@ -19,7 +19,7 @@ use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
@@ -90,7 +90,7 @@ final class WorkflowTest extends TestCase
             );
         $this->assertContains('step1', $workflow->jobs()->get('step2')->dependencies());
         $this->assertTrue($workflow->parameters()->has('foo'));
-        $this->expectException(OutOfBoundsException::class);
+        $this->expectException(OutOfRangeException::class);
         $workflow->withAddedJob(
             step: new Job(
                 TestActionParamFooResponseBar::class,

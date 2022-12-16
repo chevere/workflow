@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\DataStructure\Interfaces\VectorInterface;
+use Chevere\DataStructure\Vector;
 use function Chevere\Message\message;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\String\AssertString;
@@ -25,7 +27,6 @@ use Chevere\Throwable\Exceptions\UnexpectedValueException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
-use Ds\Vector;
 use ReflectionClass;
 use ReflectionException;
 
@@ -37,18 +38,18 @@ final class Job implements JobInterface
     private array $arguments;
 
     /**
-     * @var Vector<string>
+     * @var VectorInterface<string>
      */
-    private Vector $dependencies;
+    private VectorInterface $dependencies;
 
     private ParametersInterface $parameters;
 
     private bool $isSync = false;
 
     /**
-     * @var Vector<ReferenceInterface|VariableInterface>
+     * @var VectorInterface<ReferenceInterface|VariableInterface>
      */
-    private Vector $runIf;
+    private VectorInterface $runIf;
 
     public function __construct(
         private string $action,
@@ -100,8 +101,8 @@ final class Job implements JobInterface
                         ->withCode('%condition%', $item->__toString())
                 );
             }
-            $new->runIf->push($item);
-            $known->push($item->__toString());
+            $new->runIf = $new->runIf->withPush($item);
+            $known = $known->withPush($item->__toString());
         }
 
         return $new;
@@ -135,7 +136,7 @@ final class Job implements JobInterface
 
     public function dependencies(): array
     {
-        return $this->dependencies->toArray();
+        return iterator_to_array($this->dependencies->getIterator());
     }
 
     /**
@@ -143,7 +144,7 @@ final class Job implements JobInterface
      */
     public function runIf(): array
     {
-        return $this->runIf->toArray();
+        return iterator_to_array($this->runIf->getIterator());
     }
 
     public function isSync(): bool
@@ -216,7 +217,8 @@ final class Job implements JobInterface
         if ($this->dependencies->contains($argument->job())) {
             return;
         }
-        $this->dependencies->push($argument->job());
+        $this->dependencies = $this->dependencies
+            ->withPush($argument->job());
     }
 
     private function addDependencies(string ...$jobs): void
@@ -226,7 +228,7 @@ final class Job implements JobInterface
             if ($this->dependencies->contains($job)) {
                 continue;
             }
-            $this->dependencies->push($job);
+            $this->dependencies = $this->dependencies->withPush($job);
         }
     }
 

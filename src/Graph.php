@@ -13,52 +13,67 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\DataStructure\Interfaces\MapInterface;
+use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
+use Chevere\DataStructure\Vector;
+use function Chevere\DataStructure\vectorToArray;
 use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Ds\Vector;
 
 final class Graph implements GraphInterface
 {
     use MapTrait;
 
     /**
-     * @var array<string>
+     * @var MapInterface<string>
      */
-    private array $syncJobs = [];
+    private MapInterface $map;
+
+    /**
+     * @var VectorInterface<string>
+     */
+    private VectorInterface $syncJobs;
 
     public function __construct()
     {
         $this->map = new Map();
+        $this->syncJobs = new Vector();
     }
 
     public function withPut(
         string $name,
         JobInterface $job,
     ): GraphInterface {
-        $vector = $job->dependencies();
+        $vector = new Vector(...$job->dependencies());
         $this->assertNotSelfDependency($name, $vector);
         $new = clone $this;
         foreach ($job->dependencies() as $dependency) {
             if (! $new->has($dependency)) {
                 $new->map = $new->map
-                    ->withPut($dependency, new Vector());
+                    ->withPut(...[
+                        $dependency => new Vector(),
+                    ]);
             }
         }
         if ($new->map->has($name)) {
-            /** @var Vector<string> $existing */
+            /** @var VectorInterface<string> $existing */
             $existing = $new->map->get($name);
-            /** @var array<string> $array */
-            $array = $existing->merge($vector)->toArray();
-            $vector = new Vector($array);
+            /** @var array<string> $merge */
+            $existingArray = vectorToArray($existing);
+            $vectorArray = vectorToArray($vector);
+            $merge = array_merge($existingArray, $vectorArray);
+            $vector = new Vector(...$merge);
         }
         $new->handleDependencyUpdate($name, $vector);
-        $new->map = $new->map->withPut($name, $vector);
+        $new->map = $new->map->withPut(...[
+            $name => $vector,
+        ]);
         if ($job->isSync()) {
-            $new->syncJobs->push($name);
+            $new->syncJobs = $new->syncJobs->withPush($name);
         }
 
         return $new;
@@ -70,17 +85,16 @@ final class Graph implements GraphInterface
     }
 
     /**
-     * @return Vector<string>
+     * @return VectorInterface<string>
      */
-    public function get(string $job): Vector
+    public function get(string $job): VectorInterface
     {
-        // @phpstan-ignore-next-line
         return $this->map->get($job);
     }
 
     public function hasDependencies(string $job, string ...$dependencies): bool
     {
-        /** @var Vector<string> $array */
+        /** @var VectorInterface<string> $array */
         $array = $this->map->get($job);
 
         return $array->contains(...$dependencies);
@@ -106,7 +120,7 @@ final class Graph implements GraphInterface
             }
             $sort[$toIndex][] = $job;
             $previous[] = $job;
-            if ($this->syncJobs->contains($job)) {
+            if ($this->syncJobs->find($job) !== null) {
                 $sync[$job] = $toIndex;
             }
         }
@@ -121,11 +135,11 @@ final class Graph implements GraphInterface
     {
         $array = iterator_to_array($this->map->getIterator(), true);
         // @phpstan-ignore-next-line
-        uasort($array, function (Vector $a, Vector $b) {
+        uasort($array, function (VectorInterface $a, VectorInterface $b) {
             return match (true) {
-                $b->contains(...$a->toArray()) => -1,
+                $b->contains(...vectorToArray($a)) => -1,
                 // @infection-ignore-all
-                $a->contains(...$b->toArray()) => 1,
+                $a->contains(...vectorToArray($b)) => 1,
                 default => 0
             };
         });
@@ -145,27 +159,30 @@ final class Graph implements GraphInterface
             return $sort;
         }
         $aux = 0;
-        $vector = $sort;
-        foreach ($sync as $syncJob => $indexKey) {
-            $auxIndexKey = $indexKey + $aux;
-            $array = $vector->get($auxIndexKey);
-            $key = array_search($syncJob, $array, true);
+        $vector = new Vector(...$sort);
+        foreach ($sync as $job => $index) {
+            $auxIndex = $index + $aux;
+            $array = $vector->get($auxIndex);
+            $key = array_search($job, $array, true);
             unset($array[$key]);
             $array = array_values($array);
-            $vector->offsetSet($auxIndexKey, $array);
-            $vector->insert($auxIndexKey, [$syncJob]);
+            $vector = $vector
+                ->withSet($auxIndex, $array)
+                ->withInsert($auxIndex, [$job]);
             $aux++;
         }
 
-        return array_values(array_filter($vector));
+        return array_values(array_filter(
+            vectorToArray($vector)
+        ));
     }
 
     /**
-     * @param array<string> $vector
+     * @param VectorInterface<string> $vector
      */
-    private function assertNotSelfDependency(string $job, array $vector): void
+    private function assertNotSelfDependency(string $job, VectorInterface $vector): void
     {
-        if (! in_array($job, $vector, true)) {
+        if (! $vector->contains($job)) {
             return;
         }
 
@@ -176,19 +193,21 @@ final class Graph implements GraphInterface
     }
 
     /**
-     * @param array<string> $vector
+     * @param VectorInterface<string> $vector
      */
-    private function handleDependencyUpdate(string $job, array $vector): void
+    private function handleDependencyUpdate(string $job, VectorInterface $vector): void
     {
         /** @var string $dependency */
-        foreach ($vector as $dependency) {
-            /** @var array<string> $update */
+        foreach ($vector->getIterator() as $dependency) {
+            /** @var VectorInterface<string> $update */
             $update = $this->map->get($dependency);
             $findJob = $update->find($job);
             if ($findJob !== null) {
-                unset($update[$findJob]);
+                $update = $update->withRemove($findJob);
             }
-            $this->map = $this->map->withPut($dependency, $update);
+            $this->map = $this->map->withPut(...[
+                $dependency => $update,
+            ]);
         }
     }
 }

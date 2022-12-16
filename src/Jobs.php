@@ -14,11 +14,14 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\DataStructure\Interfaces\MapInterface;
+use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
+use Chevere\DataStructure\Vector;
 use function Chevere\Message\message;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Type\Interfaces\TypeInterface;
 use function Chevere\Type\typeBoolean;
@@ -27,7 +30,6 @@ use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
-use Ds\Vector;
 use Iterator;
 
 final class Jobs implements JobsInterface
@@ -35,20 +37,20 @@ final class Jobs implements JobsInterface
     use MapTrait;
 
     /**
-     * @var Vector<string>
+     * @var VectorInterface<string>
      */
-    private Vector $jobs;
+    private VectorInterface $jobs;
 
     private GraphInterface $graph;
 
-    private Map $variables;
+    private MapInterface $variables;
 
-    private Map $references;
+    private MapInterface $references;
 
     /**
-     * @var Vector<string>
+     * @var VectorInterface<string>
      */
-    private Vector $jobDependencies;
+    private VectorInterface $jobDependencies;
 
     public function __construct(JobInterface ...$jobs)
     {
@@ -62,7 +64,7 @@ final class Jobs implements JobsInterface
 
     public function keys(): array
     {
-        return $this->jobs->toArray();
+        return iterator_to_array($this->jobs->getIterator());
     }
 
     public function graph(): array
@@ -70,12 +72,12 @@ final class Jobs implements JobsInterface
         return $this->graph->toArray();
     }
 
-    public function variables(): Map
+    public function variables(): MapInterface
     {
         return $this->variables;
     }
 
-    public function references(): Map
+    public function references(): MapInterface
     {
         return $this->references;
     }
@@ -85,12 +87,8 @@ final class Jobs implements JobsInterface
         try {
             // @phpstan-ignore-next-line
             return $this->map->get($job);
-        } catch (\TypeError $e) { // @codeCoverageIgnoreStart
-            throw new TypeError(previous: $e);
-        }
-        // @codeCoverageIgnoreEnd
-        catch (\OutOfBoundsException $e) {
-            throw new OutOfBoundsException(
+        } catch (OutOfRangeException $e) {
+            throw new OutOfRangeException(
                 message('Job %name% not found')
                     ->withCode('%name%', $job)
             );
@@ -126,16 +124,18 @@ final class Jobs implements JobsInterface
                     ->withCode('%name%', $name)
             );
         }
-        $this->map = $this->map->withPut($name, $job);
+        $this->map = $this->map->withPut(...[
+            $name => $job,
+        ]);
     }
 
     private function putAdded(JobInterface ...$jobs): void
     {
         foreach ($jobs as $name => $job) {
-            $this->jobDependencies = new Vector($job->dependencies());
+            $this->jobDependencies = new Vector(...$job->dependencies());
             $name = strval($name);
             $this->addMap($name, $job);
-            $this->jobs->push($name);
+            $this->jobs = $this->jobs->withPush($name);
             $this->handleArguments($name, $job);
             foreach ($job->runIf() as $runIf) {
                 $this->handleRunIfReference($runIf);
@@ -153,7 +153,11 @@ final class Jobs implements JobsInterface
         $action = new ($job->action());
         foreach ($action->responseParameters()->getIterator() as $key => $parameter) {
             $this->references = $this->references
-                ->withPut(strval(reference($name, $key)), $parameter->type());
+                ->withPut(
+                    ...[
+                        strval(reference($name, $key)) => $parameter->type(),
+                    ]
+                );
         }
     }
 
@@ -201,7 +205,9 @@ final class Jobs implements JobsInterface
             $key = $argument->__toString();
         }
         if (! $map->has($key)) {
-            return $map->withPut($key, $type);
+            return $map->withPut(...[
+                $key => $type,
+            ]);
         }
         /** @var TypeInterface $typeStored */
         $typeStored = $map->get($key);
@@ -225,14 +231,15 @@ final class Jobs implements JobsInterface
         }
         if ($runIf instanceof ReferenceInterface) {
             if (! $this->jobDependencies->contains($runIf->job())) {
-                $this->jobDependencies->push($runIf->job());
+                $this->jobDependencies = $this->jobDependencies
+                    ->withPush($runIf->job());
             }
 
             try {
                 /** @var JobInterface $runIfJob */
                 $runIfJob = $this->map->get($runIf->job());
-            } catch (OutOfBoundsException $e) {
-                throw new OutOfBoundsException(
+            } catch (OutOfRangeException $e) {
+                throw new OutOfRangeException(
                     message('Job %job% not found')
                         ->withCode('%job%', $runIf->job())
                 );
@@ -257,7 +264,11 @@ final class Jobs implements JobsInterface
         }
         if (! $this->variables->has($runIf->__toString())) {
             $this->variables = $this->variables
-                ->withPut($runIf->__toString(), typeBoolean());
+                ->withPut(
+                    ...[
+                        $runIf->__toString() => typeBoolean(),
+                    ]
+                );
 
             return;
         }
@@ -275,11 +286,14 @@ final class Jobs implements JobsInterface
 
     private function assertDependencies(string $job): void
     {
-        $dependencies = $this->jobDependencies->toArray();
+        $dependencies = iterator_to_array($this->jobDependencies->getIterator());
         if (! $this->jobs->contains(...$dependencies)) {
-            $missing = array_diff($dependencies, $this->jobs->toArray());
+            $missing = array_diff(
+                $dependencies,
+                iterator_to_array($this->jobs->getIterator())
+            );
 
-            throw new OutOfBoundsException(
+            throw new OutOfRangeException(
                 message('Job %job% has undeclared dependencies: %dependencies%')
                     ->withCode('%job%', $job)
                     ->withCode('%dependencies%', implode(', ', $missing))

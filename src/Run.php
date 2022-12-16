@@ -13,24 +13,26 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\DataStructure\Interfaces\MapInterface;
+use Chevere\DataStructure\Map;
 use function Chevere\Message\message;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
+use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use function Chevere\VariableSupport\deepCopy;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
-use Ds\Map;
 use Ramsey\Uuid\Uuid;
 
 final class Run implements RunInterface
 {
     /**
-     * @var Map<string, ResponseInterface>
+     * @var MapInterface<string, ResponseInterface>
      */
-    private Map $jobs;
+    private MapInterface $jobs;
 
     private string $uuid;
 
@@ -41,7 +43,10 @@ final class Run implements RunInterface
         mixed ...$variables
     ) {
         $this->uuid = Uuid::uuid4()->toString();
-        $this->arguments = new Arguments($workflow->parameters(), ...$variables);
+        $this->arguments = new Arguments(
+            $workflow->parameters(),
+            ...$variables
+        );
         $this->jobs = new Map();
     }
 
@@ -70,39 +75,40 @@ final class Run implements RunInterface
     {
         $new = clone $this;
         $new->workflow->jobs()->get($job);
+        if (count($new->workflow->getJobReturnArguments($job)) !== count($response->data())) {
+            throw new ArgumentCountError();
+        }
         $tryArguments = new Arguments(
             $new->workflow->getJobReturnArguments($job),
             ...$response->data()
         );
         $tryArguments->parameters();
-        $new->jobs->put($job, $response);
+        $new->jobs = $new->jobs->withPut(...[
+            $job => $response,
+        ]);
 
         return $new;
     }
 
     public function has(string $name): bool
     {
-        return $this->jobs->hasKey($name);
+        return $this->jobs->has($name);
     }
 
     /**
      * @throws TypeError
-     * @throws OutOfBoundsException
+     * @throws OutOfRangeException
      */
     public function get(string $name): ResponseInterface
     {
         try {
             return $this->jobs->get($name);
-        }
-        // @codeCoverageIgnoreStart
-        // @infection-ignore-all
-        // @phpstan-ignore-next-line
-        catch (\TypeError $e) {
+        } catch (\TypeError $e) { // @codeCoverageIgnoreStart
             throw new TypeError(previous: $e);
         }
         // @codeCoverageIgnoreEnd
-        catch (\OutOfBoundsException $e) {
-            throw new OutOfBoundsException(
+        catch (OutOfRangeException $e) {
+            throw new OutOfRangeException(
                 message('Job %name% not found')
                     ->withCode('%name%', $name)
             );

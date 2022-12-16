@@ -18,7 +18,7 @@ use Chevere\String\Exceptions\CtypeSpaceException;
 use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Graph;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -30,7 +30,7 @@ final class GraphTest extends TestCase
     public function testEmpty(): void
     {
         $graph = new Graph();
-        $this->expectException(OutOfBoundsException::class);
+        $this->expectException(OutOfRangeException::class);
         $graph->hasDependencies('j0');
     }
 
@@ -156,11 +156,11 @@ final class GraphTest extends TestCase
         $graph = $graph->withPut('j0', $this->getJob());
         $this->assertTrue($graph->hasDependencies('j0'));
         $this->assertFalse($graph->hasDependencies('j0', 'jn'));
-        $this->assertSame([], $graph->get('j0')->toArray());
+        $this->assertSame([], iterator_to_array($graph->get('j0')->getIterator()));
         $graph = $graph->withPut('j1', $this->getJob());
         $graph = $graph->withPut('j2', $this->getJob()->withDepends('j0'));
         $this->assertTrue($graph->hasDependencies('j2', 'j0'));
-        $this->assertSame(['j0'], $graph->get('j2')->toArray());
+        $this->assertSame(['j0'], iterator_to_array($graph->get('j2')->getIterator()));
         $expected = [
             ['j0', 'j1'],
             ['j2'],
