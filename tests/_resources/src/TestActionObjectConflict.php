@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Filesystem\Path;
+use Chevere\Filesystem\Interfaces\PathInterface;
 
 class TestActionObjectConflict extends Action
 {
-    public function run(Path $path, string $bar): array
+    public function run(PathInterface $path, string $bar): array
     {
         return [];
     }

@@ -76,7 +76,7 @@ final class Run implements RunInterface
         $new = clone $this;
         $new->workflow->jobs()->get($job);
         $tryArguments = new Arguments(
-            $new->workflow->getJobReturnArguments($job),
+            $new->workflow->getJobResponseParameters($job),
             ...$response->data()
         );
         $tryArguments->parameters();

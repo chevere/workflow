@@ -32,7 +32,7 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                jobs: new Job(
+                job: new Job(
                     TestActionParam::class,
                     foo: variable('foo'),
                 )

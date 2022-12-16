@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
-use Chevere\Tests\_resources\src\TestActionNoParamsFalseResponse;
+use Chevere\Tests\_resources\src\TestActionNoParamsBooleanResponses;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
@@ -301,16 +301,25 @@ final class JobsTest extends TestCase
 
     public function testWithRunIfReference(): void
     {
-        $reference = reference('j1', 'key');
+        $true = reference('j1', 'true');
+        $false = reference('j1', 'false');
         $jobs = new Jobs(
             j1: job(
-                TestActionNoParamsFalseResponse::class,
+                TestActionNoParamsBooleanResponses::class,
             ),
             j2: job(
+                TestActionNoParamsBooleanResponses::class,
+            )->withRunIf($true, $false),
+            j3: job(
                 TestActionNoParams::class,
-            )
-                ->withRunIf($reference),
+            )->withRunIf($false, $true),
         );
-        $this->assertTrue($jobs->references()->has($reference->__toString()));
+        $this->assertTrue(
+            $jobs->references()->has($true->__toString(), $false->__toString())
+        );
+        $j4 = job(TestActionNoParams::class)
+            ->withRunIf(reference('j5', 'missing'));
+        $this->expectException(OutOfRangeException::class);
+        $jobs->withAdded(j4:$j4);
     }
 }

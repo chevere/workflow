@@ -46,13 +46,13 @@ final class Runner implements RunnerInterface
     {
         $new = clone $this;
         $jobs = $new->run->workflow()->jobs();
-        foreach ($jobs->graph() as $queue) {
-            $promises = $new->getPromises($queue);
+        foreach ($jobs->graph() as $node) {
+            $promises = $new->getPromises($node);
             /** @var RunnerInterface[] $responses */
             $responses = wait(all($promises));
-            /** @var self $end */
-            $end = end($responses);
-            if ($end->run()->has(...$queue)) {
+            if (count($node) === 1) {
+                /** @var self $end */
+                $end = end($responses);
                 $new = $end;
 
                 continue;
@@ -65,16 +65,15 @@ final class Runner implements RunnerInterface
 
     public function withRunJob(string $name): RunnerInterface
     {
-        // $new = clone $this;
-        $job = $this->run()->workflow()->jobs()->get($name);
-        /** @var ActionInterface $action */
+        $new = clone $this;
+        $job = $new->run()->workflow()->jobs()->get($name);
         $action = $job->getAction()
-            ->withContainer($this->container);
-        $arguments = $this->getJobArguments($job);
-        $response = $this->getActionResponse($action, $arguments);
-        $this->addJob($name, $response);
+            ->withContainer($new->container);
+        $arguments = $new->getJobArguments($job);
+        $response = $new->getActionResponse($action, $arguments);
+        $new->addJob($name, $response);
 
-        return $this;
+        return $new;
     }
 
     /**

@@ -34,12 +34,12 @@ interface WorkflowInterface extends Countable
      *
      * @throws OverflowException
      */
-    public function withAddedJob(JobInterface ...$jobs): self;
+    public function withAddedJob(JobInterface ...$job): self;
 
     public function parameters(): ParametersInterface;
 
     /**
      * Provides access to the expected return arguments for the given `$job`.
      */
-    public function getJobReturnArguments(string $job): ParametersInterface;
+    public function getJobResponseParameters(string $job): ParametersInterface;
 }

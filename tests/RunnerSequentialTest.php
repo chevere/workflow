@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use function Chevere\Filesystem\fileForPath;
+use function Chevere\Filesystem\directoryForPath;
+use Chevere\Filesystem\File;
+use Chevere\Filesystem\Interfaces\DirectoryInterface;
 use Chevere\Tests\_resources\src\TestActionFileWrite;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\run;
@@ -22,9 +24,22 @@ use PHPUnit\Framework\TestCase;
 
 final class RunnerSequentialTest extends TestCase
 {
+    private DirectoryInterface $directory;
+
+    protected function setUp(): void
+    {
+        $this->directory = directoryForPath(__DIR__ . '/_resources/temp');
+        $this->directory->createIfNotExists();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->directory->removeIfExists();
+    }
+
     public function testSequentialRunner(): void
     {
-        $file = fileForPath(__DIR__ . '/_resources/output-sequential');
+        $file = new File($this->directory->path()->getChild('output-sequential'));
         $file->removeIfExists();
         $file->create();
         $file->put('');

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Map;
 use function Chevere\Message\message;
@@ -21,7 +20,6 @@ use function Chevere\Parameter\booleanParameter;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
-use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
@@ -62,11 +60,11 @@ final class Workflow implements WorkflowInterface
         return $this->jobs->count();
     }
 
-    public function withAddedJob(JobInterface ...$jobs): WorkflowInterface
+    public function withAddedJob(JobInterface ...$job): WorkflowInterface
     {
         $new = clone $this;
-        $new->jobs = $new->jobs->withAdded(...$jobs);
-        $new->putAdded(...$jobs);
+        $new->jobs = $new->jobs->withAdded(...$job);
+        $new->putAdded(...$job);
 
         return $new;
     }
@@ -80,7 +78,7 @@ final class Workflow implements WorkflowInterface
      * @throws \TypeError
      * @throws OutOfRangeException
      */
-    public function getJobReturnArguments(string $job): ParametersInterface
+    public function getJobResponseParameters(string $job): ParametersInterface
     {
         /** @var ParametersInterface */
         return $this->provided->get($job);
@@ -88,7 +86,6 @@ final class Workflow implements WorkflowInterface
 
     private function putParameters(string $name, JobInterface $job): void
     {
-        /** @var ActionInterface $action */
         $action = $job->getAction();
         $parameters = $action->parameters();
         $this->provided = $this->provided->withPut(
@@ -112,33 +109,11 @@ final class Workflow implements WorkflowInterface
         }
     }
 
-    private function assertMatchesExistingParameter(
-        string $name,
-        ParameterInterface $existent,
-        ParameterInterface $parameter
-    ): void {
-        if ($existent::class !== $parameter::class) {
-            throw new TypeError(
-                message("Reference %name% of type %type% doesn't match type %provided%")
-                    ->withStrong('%name%', $name)
-                    ->withCode('%type%', $existent::class)
-                    ->withCode('%provided%', $parameter::class),
-            );
-        }
-    }
-
     private function putVariable(
         VariableInterface $variable,
         ParameterInterface $parameter
     ): void {
         if ($this->parameters->has($variable->__toString())) {
-            $existent = $this->parameters->get($variable->__toString());
-            $this->assertMatchesExistingParameter(
-                $variable->__toString(),
-                $existent,
-                $parameter
-            );
-
             return;
         }
         $this->parameters = $this->parameters
@@ -148,7 +123,6 @@ final class Workflow implements WorkflowInterface
     }
 
     private function assertPreviousReference(
-        ParameterInterface $parameter,
         ReferenceInterface $reference
     ): void {
         /** @var ParametersInterface $responseParameters */
@@ -161,11 +135,6 @@ final class Workflow implements WorkflowInterface
                     ->withStrong('%job%', $reference->job()),
             );
         }
-        $this->assertMatchesExistingParameter(
-            $reference->__toString(),
-            $responseParameters->get($reference->parameter()),
-            $parameter
-        );
     }
 
     private function putAdded(JobInterface ...$job): void
@@ -193,7 +162,7 @@ final class Workflow implements WorkflowInterface
             $this->putVariable($value, $parameter);
         }
         if ($value instanceof ReferenceInterface) {
-            $this->assertPreviousReference($parameter, $value);
+            $this->assertPreviousReference($value);
 
             try {
                 /** @var array<string[]> $expected */

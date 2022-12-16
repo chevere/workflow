@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Filesystem\Interfaces\PathInterface;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionObjectConflict;
@@ -135,7 +136,7 @@ final class JobTest extends TestCase
         $this->assertContains('step1', $job->dependencies());
     }
 
-    public function testWithRunIf(): void
+    public function testWithRunIfVariable(): void
     {
         $job = new Job(TestActionNoParams::class);
         $variable = variable('wea');
@@ -155,6 +156,7 @@ final class JobTest extends TestCase
     public function testWithMissingArgument(): void
     {
         $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Missing argument(s) [' . PathInterface::class . ' path] for ' . TestActionObjectConflict::class);
         new Job(
             TestActionObjectConflict::class,
             baz: reference(job: 'step1', parameter: 'bar'),

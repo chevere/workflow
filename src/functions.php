@@ -22,6 +22,11 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Psr\Container\ContainerInterface;
 
+// @codeCoverageIgnoreStart
+
+/**
+ * Creates a WorkflowInterface instance for the given jobs.
+ */
 function workflow(JobInterface ...$job): WorkflowInterface
 {
     return new Workflow(
@@ -29,14 +34,20 @@ function workflow(JobInterface ...$job): WorkflowInterface
     );
 }
 
-function job(
-    string $action,
-    mixed ...$argument
-): JobInterface {
+/**
+ * Creates a JobInterface instance for the given action and arguments.
+ *
+ * @param string $action Action name
+ * @param mixed ...$argument Action arguments (raw, reference or variable)
+ */
+function job(string $action, mixed ...$argument): JobInterface
+{
     return new Job($action, ...$argument);
 }
 
 /**
+ * Creates a ReferenceInterface instance for the given job and parameter.
+ *
  * @param string $job Job name
  * @param string $parameter Response parameter name
  */
@@ -45,11 +56,19 @@ function reference(string $job, string $parameter): ReferenceInterface
     return new Reference($job, $parameter);
 }
 
+/**
+ * Creates a VariableInterface instance for the given name.
+ *
+ * @param string $name Variable name
+ */
 function variable(string $name): VariableInterface
 {
     return new Variable($name);
 }
 
+/**
+ * Creates a RunnerInterface instance for the given job.
+ */
 function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 {
     if ($runner->run()->has($job)) {
@@ -60,6 +79,8 @@ function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 }
 
 /**
+ * Creates a RunInterface instance for the given workflow, variables and container.
+ *
  * @param array<string, mixed> $variables
  */
 function run(
@@ -67,12 +88,10 @@ function run(
     array $variables = [],
     ?ContainerInterface $container = null
 ): RunInterface {
-    $workflowRun = new Run($workflow, ...$variables);
+    $run = new Run($workflow, ...$variables);
 
-    return (new Runner(
-        $workflowRun,
-        $container ?? new Container()
-    ))
+    return (new Runner($run, $container ?? new Container()))
         ->withRun()
         ->run();
 }
+// @codeCoverageIgnoreEnd

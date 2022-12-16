@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
@@ -142,7 +141,6 @@ final class Jobs implements JobsInterface
 
     private function storeReferences(string $name, JobInterface $job): void
     {
-        /** @var ActionInterface $action */
         $action = $job->getAction();
         foreach ($action->responseParameters()->getIterator() as $key => $parameter) {
             $this->references = $this->references
@@ -157,7 +155,6 @@ final class Jobs implements JobsInterface
     private function handleArguments(string $name, JobInterface $job): void
     {
         foreach ($job->arguments() as $parameter => $argument) {
-            /** @var ActionInterface $action */
             $action = $job->getAction();
             /** @var TypeInterface $type */
             $type = $action->parameters()->get($parameter)->type();
@@ -222,31 +219,24 @@ final class Jobs implements JobsInterface
         if (! $runIf instanceof ReferenceInterface) {
             return;
         }
-        if ($runIf instanceof ReferenceInterface) {
-            if (! $this->jobDependencies->contains($runIf->job())) {
-                $this->jobDependencies = $this->jobDependencies
-                    ->withPush($runIf->job());
-            }
 
-            try {
-                /** @var JobInterface $runIfJob */
-                $runIfJob = $this->map->get($runIf->job());
-            } catch (OutOfRangeException $e) {
-                throw new OutOfRangeException(
-                    message('Job %job% not found')
-                        ->withCode('%job%', $runIf->job())
-                );
-            }
-            /** @var ActionInterface $action */
-            $action = $runIfJob->getAction();
-            $parameter = $action
-                ->getResponseParameters()->get($runIf->parameter());
-            if ($parameter->type()->primitive() !== 'boolean') {
-                throw new TypeError(
-                    message('Reference %reference% must be of type boolean')
-                        ->withCode('%reference%', $runIf->__toString())
-                );
-            }
+        try {
+            /** @var JobInterface $runIfJob */
+            $runIfJob = $this->map->get($runIf->job());
+        } catch (OutOfRangeException $e) {
+            throw new OutOfRangeException(
+                message('Job %job% not found')
+                    ->withCode('%job%', $runIf->job())
+            );
+        }
+        $action = $runIfJob->getAction();
+        $parameter = $action->getResponseParameters()
+            ->get($runIf->parameter());
+        if ($parameter->type()->primitive() !== 'boolean') {
+            throw new TypeError(
+                message('Reference %reference% must be of type boolean')
+                    ->withCode('%reference%', $runIf->__toString())
+            );
         }
     }
 
