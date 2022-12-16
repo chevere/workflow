@@ -66,7 +66,7 @@ final class Jobs implements JobsInterface
     public function keys(): array
     {
         /** @var array<string> */
-        return vectorToArray($this->jobs);
+        return $this->map->keys();
     }
 
     public function graph(): array
@@ -86,23 +86,14 @@ final class Jobs implements JobsInterface
 
     public function get(string $job): JobInterface
     {
-        try {
-            // @phpstan-ignore-next-line
-            return $this->map->get($job);
-        } catch (OutOfRangeException $e) {
-            throw new OutOfRangeException(
-                message('Job %name% not found')
-                    ->withCode('%name%', $job)
-            );
-        }
+        /** @var JobInterface */
+        return $this->map->get($job);
     }
 
     #[\ReturnTypeWillChange]
     public function getIterator(): Iterator
     {
-        foreach ($this->jobs as $job) {
-            yield $job => $this->get($job);
-        }
+        return $this->map->getIterator();
     }
 
     public function has(string $job): bool

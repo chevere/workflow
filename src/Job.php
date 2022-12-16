@@ -54,7 +54,7 @@ final class Job implements JobInterface
 
     public function __construct(
         private string $action,
-        mixed ...$actionParameters
+        mixed ...$actionParameter
     ) {
         $this->runIf = new Vector();
 
@@ -79,7 +79,7 @@ final class Job implements JobInterface
         $instance = $reflection->newInstance();
         $this->parameters = $instance->parameters();
         $this->arguments = [];
-        $this->setArguments(...$actionParameters);
+        $this->setArguments(...$actionParameter);
     }
 
     public function withArguments(mixed ...$namedArguments): JobInterface
@@ -158,30 +158,27 @@ final class Job implements JobInterface
         return $this->isSync;
     }
 
-    private function setArguments(mixed ...$namedArguments): void
+    private function setArguments(mixed ...$argument): void
     {
-        /** @var array<string, mixed> $namedArguments */
-        $this->assertArgumentsCount($namedArguments);
+        /** @var array<string, mixed> $argument */
+        $this->assertArgumentsCount($argument);
         $values = [];
         $missing = [];
-        $iterator = $this->parameters->getIterator();
-        $iterator->rewind();
-        while ($iterator->valid()) {
-            $name = $iterator->key();
-            $argument = $namedArguments[$name] ?? null;
-            if ($argument !== null) {
-                $values[$name] = $argument;
-                $this->inferDependencies($argument);
+        foreach ($this->parameters->getIterator() as $name => $parameter) {
+            $item = $argument[$name] ?? null;
+            if ($item !== null) {
+                $values[$name] = $item;
+                $this->inferDependencies($item);
             } elseif ($this->parameters->isRequired($name)) {
-                $missing[] = $name;
+                $missing[] = $parameter->type()->typeHinting()
+                    . " {$name}";
             }
-            // @infection-ignore-all
-            $iterator->next();
         }
         if ($missing !== []) {
             throw new BadMethodCallException(
-                message('Missing argument(s) [%arguments%]')
+                message('Missing argument(s) [%arguments%] for %action%')
                     ->withCode('%arguments%', implode(', ', $missing))
+                    ->withCode('%action%', $this->action)
             );
         }
         $this->arguments = $values;

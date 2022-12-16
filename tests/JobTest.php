@@ -15,9 +15,12 @@ namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\_resources\src\TestActionObjectConflict;
+use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Tests\_resources\src\TestActionParamsAlt;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exception;
+use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
@@ -62,16 +65,6 @@ final class JobTest extends TestCase
         );
     }
 
-    public function testWithIsSync(): void
-    {
-        $action = TestActionNoParams::class;
-        $job = new Job($action);
-        $this->assertFalse($job->isSync());
-        $jobWithSync = $job->withIsSync();
-        $this->assertNotSame($job, $jobWithSync);
-        $this->assertTrue($jobWithSync->isSync());
-    }
-
     public function testConstruct(): void
     {
         $action = TestActionParamsAlt::class;
@@ -85,12 +78,23 @@ final class JobTest extends TestCase
         ];
         $job = new Job($action, ...$parameters);
         $this->assertSame($action, $job->action());
+        $this->assertEquals(new $action(), $job->getAction());
         $this->assertSame($parameters, $job->arguments());
         $taskWithArgument = $job->withArguments(...$arguments);
         $this->assertNotSame($job, $taskWithArgument);
         $this->assertSame($arguments, $taskWithArgument->arguments());
         $job = new Job($action, ...$arguments);
         $this->assertSame($arguments, $job->arguments());
+    }
+
+    public function testWithIsSync(): void
+    {
+        $action = TestActionNoParams::class;
+        $job = new Job($action);
+        $this->assertFalse($job->isSync());
+        $jobWithSync = $job->withIsSync();
+        $this->assertNotSame($job, $jobWithSync);
+        $this->assertTrue($jobWithSync->isSync());
     }
 
     public function testWithDependencies(): void
@@ -124,9 +128,9 @@ final class JobTest extends TestCase
     public function testWithJobReference(): void
     {
         $job = new Job(
-            TestActionParamsAlt::class,
+            TestActionParams::class,
             foo: reference('step1', 'bar'),
-            bar: variable('foo')
+            bar: reference('step1', 'bar')
         );
         $this->assertContains('step1', $job->dependencies());
     }
@@ -146,5 +150,15 @@ final class JobTest extends TestCase
         );
         $this->expectException(OverflowException::class);
         $job->withRunIf($variable, $variable);
+    }
+
+    public function testWithMissingArgument(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        new Job(
+            TestActionObjectConflict::class,
+            baz: reference(job: 'step1', parameter: 'bar'),
+            bar: variable('foo')
+        );
     }
 }

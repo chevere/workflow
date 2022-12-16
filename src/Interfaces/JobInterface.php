@@ -14,21 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
 
 /**
  * Describes the component in charge of defining a job.
  */
 interface JobInterface
 {
-    /**
-     * @throws InvalidArgumentException
-     */
-    public function __construct(
-        string $action,
-        mixed ...$namedArguments
-    );
-
     public function withArguments(mixed ...$namedArguments): self;
 
     public function withRunIf(ReferenceInterface|VariableInterface ...$context): self;

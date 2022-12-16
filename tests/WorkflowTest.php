@@ -14,10 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
-use Chevere\Tests\_resources\src\TestActionObjectConflict;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
-use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
@@ -56,7 +54,7 @@ final class WorkflowTest extends TestCase
         $workflowWithAddedStep->withAddedJob(step: $step);
     }
 
-    public function testWithAddedStepWithArguments(): void
+    public function testWithAddedJobWithArguments(): void
     {
         $step = new Job(
             TestActionParamFooResponseBar::class,
@@ -67,39 +65,39 @@ final class WorkflowTest extends TestCase
         $this->assertSame($step, $workflow->jobs()->get('name'));
     }
 
-    // public function testWithReferencedParameters(): void
-    // {
-    //     $workflow = new Workflow(
-    //         new Jobs(
-    //             step1: new Job(
-    //                 TestActionParamFooResponseBar::class,
-    //                 foo: variable('foo')
-    //             ),
-    //         )
-    //     );
-    //     $this->assertTrue($workflow->jobs()->has('step1'));
-    //     $this->assertTrue($workflow->jobs()->variables()->has('foo'));
-    //     $this->assertTrue($workflow->parameters()->has('foo'));
-    //     $workflow = $workflow
-    //         ->withAddedJob(
-    //             step2: new Job(
-    //                 TestActionParams::class,
-    //                 foo: reference(job: 'step1', parameter: 'bar'),
-    //                 bar: variable('foo')
-    //             )
-    //         );
-    //     $this->assertContains('step1', $workflow->jobs()->get('step2')->dependencies());
-    //     $this->assertTrue($workflow->parameters()->has('foo'));
-    //     $this->expectException(OutOfRangeException::class);
-    //     $workflow->withAddedJob(
-    //         step: new Job(
-    //             TestActionParamFooResponseBar::class,
-    //             foo: reference(job: 'not', parameter: 'found')
-    //         )
-    //     );
-    // }
+    public function testWithReference(): void
+    {
+        $workflow = new Workflow(
+            new Jobs(
+                step1: new Job(
+                    TestActionParamFooResponseBar::class,
+                    foo: variable('foo')
+                ),
+            )
+        );
+        $this->assertTrue($workflow->jobs()->has('step1'));
+        $this->assertTrue($workflow->jobs()->variables()->has('foo'));
+        $this->assertTrue($workflow->parameters()->has('foo'));
+        $workflow = $workflow
+            ->withAddedJob(
+                step2: new Job(
+                    TestActionParams::class,
+                    foo: reference(job: 'step1', parameter: 'bar'),
+                    bar: variable('foo')
+                )
+            );
+        $this->assertContains('step1', $workflow->jobs()->get('step2')->dependencies());
+        $this->assertTrue($workflow->parameters()->has('foo'));
+        $this->expectException(OutOfRangeException::class);
+        $workflow->withAddedJob(
+            step: new Job(
+                TestActionParamFooResponseBar::class,
+                foo: reference(job: 'not', parameter: 'found')
+            )
+        );
+    }
 
-    public function testWithConflictingReferencedParameters(): void
+    public function testWithMissingReference(): void
     {
         $this->expectException(OutOfRangeException::class);
         $this->expectExceptionMessage('Incompatible declaration');
@@ -114,22 +112,6 @@ final class WorkflowTest extends TestCase
             step2: job(
                 TestActionParams::class,
                 foo: reference(job: 'step1', parameter: 'missing'),
-                bar: variable('foo')
-            )
-        );
-    }
-
-    public function testWithConflictingTypeReferencedParameters(): void
-    {
-        $this->expectException(BadMethodCallException::class);
-        workflow(
-            step1: job(
-                TestActionParamFooResponseBar::class,
-                foo: variable('foo')
-            ),
-            step2: job(
-                TestActionObjectConflict::class,
-                baz: reference(job: 'step1', parameter: 'bar'),
                 bar: variable('foo')
             )
         );

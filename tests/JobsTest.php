@@ -20,6 +20,8 @@ use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OverflowException;
+use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use function Chevere\Workflow\reference;
@@ -28,6 +30,45 @@ use PHPUnit\Framework\TestCase;
 
 final class JobsTest extends TestCase
 {
+    public function testConstruct(): void
+    {
+        $jobs = new Jobs();
+        $this->assertSame([], $jobs->keys());
+        $this->assertSame([], iterator_to_array($jobs->getIterator()));
+        $this->expectException(OutOfRangeException::class);
+        $jobs->get('j1');
+    }
+
+    public function testConstructWithJob(): void
+    {
+        $j1 = new Job(TestActionNoParams::class);
+        $jobs = new Jobs(
+            j1: $j1
+        );
+        $this->assertSame(['j1'], $jobs->keys());
+        $this->assertSame([
+            'j1' => $j1,
+        ], iterator_to_array($jobs->getIterator()));
+    }
+
+    public function testWithAdded(): void
+    {
+        $j1 = job(TestActionNoParams::class);
+        $jobs = new Jobs();
+        $this->assertFalse($jobs->has('j1'));
+        $withAdded = $jobs->withAdded(
+            j1: $j1,
+        );
+        $this->assertNotSame($jobs, $withAdded);
+        $this->assertTrue($withAdded->has('j1'));
+        $this->assertSame(['j1'], $withAdded->keys());
+        $this->assertSame([
+            'j1' => $j1,
+        ], iterator_to_array($withAdded->getIterator()));
+        $this->expectException(OverflowException::class);
+        $withAdded->withAdded(j1: $j1);
+    }
+
     public function testAsync(): void
     {
         $jobs = new Jobs(
@@ -83,14 +124,13 @@ final class JobsTest extends TestCase
         );
     }
 
-    public function testWithDependsOnPreviousChain(): void
+    public function testWithDependsOnPreviousMultiple(): void
     {
         $jobs = new Jobs(
             j1: job(TestActionNoParams::class),
             j2: job(TestActionNoParams::class),
             j3: job(TestActionNoParams::class)
-                ->withDepends('j2')
-                ->withDepends('j1'),
+                ->withDepends('j2', 'j1'),
         );
         $this->assertSame(
             [
@@ -101,7 +141,7 @@ final class JobsTest extends TestCase
         );
     }
 
-    public function testWithDependsOnPreviousFunction(): void
+    public function testWithDependsOnPreviousSingle(): void
     {
         $jobs = new Jobs(
             j1: job(TestActionNoParams::class),
@@ -143,6 +183,21 @@ final class JobsTest extends TestCase
         );
     }
 
+    public function testWithReference(): void
+    {
+        $jobs = new Jobs(
+            one: job(
+                TestActionParamFooResponseBar::class,
+                foo: 'foo'
+            ),
+            two: job(
+                TestActionParamFooResponseBar::class,
+                foo: reference('one', 'bar')
+            )
+        );
+        $this->assertSame(['one:bar', 'two:bar'], $jobs->references()->keys());
+    }
+
     public function testMissingReference(): void
     {
         $this->expectException(OutOfRangeException::class);
@@ -172,17 +227,6 @@ final class JobsTest extends TestCase
                 bar: reference('one', 'id')
             )
         );
-    }
-
-    public function testWithAdded(): void
-    {
-        $jobs = new Jobs();
-        $this->assertFalse($jobs->has('j1'));
-        $withAdded = $jobs->withAdded(
-            j1: job(TestActionNoParams::class),
-        );
-        $this->assertNotSame($jobs, $withAdded);
-        $this->assertTrue($withAdded->has('j1'));
     }
 
     public function testWithRunIfUndeclaredJob(): void

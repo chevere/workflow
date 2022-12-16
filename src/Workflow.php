@@ -141,7 +141,6 @@ final class Workflow implements WorkflowInterface
         if ($this->parameters->has($variable->__toString())) {
             $existent = $this->parameters->get($variable->__toString());
             $this->assertMatchesExistingParameter(
-                // @infection-ignore-all
                 $variable->__toString(),
                 $existent,
                 $parameter

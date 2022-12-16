@@ -31,9 +31,9 @@ function workflow(JobInterface ...$job): WorkflowInterface
 
 function job(
     string $action,
-    mixed ...$namedArguments
+    mixed ...$argument
 ): JobInterface {
-    return new Job($action, ...$namedArguments);
+    return new Job($action, ...$argument);
 }
 
 /**
