@@ -167,7 +167,7 @@ final class Workflow implements WorkflowInterface
             try {
                 /** @var array<string[]> $expected */
                 $expected = $this->expected->get($value->job());
-            } catch(OutOfRangeException) {
+            } catch (OutOfRangeException) {
                 $expected = [];
             }
             $expected[] = $value->parameter();
