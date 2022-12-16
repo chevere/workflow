@@ -82,15 +82,8 @@ final class Workflow implements WorkflowInterface
      */
     public function getJobReturnArguments(string $job): ParametersInterface
     {
-        try {
-            /** @var ParametersInterface */
-            return $this->provided->get($job);
-        } catch (OutOfRangeException $e) {
-            throw new OutOfRangeException(
-                message('Job %job% not found')
-                    ->withCode('%job%', $job)
-            );
-        }
+        /** @var ParametersInterface */
+        return $this->provided->get($job);
     }
 
     private function putParameters(string $name, JobInterface $job): void
