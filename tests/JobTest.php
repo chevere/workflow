@@ -108,7 +108,9 @@ final class JobTest extends TestCase
         $job = new Job(TestActionNoParamsIntegerResponse::class);
         $this->assertSame([], $job->dependencies());
         $this->expectException(OverflowException::class);
-        $job->withDepends('foo', 'foo');
+        $this->expectExceptionMessage('Job dependencies must be unique');
+        $this->expectExceptionMessage('repeated foo');
+        $job->withDepends('bar', 'foo', 'foo');
     }
 
     public function testWithWrongDepends(): void
@@ -143,6 +145,6 @@ final class JobTest extends TestCase
             $job->runIf()
         );
         $this->expectException(OverflowException::class);
-        $job = $job->withRunIf($variable, $variable);
+        $job->withRunIf($variable, $variable);
     }
 }

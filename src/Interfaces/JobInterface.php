@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
+use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 
 /**
@@ -37,6 +38,8 @@ interface JobInterface
     public function withDepends(string ...$jobs): self;
 
     public function action(): string;
+
+    public function getAction(): ActionInterface;
 
     /**
      * @return array<string, mixed>

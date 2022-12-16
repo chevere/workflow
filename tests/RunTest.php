@@ -76,9 +76,6 @@ final class RunTest extends TestCase
         $this->assertNotSame($workflowRun, $workflowRunWithStepResponse);
         $this->assertTrue($workflowRunWithStepResponse->has('step0'));
         $this->assertSame([], $workflowRunWithStepResponse->get('step0')->data());
-        $this->expectException(ArgumentCountError::class);
-        $workflowRunWithStepResponse
-            ->withJobResponse('step0', new Response(extra: 'not-allowed'));
     }
 
     public function testWithAddedNotFound(): void

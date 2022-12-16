@@ -67,9 +67,7 @@ final class Runner implements RunnerInterface
                 $responses = wait(all($promises));
                 // @phpstan-ignore-next-line
                 $new->responses = $responses;
-            }
-            // @codeCoverageIgnoreStart
-            catch (Throwable $e) {
+            } catch (Throwable $e) { // @codeCoverageIgnoreStart
                 throw new RuntimeException(
                     message('Error running job %job% [%message%]')
                         ->withCode('%job%', $jobName ?? ':before')
@@ -110,9 +108,7 @@ final class Runner implements RunnerInterface
     ): ResponseInterface {
         try {
             return $action->getResponse(...$arguments);
-        }
-        // @codeCoverageIgnoreStart
-        catch (Throwable $e) {
+        } catch (Throwable $e) { // @codeCoverageIgnoreStart
             $actionTrace = $e->getTrace()[1] ?? [];
             $fileLine = strtr('%file%:%line%', [
                 '%file%' => $actionTrace['file'] ?? 'anon',

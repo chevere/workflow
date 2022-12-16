@@ -22,15 +22,12 @@ use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
-use Throwable;
 
 final class Workflow implements WorkflowInterface
 {
@@ -79,29 +76,27 @@ final class Workflow implements WorkflowInterface
         return $this->parameters;
     }
 
+    /**
+     * @throws \TypeError
+     * @throws OutOfRangeException
+     */
     public function getJobReturnArguments(string $job): ParametersInterface
     {
         try {
+            /** @var ParametersInterface */
             return $this->provided->get($job);
-        }
-        // @codeCoverageIgnoreStart
-        // @infection-ignore-all
-        // @phpstan-ignore-next-line
-        catch (\TypeError $e) {
-            throw new TypeError(previous: $e);
         } catch (OutOfRangeException $e) {
             throw new OutOfRangeException(
                 message('Job %job% not found')
                     ->withCode('%job%', $job)
             );
         }
-        // @codeCoverageIgnoreEnd
     }
 
     private function putParameters(string $name, JobInterface $job): void
     {
         /** @var ActionInterface $action */
-        $action = new ($job->action());
+        $action = $job->getAction();
         $parameters = $action->parameters();
         $this->provided = $this->provided->withPut(
             ...[
@@ -112,8 +107,8 @@ final class Workflow implements WorkflowInterface
             try {
                 $parameter = $parameters->get($argument);
                 $this->putVariableReference($value, $parameter);
-            } catch (Throwable $e) {
-                throw new InvalidArgumentException(
+            } catch (OutOfRangeException $e) {
+                throw new OutOfRangeException(
                     message('Incompatible declaration on Job %name% (%arg%) [%message%]')
                         ->withStrong('%name%', $name)
                         ->withStrong('%arg%', "argument@{$argument}")
@@ -167,7 +162,7 @@ final class Workflow implements WorkflowInterface
         /** @var ParametersInterface $responseParameters */
         $responseParameters = $this->provided->get($reference->job());
         if (! $responseParameters->has($reference->parameter())) {
-            throw new OutOfBoundsException(
+            throw new OutOfRangeException(
                 message('Reference %reference% not found, response key %parameter% is not declared by %job%')
                     ->withCode('%reference%', $reference->__toString())
                     ->withStrong('%parameter%', $reference->parameter())
@@ -207,7 +202,13 @@ final class Workflow implements WorkflowInterface
         }
         if ($value instanceof ReferenceInterface) {
             $this->assertPreviousReference($parameter, $value);
-            $expected = $this->expected->get($value->job(), []);
+
+            try {
+                /** @var array<string[]> $expected */
+                $expected = $this->expected->get($value->job());
+            } catch(OutOfRangeException) {
+                $expected = [];
+            }
             $expected[] = $value->parameter();
             $this->expected = $this->expected
                 ->withPut(...[

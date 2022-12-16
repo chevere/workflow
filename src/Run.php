@@ -19,8 +19,6 @@ use function Chevere\Message\message;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
-use Chevere\Throwable\Errors\ArgumentCountError;
-use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfRangeException;
 use function Chevere\VariableSupport\deepCopy;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -75,9 +73,6 @@ final class Run implements RunInterface
     {
         $new = clone $this;
         $new->workflow->jobs()->get($job);
-        if (count($new->workflow->getJobReturnArguments($job)) !== count($response->data())) {
-            throw new ArgumentCountError();
-        }
         $tryArguments = new Arguments(
             $new->workflow->getJobReturnArguments($job),
             ...$response->data()
@@ -96,18 +91,15 @@ final class Run implements RunInterface
     }
 
     /**
-     * @throws TypeError
+     * @throws \TypeError
      * @throws OutOfRangeException
      */
     public function get(string $name): ResponseInterface
     {
         try {
+            /** @var ResponseInterface */
             return $this->jobs->get($name);
-        } catch (\TypeError $e) { // @codeCoverageIgnoreStart
-            throw new TypeError(previous: $e);
-        }
-        // @codeCoverageIgnoreEnd
-        catch (OutOfRangeException $e) {
+        } catch (OutOfRangeException $e) {
             throw new OutOfRangeException(
                 message('Job %name% not found')
                     ->withCode('%name%', $name)

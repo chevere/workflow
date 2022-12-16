@@ -16,6 +16,7 @@ namespace Chevere\Workflow;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
+use function Chevere\DataStructure\vectorToArray;
 use function Chevere\Message\message;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\String\AssertString;
@@ -129,6 +130,12 @@ final class Job implements JobInterface
         return $this->action;
     }
 
+    public function getAction(): ActionInterface
+    {
+        /** @var ActionInterface */
+        return new $this->action();
+    }
+
     public function arguments(): array
     {
         return $this->arguments;
@@ -136,15 +143,14 @@ final class Job implements JobInterface
 
     public function dependencies(): array
     {
-        return iterator_to_array($this->dependencies->getIterator());
+        /** @var array<string> */
+        return vectorToArray($this->dependencies);
     }
 
-    /**
-     * @return array<ReferenceInterface|VariableInterface>
-     */
     public function runIf(): array
     {
-        return iterator_to_array($this->runIf->getIterator());
+        /** @var array<ReferenceInterface|VariableInterface> */
+        return vectorToArray($this->runIf);
     }
 
     public function isSync(): bool

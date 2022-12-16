@@ -16,6 +16,7 @@ namespace Chevere\Workflow;
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
+use function Chevere\DataStructure\mapToArray;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
 use function Chevere\DataStructure\vectorToArray;
@@ -29,7 +30,7 @@ final class Graph implements GraphInterface
     use MapTrait;
 
     /**
-     * @var MapInterface<string>
+     * @var MapInterface<string, VectorInterface>
      */
     private MapInterface $map;
 
@@ -62,7 +63,6 @@ final class Graph implements GraphInterface
         if ($new->map->has($name)) {
             /** @var VectorInterface<string> $existing */
             $existing = $new->map->get($name);
-            /** @var array<string> $merge */
             $existingArray = vectorToArray($existing);
             $vectorArray = vectorToArray($vector);
             $merge = array_merge($existingArray, $vectorArray);
@@ -84,11 +84,9 @@ final class Graph implements GraphInterface
         return $this->map->has($job);
     }
 
-    /**
-     * @return VectorInterface<string>
-     */
     public function get(string $job): VectorInterface
     {
+        /** @var VectorInterface<string> */
         return $this->map->get($job);
     }
 
@@ -100,9 +98,6 @@ final class Graph implements GraphInterface
         return $array->contains(...$dependencies);
     }
 
-    /**
-     * @return array<int, array<int, string>>
-     */
     public function toArray(): array
     {
         $sort = [];
@@ -133,7 +128,7 @@ final class Graph implements GraphInterface
      */
     private function getSortAsc(): array
     {
-        $array = iterator_to_array($this->map->getIterator(), true);
+        $array = mapToArray($this->map);
         // @phpstan-ignore-next-line
         uasort($array, function (VectorInterface $a, VectorInterface $b) {
             return match (true) {
@@ -162,6 +157,7 @@ final class Graph implements GraphInterface
         $vector = new Vector(...$sort);
         foreach ($sync as $job => $index) {
             $auxIndex = $index + $aux;
+            /** @var array<int, string> $array */
             $array = $vector->get($auxIndex);
             $key = array_search($job, $array, true);
             unset($array[$key]);
@@ -171,10 +167,12 @@ final class Graph implements GraphInterface
                 ->withInsert($auxIndex, [$job]);
             $aux++;
         }
+        /** @var array<int, array<int, string>> */
+        $array = vectorToArray($vector);
 
-        return array_values(array_filter(
-            vectorToArray($vector)
-        ));
+        return array_values(
+            array_filter($array)
+        );
     }
 
     /**

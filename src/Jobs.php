@@ -19,6 +19,7 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
+use function Chevere\DataStructure\vectorToArray;
 use function Chevere\Message\message;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\OutOfRangeException;
@@ -64,7 +65,8 @@ final class Jobs implements JobsInterface
 
     public function keys(): array
     {
-        return iterator_to_array($this->jobs->getIterator());
+        /** @var array<string> */
+        return vectorToArray($this->jobs);
     }
 
     public function graph(): array
@@ -150,7 +152,7 @@ final class Jobs implements JobsInterface
     private function storeReferences(string $name, JobInterface $job): void
     {
         /** @var ActionInterface $action */
-        $action = new ($job->action());
+        $action = $job->getAction();
         foreach ($action->responseParameters()->getIterator() as $key => $parameter) {
             $this->references = $this->references
                 ->withPut(
@@ -165,7 +167,7 @@ final class Jobs implements JobsInterface
     {
         foreach ($job->arguments() as $parameter => $argument) {
             /** @var ActionInterface $action */
-            $action = new ($job->action());
+            $action = $job->getAction();
             /** @var TypeInterface $type */
             $type = $action->parameters()->get($parameter)->type();
             $property = match (true) {
@@ -245,7 +247,7 @@ final class Jobs implements JobsInterface
                 );
             }
             /** @var ActionInterface $action */
-            $action = new ($runIfJob->action());
+            $action = $runIfJob->getAction();
             $parameter = $action
                 ->getResponseParameters()->get($runIf->parameter());
             if ($parameter->type()->primitive() !== 'boolean') {
@@ -286,11 +288,11 @@ final class Jobs implements JobsInterface
 
     private function assertDependencies(string $job): void
     {
-        $dependencies = iterator_to_array($this->jobDependencies->getIterator());
+        $dependencies = vectorToArray($this->jobDependencies);
         if (! $this->jobs->contains(...$dependencies)) {
             $missing = array_diff(
                 $dependencies,
-                iterator_to_array($this->jobs->getIterator())
+                vectorToArray($this->jobs)
             );
 
             throw new OutOfRangeException(
