@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\DataStructure\Interfaces\VectorInterface;
 
 /**
  * Describes the component in charge of defining a job.
@@ -38,14 +39,14 @@ interface JobInterface
     public function arguments(): array;
 
     /**
-     * @return string[]
+     * @return VectorInterface<string>
      */
-    public function dependencies(): array;
+    public function dependencies(): VectorInterface;
 
     public function isSync(): bool;
 
     /**
-     * @return array<ReferenceInterface|VariableInterface>
+     * @return VectorInterface<ReferenceInterface|VariableInterface>
      */
-    public function runIf(): array;
+    public function runIf(): VectorInterface;
 }

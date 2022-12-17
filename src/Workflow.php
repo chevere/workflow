@@ -158,23 +158,30 @@ final class Workflow implements WorkflowInterface
         mixed $value,
         ParameterInterface $parameter
     ): void {
-        if ($value instanceof VariableInterface) {
+        $isVariable = $value instanceof VariableInterface;
+        $isReference = $value instanceof ReferenceInterface;
+        if (! ($isVariable || $isReference)) {
+            return;
+        }
+        if ($isVariable) {
+            /** @var VariableInterface $value */
             $this->putVariable($value, $parameter);
-        }
-        if ($value instanceof ReferenceInterface) {
-            $this->assertPreviousReference($value);
 
-            try {
-                /** @var array<string[]> $expected */
-                $expected = $this->expected->get($value->job());
-            } catch (OutOfRangeException) {
-                $expected = [];
-            }
-            $expected[] = $value->parameter();
-            $this->expected = $this->expected
-                ->withPut(...[
-                    $value->job() => $expected,
-                ]);
+            return;
         }
+        /** @var ReferenceInterface $value */
+        $this->assertPreviousReference($value);
+
+        try {
+            /** @var array<string[]> $expected */
+            $expected = $this->expected->get($value->job());
+        } catch (OutOfRangeException) {
+            $expected = [];
+        }
+        $expected[] = $value->parameter();
+        $this->expected = $this->expected
+            ->withPut(...[
+                $value->job() => $expected,
+            ]);
     }
 }

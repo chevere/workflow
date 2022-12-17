@@ -49,10 +49,10 @@ final class Graph implements GraphInterface
         string $name,
         JobInterface $job,
     ): GraphInterface {
-        $vector = new Vector(...$job->dependencies());
+        $vector = $job->dependencies();
         $this->assertNotSelfDependency($name, $vector);
         $new = clone $this;
-        foreach ($job->dependencies() as $dependency) {
+        foreach ($vector as $dependency) {
             if (! $new->has($dependency)) {
                 $new->map = $new->map
                     ->withPut(...[

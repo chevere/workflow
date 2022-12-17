@@ -314,6 +314,13 @@ final class JobsTest extends TestCase
                 TestActionNoParams::class,
             )->withRunIf($false, $true),
         );
+        $this->assertSame(
+            [
+                ['j1'],
+                ['j2', 'j3'],
+            ],
+            $jobs->graph()
+        );
         $this->assertTrue(
             $jobs->references()->has($true->__toString(), $false->__toString())
         );

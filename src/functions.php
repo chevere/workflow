@@ -21,6 +21,7 @@ use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use Psr\Container\ContainerInterface;
+use Throwable;
 
 // @codeCoverageIgnoreStart
 
@@ -71,8 +72,12 @@ function variable(string $name): VariableInterface
  */
 function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 {
-    if ($runner->run()->has($job)) {
+    try {
+        $runner->run()->getResponse($job);
+
         return $runner;
+    } catch(Throwable) {
+        // ignore
     }
 
     return $runner->withRunJob($job);

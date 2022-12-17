@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\DataStructure\Interfaces\MappedInterface;
+use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Errors\ArgumentCountError;
@@ -24,11 +25,6 @@ use Iterator;
  */
 interface RunInterface extends MappedInterface
 {
-    /**
-     * @param mixed ...$variables Workflow variables.
-     */
-    public function __construct(WorkflowInterface $workflow, mixed ...$variables);
-
     public function keys(): array;
 
     /**
@@ -48,21 +44,25 @@ interface RunInterface extends MappedInterface
     public function arguments(): ArgumentsInterface;
 
     /**
-     * @throws ArgumentCountError
+     * @return VectorInterface<string>
      */
-    public function withJobResponse(string $job, ResponseInterface $response): self;
+    public function skip(): VectorInterface;
 
     /**
-     * Indicates whether the instance has the given `$job`. Will return `true` if job has ran.
+     * @throws ArgumentCountError
      */
-    public function has(string ...$job): bool;
+    public function withResponse(string $job, ResponseInterface $response): self;
+
+    public function withSkip(string ...$job): self;
 
     /**
      * Provides access to the ResponseInterface instance for the given `$job`.
      */
-    public function get(string $job): ResponseInterface;
+    public function getResponse(string $job): ResponseInterface;
 
     /**
+     * Iterator for job responses.
+     *
      * @return Iterator<string, ResponseInterface>
      */
     public function getIterator(): Iterator;

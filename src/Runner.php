@@ -60,11 +60,20 @@ final class Runner implements RunnerInterface
     {
         $new = clone $this;
         $job = $new->run()->workflow()->jobs()->get($name);
-        $action = $job->getAction()
-            ->withContainer($new->container);
+        foreach ($job->runIf() as $runIf) {
+            $condition = $runIf instanceof VariableInterface
+                ? $new->run->arguments()->getBoolean($runIf->__toString())
+                : $new->run->getResponse($runIf->job())->data()[$runIf->parameter()];
+            if ($condition === false) {
+                $new->addJobSkip($name);
+
+                return $new;
+            }
+        }
+        $action = $job->getAction()->withContainer($new->container);
         $arguments = $new->getJobArguments($job);
         $response = $new->getActionResponse($action, $arguments);
-        $new->addJob($name, $response);
+        $new->addJobResponse($name, $response);
 
         return $new;
     }
@@ -102,31 +111,37 @@ final class Runner implements RunnerInterface
     private function getJobArguments(JobInterface $job): array
     {
         $arguments = [];
-        foreach ($job->arguments() as $name => $argument) {
-            $isReference = $argument instanceof ReferenceInterface;
-            $isVariable = $argument instanceof VariableInterface;
+        foreach ($job->arguments() as $name => $value) {
+            $isReference = $value instanceof ReferenceInterface;
+            $isVariable = $value instanceof VariableInterface;
             if (! ($isReference || $isVariable)) {
-                $arguments[$name] = $argument;
+                $arguments[$name] = $value;
 
                 continue;
             }
             if ($isVariable) {
+                /** @var VariableInterface $value */
                 $arguments[$name] = $this->run->arguments()
-                    ->get($argument->__toString());
+                    ->get($value->__toString());
 
                 continue;
             }
-            $arguments[$name] = $this->run->get($argument->job())
-                ->data()[$argument->parameter()];
+            /** @var ReferenceInterface $value */
+            $arguments[$name] = $this->run->getResponse($value->job())
+                ->data()[$value->parameter()];
         }
 
         return $arguments;
     }
 
-    private function addJob(string $name, ResponseInterface $response): void
+    private function addJobResponse(string $name, ResponseInterface $response): void
     {
-        $this->run = $this->run
-            ->withJobResponse($name, $response);
+        $this->run = $this->run->withResponse($name, $response);
+    }
+
+    private function addJobSkip(string $name): void
+    {
+        $this->run = $this->run->withSkip($name);
     }
 
     /**
@@ -150,8 +165,14 @@ final class Runner implements RunnerInterface
     private function merge(self $self, RunnerInterface ...$merge): void
     {
         foreach ($merge as $runner) {
-            foreach ($runner->run()->getIterator() as $name => $response) {
-                $self->addJob($name, $response);
+            foreach ($runner->run() as $name => $response) {
+                $self->addJobResponse($name, $response);
+            }
+            foreach ($runner->run()->skip() as $name) {
+                if ($self->run->skip()->contains($name)) {
+                    continue;
+                }
+                $self->addJobSkip($name);
             }
         }
     }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use function Chevere\DataStructure\vectorToArray;
 use Chevere\Filesystem\Interfaces\PathInterface;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
@@ -101,17 +102,17 @@ final class JobTest extends TestCase
     public function testWithDependencies(): void
     {
         $job = new Job(TestActionNoParamsIntegerResponse::class);
-        $this->assertSame([], $job->dependencies());
+        $this->assertSame([], vectorToArray($job->dependencies()));
         $job = $job->withDepends('foo', 'bar');
-        $this->assertSame(['foo', 'bar'], $job->dependencies());
+        $this->assertSame(['foo', 'bar'], vectorToArray($job->dependencies()));
         $job = $job->withDepends('foo', 'bar', 'wea');
-        $this->assertSame(['foo', 'bar', 'wea'], $job->dependencies());
+        $this->assertSame(['foo', 'bar', 'wea'], vectorToArray($job->dependencies()));
     }
 
     public function testWithDependenciesOverflow(): void
     {
         $job = new Job(TestActionNoParamsIntegerResponse::class);
-        $this->assertSame([], $job->dependencies());
+        $this->assertSame([], vectorToArray($job->dependencies()));
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Job dependencies must be unique');
         $this->expectExceptionMessage('repeated foo');
@@ -121,7 +122,7 @@ final class JobTest extends TestCase
     public function testWithWrongDepends(): void
     {
         $job = new Job(TestActionNoParamsIntegerResponse::class);
-        $this->assertSame([], $job->dependencies());
+        $this->assertSame([], vectorToArray($job->dependencies()));
         $this->expectException(Exception::class);
         $job->withDepends('');
     }
@@ -141,16 +142,26 @@ final class JobTest extends TestCase
         $job = new Job(TestActionNoParams::class);
         $variable = variable('wea');
         $job = $job->withRunIf($variable);
-        $this->assertEquals(
-            [$variable],
-            $job->runIf()
-        );
         $this->assertSame(
             [$variable],
-            $job->runIf()
+            vectorToArray($job->runIf())
         );
         $this->expectException(OverflowException::class);
         $job->withRunIf($variable, $variable);
+    }
+
+    public function testWithRunIfReference(): void
+    {
+        $job = new Job(TestActionNoParams::class);
+        $reference = reference('jobN', 'parameter');
+        $job = $job->withRunIf($reference);
+        $this->assertSame(
+            [$reference],
+            vectorToArray($job->runIf())
+        );
+        $this->assertTrue($job->dependencies()->contains('jobN'));
+        $this->expectException(OverflowException::class);
+        $job->withRunIf($reference, $reference);
     }
 
     public function testWithMissingArgument(): void

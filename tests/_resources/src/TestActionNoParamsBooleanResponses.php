@@ -32,7 +32,7 @@ final class TestActionNoParamsBooleanResponses extends Action
     {
         return [
             'true' => true,
-            'false' => true,
+            'false' => false,
         ];
     }
 }

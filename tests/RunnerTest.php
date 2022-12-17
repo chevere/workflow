@@ -14,9 +14,13 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Container\Container;
+use function Chevere\DataStructure\vectorToArray;
 use Chevere\Tests\_resources\src\TestActionNoParams;
+use Chevere\Tests\_resources\src\TestActionNoParamsBooleanResponses;
+use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamFooResponse1;
 use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Workflow\Interfaces\RunInterface;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\reference;
@@ -26,7 +30,6 @@ use Chevere\Workflow\Runner;
 use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 final class RunnerTest extends TestCase
 {
@@ -34,33 +37,33 @@ final class RunnerTest extends TestCase
     {
         $container = new Container();
         $jobsRunArguments = [
-            'j1' => [
+            'job1' => [
                 'foo' => 'viva Chile!',
             ],
-            'j2' => [
+            'job2' => [
                 'foo' => 'tenemos el litio botado',
                 'bar' => 'y no lo sabemos aprovechar',
             ],
-            'j3' => [
+            'job3' => [
                 'foo' => 'condimento bueno',
             ],
         ];
-        $j1 = job(
+        $job1 = job(
             TestActionParamFooResponse1::class,
-            ...$jobsRunArguments['j1']
+            ...$jobsRunArguments['job1']
         );
-        $j2 = job(
+        $job2 = job(
             TestActionParamsFooBarResponse2::class,
-            ...$jobsRunArguments['j2']
+            ...$jobsRunArguments['job2']
         );
-        $j3 = job(
+        $job3 = job(
             TestActionParamFooResponse1::class,
-            ...$jobsRunArguments['j3']
+            ...$jobsRunArguments['job3']
         )->withIsSync();
         $jobs = [
-            'j1' => $j1,
-            'j2' => $j2,
-            'j3' => $j3,
+            'job1' => $job1,
+            'job2' => $job2,
+            'job3' => $job3,
         ];
         $workflow = workflow(...$jobs);
         $run = new Run($workflow);
@@ -68,9 +71,9 @@ final class RunnerTest extends TestCase
         foreach (array_keys($jobs) as $name) {
             $runner = $runner->withRunJob($name);
         }
-        $this->assertRunnerAgainstRun($jobs, $jobsRunArguments, $runner->run());
+        $this->assertExpectedRun($jobs, $jobsRunArguments, $runner->run());
         $run = run($workflow);
-        $this->assertRunnerAgainstRun($jobs, $jobsRunArguments, $run);
+        $this->assertExpectedRun($jobs, $jobsRunArguments, $run);
     }
 
     public function testRunnerForVariables(): void
@@ -82,45 +85,45 @@ final class RunnerTest extends TestCase
             'tres' => 'en las discos todos lo practican',
         ];
         $jobsRunArguments = [
-            'j1' => [
+            'job1' => [
                 'foo' => $variables['uno'],
             ],
-            'j2' => [
+            'job2' => [
                 'foo' => $variables['dos'],
                 'bar' => $variables['dos'],
             ],
-            'j3' => [
+            'job3' => [
                 'foo' => $variables['tres'],
             ],
         ];
         $jobsVariables = [
-            'j1' => [
+            'job1' => [
                 'foo' => variable('uno'),
             ],
-            'j2' => [
+            'job2' => [
                 'foo' => variable('dos'),
                 'bar' => variable('dos'),
             ],
-            'j3' => [
+            'job3' => [
                 'foo' => variable('tres'),
             ],
         ];
-        $j1 = job(
+        $job1 = job(
             TestActionParamFooResponse1::class,
-            ...$jobsVariables['j1']
+            ...$jobsVariables['job1']
         );
-        $j2 = job(
+        $job2 = job(
             TestActionParamsFooBarResponse2::class,
-            ...$jobsVariables['j2']
+            ...$jobsVariables['job2']
         );
-        $j3 = job(
+        $job3 = job(
             TestActionParamFooResponse1::class,
-            ...$jobsVariables['j3']
+            ...$jobsVariables['job3']
         )->withIsSync();
         $jobs = [
-            'j1' => $j1,
-            'j2' => $j2,
-            'j3' => $j3,
+            'job1' => $job1,
+            'job2' => $job2,
+            'job3' => $job3,
         ];
         $workflow = workflow(...$jobs);
         $run = new Run($workflow, ...$variables);
@@ -128,9 +131,9 @@ final class RunnerTest extends TestCase
         foreach (array_keys($jobs) as $name) {
             $runner = $runner->withRunJob($name);
         }
-        $this->assertRunnerAgainstRun($jobs, $jobsRunArguments, $runner->run());
+        $this->assertExpectedRun($jobs, $jobsRunArguments, $runner->run());
         $run = run($workflow, $variables);
-        $this->assertRunnerAgainstRun($jobs, $jobsRunArguments, $run);
+        $this->assertExpectedRun($jobs, $jobsRunArguments, $run);
     }
 
     public function testRunnerForReferences(): void
@@ -142,45 +145,45 @@ final class RunnerTest extends TestCase
             'tres' => 'y verías la vida... tal como es',
         ];
         $jobsRunArguments = [
-            'j1' => [
+            'job1' => [
                 'foo' => $references['uno'],
             ],
-            'j2' => [
+            'job2' => [
                 'foo' => $references['uno'],
                 'bar' => $references['uno'],
             ],
-            'j3' => [
+            'job3' => [
                 'foo' => $references['uno'] . '^' . $references['uno'],
             ],
         ];
         $jobsReferences = [
-            'j1' => [
+            'job1' => [
                 'foo' => $references['uno'],
             ],
-            'j2' => [
-                'foo' => reference('j1', 'response1'),
-                'bar' => reference('j1', 'response1'),
+            'job2' => [
+                'foo' => reference('job1', 'response1'),
+                'bar' => reference('job1', 'response1'),
             ],
-            'j3' => [
-                'foo' => reference('j2', 'response2'),
+            'job3' => [
+                'foo' => reference('job2', 'response2'),
             ],
         ];
-        $j1 = job(
+        $job1 = job(
             TestActionParamFooResponse1::class,
-            ...$jobsReferences['j1']
+            ...$jobsReferences['job1']
         );
-        $j2 = job(
+        $job2 = job(
             TestActionParamsFooBarResponse2::class,
-            ...$jobsReferences['j2']
+            ...$jobsReferences['job2']
         );
-        $j3 = job(
+        $job3 = job(
             TestActionParamFooResponse1::class,
-            ...$jobsReferences['j3']
+            ...$jobsReferences['job3']
         )->withIsSync();
         $jobs = [
-            'j1' => $j1,
-            'j2' => $j2,
-            'j3' => $j3,
+            'job1' => $job1,
+            'job2' => $job2,
+            'job3' => $job3,
         ];
         $workflow = workflow(...$jobs);
         $run = new Run($workflow, ...$references);
@@ -188,44 +191,83 @@ final class RunnerTest extends TestCase
         foreach (array_keys($jobs) as $name) {
             $runner = $runner->withRunJob($name);
         }
-        $this->assertRunnerAgainstRun($jobs, $jobsRunArguments, $runner->run());
+        $this->assertExpectedRun($jobs, $jobsRunArguments, $runner->run());
         $run = run($workflow, $references);
-        $this->assertRunnerAgainstRun($jobs, $jobsRunArguments, $run);
+        $this->assertExpectedRun($jobs, $jobsRunArguments, $run);
     }
 
-    public function testWithRunIf(): void
+    public function testWithRunIfVariable(): void
     {
         $container = new Container();
         $name = 'variable';
-        $job = job(TestActionNoParams::class)
-            ->withRunIf(variable($name));
-        $workflow = workflow(j1: $job);
+        $job = job(TestActionNoParams::class)->withRunIf(variable($name));
+        $workflow = workflow(job1: $job);
         $arguments = [
             $name => true,
         ];
         $run = new Run($workflow, ...$arguments);
         $runner = new Runner($run, $container);
-        $runner = $runner->withRun();
+        $runner = $runner->withRunJob('job1');
         $this->assertSame(
             $job->getAction()->run(),
-            $runner->run()->get('j1')->data()
+            $runner->run()->getResponse('job1')->data()
         );
         $arguments = [
             $name => false,
         ];
         $run = new Run($workflow, ...$arguments);
         $runner = new Runner($run, $container);
-        // Note: RunIf stuff should be skipped, not throwing an exception
-        // $this->expectException(RuntimeException::class);
-        // $runner->withRun();
+        $runner = $runner->withRunJob('job1');
+        $this->assertSame(['job1'], vectorToArray($runner->run()->skip()));
+        $run = run($workflow, $arguments);
+        $this->assertSame(['job1'], vectorToArray($runner->run()->skip()));
+        $this->expectException(OutOfRangeException::class);
+        $runner->run()->getResponse('job1')->data();
     }
 
-    private function assertRunnerAgainstRun(array $jobs, array $runArguments, RunInterface $run): void
+    public function testRunIfReference(): void
+    {
+        $container = new Container();
+        $job1 = job(TestActionNoParamsBooleanResponses::class);
+        $job2 = job(TestActionNoParamsBooleanResponses::class);
+        $job3 = job(TestActionNoParamsIntegerResponse::class);
+        $workflow = workflow(
+            job1: $job1,
+            job2: $job2->withRunIf(reference('job1', 'true')),
+            job3: $job3->withRunIf(reference('job1', 'true')),
+        );
+        $run = new Run($workflow);
+        $runner = new Runner($run, $container);
+        $runner = $runner
+            ->withRunJob('job1')
+            ->withRunJob('job2')
+            ->withRunJob('job3');
+        $runner->run()->getResponse('job2');
+        $runner->run()->getResponse('job3');
+        $workflow = workflow(
+            job1: $job1,
+            job2: $job2->withRunIf(reference('job1', 'true'), reference('job1', 'false')),
+            job3: $job3->withRunIf(reference('job1', 'true'), reference('job1', 'false')),
+            job4: $job1->withDepends('job3')
+        );
+        $run = new Run($workflow);
+        $runner = new Runner($run, $container);
+        $runner = $runner
+            ->withRunJob('job1')
+            ->withRunJob('job2')
+            ->withRunJob('job3')
+            ->withRunJob('job4');
+        $this->assertSame(['job2', 'job3'], vectorToArray($runner->run()->skip()));
+        $run = run($workflow);
+        $this->assertSame(['job2', 'job3'], vectorToArray($runner->run()->skip()));
+    }
+
+    private function assertExpectedRun(array $jobs, array $runArguments, RunInterface $run): void
     {
         foreach ($jobs as $name => $job) {
             $this->assertSame(
                 $job->getAction()->run(...$runArguments[$name]),
-                $run->get($name)->data()
+                $run->getResponse($name)->data()
             );
         }
     }

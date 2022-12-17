@@ -124,7 +124,7 @@ final class Jobs implements JobsInterface
     private function putAdded(JobInterface ...$jobs): void
     {
         foreach ($jobs as $name => $job) {
-            $this->jobDependencies = new Vector(...$job->dependencies());
+            $this->jobDependencies = $job->dependencies();
             $name = strval($name);
             $this->addMap($name, $job);
             $this->jobs = $this->jobs->withPush($name);

@@ -13,16 +13,20 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use function Chevere\DataStructure\vectorToArray;
 use Chevere\Response\Response;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionParam;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
+use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Run;
 use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
 
@@ -40,26 +44,26 @@ final class RunTest extends TestCase
         $arguments = [
             'foo' => 'bar',
         ];
-        $workflowRun = new Run($workflow, ...$arguments);
+        $run = new Run($workflow, ...$arguments);
         $this->assertMatchesRegularExpression(
             '/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i',
-            $workflowRun->uuid()
+            $run->uuid()
         );
-        $this->assertSame($workflow, $workflowRun->workflow());
-        $this->assertSame($arguments, $workflowRun->arguments()->toArray());
+        $this->assertSame($workflow, $run->workflow());
+        $this->assertSame($arguments, $run->arguments()->toArray());
         $this->expectException(OutOfRangeException::class);
-        $workflowRun->get('not-found');
+        $run->getResponse('not-found');
     }
 
     public function testWithStepResponse(): void
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                step0: new Job(
+                job0: new Job(
                     TestActionParam::class,
                     foo: variable('foo')
                 ),
-                step1: new Job(
+                job1: new Job(
                     TestActionParams::class,
                     foo: variable('baz'),
                     bar: variable('bar')
@@ -70,19 +74,18 @@ final class RunTest extends TestCase
             'bar' => 'mundo',
             'baz' => 'ql',
         ];
-        $workflowRun = (new Run($workflow, ...$arguments));
-        $workflowRunWithStepResponse = $workflowRun
-            ->withJobResponse('step0', new Response());
-        $this->assertNotSame($workflowRun, $workflowRunWithStepResponse);
-        $this->assertTrue($workflowRunWithStepResponse->has('step0'));
-        $this->assertSame([], $workflowRunWithStepResponse->get('step0')->data());
+        $run = (new Run($workflow, ...$arguments));
+        $workflowRunWithStepResponse = $run
+            ->withResponse('job0', new Response());
+        $this->assertNotSame($run, $workflowRunWithStepResponse);
+        $this->assertSame([], $workflowRunWithStepResponse->getResponse('job0')->data());
     }
 
     public function testWithAddedNotFound(): void
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                step0: new Job(
+                job0: new Job(
                     TestActionParam::class,
                     foo: variable('foo')
                 )
@@ -92,7 +95,7 @@ final class RunTest extends TestCase
         ];
         $this->expectException(OutOfRangeException::class);
         (new Run($workflow, ...$arguments))
-            ->withJobResponse(
+            ->withResponse(
                 'not-found',
                 new Response()
             );
@@ -102,17 +105,41 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                step0: new Job(TestActionNoParams::class),
-                step1: new Job(
+                job0: new Job(TestActionNoParams::class),
+                job1: new Job(
                     TestActionParam::class,
                     foo: variable('foo')
                 )
             );
         $this->expectException(ArgumentCountError::class);
         (new Run($workflow))
-            ->withJobResponse(
-                'step0',
+            ->withResponse(
+                'job0',
                 new Response()
             );
+    }
+
+    public function testWithSkip(): void
+    {
+        $workflow = workflow(
+            job1: job(TestActionNoParams::class),
+            job2: job(TestActionNoParams::class)
+        );
+        $run = new Run($workflow);
+        $this->assertCount(0, $run->skip());
+        $immutable = $run->withSkip('job1', 'job2');
+        $this->assertNotSame($run, $immutable);
+        $this->assertCount(2, $immutable->skip());
+        $this->assertSame(['job1', 'job2'], vectorToArray($immutable->skip()));
+        $this->expectException(OverflowException::class);
+        $immutable->withSkip('job1');
+    }
+
+    public function testWithSkipMissingJob(): void
+    {
+        $workflow = workflow();
+        $run = new Run($workflow);
+        $this->expectException(OutOfRangeException::class);
+        $run->withSkip('job1', 'job2');
     }
 }
