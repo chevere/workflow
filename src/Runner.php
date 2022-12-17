@@ -50,14 +50,7 @@ final class Runner implements RunnerInterface
             $promises = $new->getPromises($node);
             /** @var RunnerInterface[] $responses */
             $responses = wait(all($promises));
-            if (count($node) === 1) {
-                /** @var self $end */
-                $end = end($responses);
-                $new = $end;
-
-                continue;
-            }
-            $new->mergeRunner($new, ...$responses);
+            $new->merge($new, ...$responses);
         }
 
         return $new;
@@ -110,12 +103,14 @@ final class Runner implements RunnerInterface
     {
         $arguments = [];
         foreach ($job->arguments() as $name => $argument) {
-            if (! ($argument instanceof ReferenceInterface || $argument instanceof VariableInterface)) {
+            $isReference = $argument instanceof ReferenceInterface;
+            $isVariable = $argument instanceof VariableInterface;
+            if (! ($isReference || $isVariable)) {
                 $arguments[$name] = $argument;
 
                 continue;
             }
-            if ($argument instanceof VariableInterface) {
+            if ($isVariable) {
                 $arguments[$name] = $this->run->arguments()
                     ->get($argument->__toString());
 
@@ -152,11 +147,11 @@ final class Runner implements RunnerInterface
         return $promises;
     }
 
-    private function mergeRunner(self $stock, RunnerInterface ...$merge): void
+    private function merge(self $self, RunnerInterface ...$merge): void
     {
         foreach ($merge as $runner) {
             foreach ($runner->run()->getIterator() as $name => $response) {
-                $stock->addJob($name, $response);
+                $self->addJob($name, $response);
             }
         }
     }
