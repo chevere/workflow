@@ -76,7 +76,7 @@ function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
         $runner->run()->getResponse($job);
 
         return $runner;
-    } catch(Throwable) {
+    } catch (Throwable) {
         // ignore
     }
 

@@ -50,7 +50,9 @@ final class Runner implements RunnerInterface
             $promises = $new->getPromises($node);
             /** @var RunnerInterface[] $responses */
             $responses = wait(all($promises));
-            $new->merge($new, ...$responses);
+            foreach ($responses as $runner) {
+                $new->merge($new, $runner);
+            }
         }
 
         return $new;
@@ -141,6 +143,9 @@ final class Runner implements RunnerInterface
 
     private function addJobSkip(string $name): void
     {
+        if ($this->run->skip()->contains($name)) {
+            return;
+        }
         $this->run = $this->run->withSkip($name);
     }
 
@@ -162,18 +167,13 @@ final class Runner implements RunnerInterface
         return $promises;
     }
 
-    private function merge(self $self, RunnerInterface ...$merge): void
+    private function merge(self $self, RunnerInterface $runner): void
     {
-        foreach ($merge as $runner) {
-            foreach ($runner->run() as $name => $response) {
-                $self->addJobResponse($name, $response);
-            }
-            foreach ($runner->run()->skip() as $name) {
-                if ($self->run->skip()->contains($name)) {
-                    continue;
-                }
-                $self->addJobSkip($name);
-            }
+        foreach ($runner->run() as $name => $response) {
+            $self->addJobResponse($name, $response);
+        }
+        foreach ($runner->run()->skip() as $name) {
+            $self->addJobSkip($name);
         }
     }
 }
