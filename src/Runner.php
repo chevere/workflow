@@ -21,6 +21,7 @@ use Chevere\Action\Interfaces\ActionInterface;
 use function Chevere\Message\message;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
+use Chevere\Throwable\Exceptions\OutOfRangeException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -63,10 +64,16 @@ final class Runner implements RunnerInterface
         $new = clone $this;
         $job = $new->run()->workflow()->jobs()->get($name);
         foreach ($job->runIf() as $runIf) {
-            $condition = $runIf instanceof VariableInterface
-                ? $new->run->arguments()->getBoolean($runIf->__toString())
-                : $new->run->getResponse($runIf->job())->data()[$runIf->parameter()];
-            if ($condition === false) {
+            if ($new->getRunIfCondition($runIf) === false) {
+                $new->addJobSkip($name);
+
+                return $new;
+            }
+        }
+        foreach ($job->dependencies() as $dependency) {
+            try {
+                $new->run()->getResponse($dependency);
+            } catch(OutOfRangeException) {
                 $new->addJobSkip($name);
 
                 return $new;
@@ -78,6 +85,14 @@ final class Runner implements RunnerInterface
         $new->addJobResponse($name, $response);
 
         return $new;
+    }
+
+    private function getRunIfCondition(VariableInterface | ReferenceInterface $runIf): bool
+    {
+        /** @var boolean */
+        return $runIf instanceof VariableInterface
+                ? $this->run->arguments()->getBoolean($runIf->__toString())
+                : $this->run->getResponse($runIf->job())->data()[$runIf->parameter()];
     }
 
     /**

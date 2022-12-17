@@ -218,9 +218,9 @@ final class RunnerTest extends TestCase
         $run = new Run($workflow, ...$arguments);
         $runner = new Runner($run, $container);
         $runner = $runner->withRunJob('job1');
-        $this->assertSame(['job1'], vectorToArray($runner->run()->skip()));
+        $this->assertSame($workflow->jobs()->keys(), vectorToArray($runner->run()->skip()));
         $run = run($workflow, $arguments);
-        $this->assertSame(['job1'], vectorToArray($runner->run()->skip()));
+        $this->assertSame($workflow->jobs()->keys(), vectorToArray($runner->run()->skip()));
         $this->expectException(OutOfRangeException::class);
         $runner->run()->getResponse('job1')->data();
     }
@@ -231,19 +231,19 @@ final class RunnerTest extends TestCase
         $job1 = job(TestActionNoParamsBooleanResponses::class);
         $job2 = job(TestActionNoParamsBooleanResponses::class);
         $job3 = job(TestActionNoParamsIntegerResponse::class);
+        $job4 = job(TestActionNoParamsIntegerResponse::class);
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIf(reference('job1', 'true')),
             job3: $job3->withRunIf(reference('job1', 'true')),
+            job4: $job4->withDepends('job3')
         );
         $run = new Run($workflow);
         $runner = new Runner($run, $container);
-        $runner = $runner
-            ->withRunJob('job1')
-            ->withRunJob('job2')
-            ->withRunJob('job3');
-        $runner->run()->getResponse('job2');
-        $runner->run()->getResponse('job3');
+        foreach ($workflow->jobs()->keys() as $name) {
+            $runner = $runner->withRunJob($name);
+            $runner->run()->getResponse($name);
+        }
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIf(reference('job1', 'true'), reference('job1', 'false')),
@@ -252,14 +252,13 @@ final class RunnerTest extends TestCase
         );
         $run = new Run($workflow);
         $runner = new Runner($run, $container);
-        $runner = $runner
-            ->withRunJob('job1')
-            ->withRunJob('job2')
-            ->withRunJob('job3')
-            ->withRunJob('job4');
-        $this->assertSame(['job2', 'job3'], vectorToArray($runner->run()->skip()));
+        foreach ($workflow->jobs()->keys() as $name) {
+            $runner = $runner->withRunJob($name);
+        }
+        $jobsKeysSkip = ['job2', 'job3', 'job4'];
+        $this->assertSame($jobsKeysSkip, vectorToArray($runner->run()->skip()));
         $run = run($workflow);
-        $this->assertSame(['job2', 'job3'], vectorToArray($runner->run()->skip()));
+        $this->assertSame($jobsKeysSkip, vectorToArray($runner->run()->skip()));
     }
 
     private function assertExpectedRun(array $jobs, array $runArguments, RunInterface $run): void
