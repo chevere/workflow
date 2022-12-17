@@ -73,7 +73,7 @@ final class Runner implements RunnerInterface
         foreach ($job->dependencies() as $dependency) {
             try {
                 $new->run()->getResponse($dependency);
-            } catch(OutOfRangeException) {
+            } catch (OutOfRangeException) {
                 $new->addJobSkip($name);
 
                 return $new;
