@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
@@ -32,14 +31,10 @@ use Ramsey\Uuid\Uuid;
 
 final class Run implements RunInterface
 {
-    use MapTrait;
-
     /**
-     * Job name to response.
-     *
-     * @var MapInterface<string, ResponseInterface>
+     * @template-use MapTrait<ResponseInterface>
      */
-    private MapInterface $map;
+    use MapTrait;
 
     private string $uuid;
 

@@ -34,6 +34,9 @@ use Iterator;
 
 final class Jobs implements JobsInterface
 {
+    /**
+     * @template-use MapTrait<JobInterface>
+     */
     use MapTrait;
 
     /**
@@ -43,8 +46,14 @@ final class Jobs implements JobsInterface
 
     private GraphInterface $graph;
 
+    /**
+     * @var MapInterface<TypeInterface>
+     */
     private MapInterface $variables;
 
+    /**
+     * @var MapInterface<TypeInterface>
+     */
     private MapInterface $references;
 
     /**
@@ -142,7 +151,7 @@ final class Jobs implements JobsInterface
     private function storeReferences(string $name, JobInterface $job): void
     {
         $action = $job->getAction();
-        foreach ($action->responseParameters()->getIterator() as $key => $parameter) {
+        foreach ($action->responseParameters() as $key => $parameter) {
             $this->references = $this->references
                 ->withPut(
                     ...[
@@ -183,11 +192,15 @@ final class Jobs implements JobsInterface
         }
     }
 
+    /**
+     * @param MapInterface<TypeInterface> $map
+     * @return MapInterface<TypeInterface>
+     */
     private function mapSubjectType(
         VariableInterface|ReferenceInterface $argument,
-        Map $map,
+        MapInterface $map,
         TypeInterface $type
-    ): Map {
+    ): MapInterface {
         $subject = 'Reference';
         $key = strval($argument);
         if ($argument instanceof VariableInterface) {

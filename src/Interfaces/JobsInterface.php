@@ -19,7 +19,9 @@ use Chevere\Type\Interfaces\TypeInterface;
 use Iterator;
 
 /**
- * Describes the component in charge of defining a collection of steps.
+ * Describes the component in charge of defining a collection of Jobs.
+ *
+ * @extends MappedInterface<JobInterface>
  */
 interface JobsInterface extends MappedInterface
 {
@@ -30,12 +32,12 @@ interface JobsInterface extends MappedInterface
     public function get(string $job): JobInterface;
 
     /**
-     * @return MapInterface [string => TypeInterface]
+     * @return MapInterface<TypeInterface>
      */
     public function variables(): MapInterface;
 
     /**
-     * @return MapInterface [string => TypeInterface]
+     * @return MapInterface<TypeInterface>
      */
     public function references(): MapInterface;
 
@@ -43,8 +45,6 @@ interface JobsInterface extends MappedInterface
      * @return string[]
      */
     public function keys(): array;
-
-    public function count(): int;
 
     /**
      * @return array<int, string[]>

@@ -162,7 +162,7 @@ final class Job implements JobInterface
         $this->assertArgumentsCount($argument);
         $values = [];
         $missing = [];
-        foreach ($this->parameters->getIterator() as $name => $parameter) {
+        foreach ($this->parameters as $name => $parameter) {
             $item = $argument[$name] ?? null;
             if ($item !== null) {
                 $values[$name] = $item;

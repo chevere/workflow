@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use function Chevere\DataStructure\mapToArray;
@@ -27,12 +26,10 @@ use Chevere\Workflow\Interfaces\JobInterface;
 
 final class Graph implements GraphInterface
 {
-    use MapTrait;
-
     /**
-     * @var MapInterface<string, VectorInterface>
+     * @template-use MapTrait<VectorInterface<string>>
      */
-    private MapInterface $map;
+    use MapTrait;
 
     /**
      * @var VectorInterface<string>
@@ -124,7 +121,7 @@ final class Graph implements GraphInterface
     }
 
     /**
-     * @return array<string, Vector<string>>
+     * @return array<string, VectorInterface<string>>
      */
     private function getSortAsc(): array
     {
@@ -196,7 +193,7 @@ final class Graph implements GraphInterface
     private function handleDependencyUpdate(string $job, VectorInterface $vector): void
     {
         /** @var string $dependency */
-        foreach ($vector->getIterator() as $dependency) {
+        foreach ($vector as $dependency) {
             /** @var VectorInterface<string> $update */
             $update = $this->map->get($dependency);
             $findJob = $update->find($job);

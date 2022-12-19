@@ -32,12 +32,12 @@ final class Workflow implements WorkflowInterface
     private ParametersInterface $parameters;
 
     /**
-     * @var MapInterface<string, string[]>
+     * @var MapInterface<string[]>
      */
     private MapInterface $expected;
 
     /**
-     * @var MapInterface<string, ParametersInterface>
+     * @var MapInterface<ParametersInterface>
      */
     private MapInterface $provided;
 
@@ -173,7 +173,7 @@ final class Workflow implements WorkflowInterface
         $this->assertPreviousReference($value);
 
         try {
-            /** @var array<string[]> $expected */
+            /** @var array<string> $expected */
             $expected = $this->expected->get($value->job());
         } catch (OutOfRangeException) {
             $expected = [];

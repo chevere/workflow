@@ -22,6 +22,8 @@ use Iterator;
 
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
+ *
+ * @extends MappedInterface<ResponseInterface>
  */
 interface RunInterface extends MappedInterface
 {
