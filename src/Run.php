@@ -22,7 +22,7 @@ use function Chevere\Message\message;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use function Chevere\VariableSupport\deepCopy;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -119,12 +119,10 @@ final class Run implements RunInterface
     }
 
     /**
-     * @throws \TypeError
-     * @throws OutOfRangeException
+     * @throws OutOfBoundsException
      */
     public function getResponse(string $name): ResponseInterface
     {
-        /** @var ResponseInterface */
         return $this->map->get($name);
     }
 

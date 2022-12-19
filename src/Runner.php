@@ -21,7 +21,7 @@ use Chevere\Action\Interfaces\ActionInterface;
 use function Chevere\Message\message;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -73,7 +73,7 @@ final class Runner implements RunnerInterface
         foreach ($job->dependencies() as $dependency) {
             try {
                 $new->run()->getResponse($dependency);
-            } catch (OutOfRangeException) {
+            } catch (OutOfBoundsException) {
                 $new->addJobSkip($name);
 
                 return $new;

@@ -20,7 +20,7 @@ use Chevere\Tests\_resources\src\TestActionNoParamsBooleanResponses;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamFooResponse1;
 use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\RunInterface;
 use function Chevere\Workflow\job;
 use function Chevere\Workflow\reference;
@@ -221,7 +221,7 @@ final class RunnerTest extends TestCase
         $this->assertSame($workflow->jobs()->keys(), vectorToArray($runner->run()->skip()));
         $run = run($workflow, $arguments);
         $this->assertSame($workflow->jobs()->keys(), vectorToArray($runner->run()->skip()));
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $runner->run()->getResponse('job1')->data();
     }
 

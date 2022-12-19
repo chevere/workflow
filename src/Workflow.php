@@ -20,7 +20,7 @@ use function Chevere\Parameter\booleanParameter;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
@@ -76,7 +76,7 @@ final class Workflow implements WorkflowInterface
 
     /**
      * @throws \TypeError
-     * @throws OutOfRangeException
+     * @throws OutOfBoundsException
      */
     public function getJobResponseParameters(string $job): ParametersInterface
     {
@@ -97,8 +97,8 @@ final class Workflow implements WorkflowInterface
             try {
                 $parameter = $parameters->get($argument);
                 $this->putVariableReference($value, $parameter);
-            } catch (OutOfRangeException $e) {
-                throw new OutOfRangeException(
+            } catch (OutOfBoundsException $e) {
+                throw new OutOfBoundsException(
                     message('Incompatible declaration on Job %name% (%arg%) [%message%]')
                         ->withStrong('%name%', $name)
                         ->withStrong('%arg%', "argument@{$argument}")
@@ -128,7 +128,7 @@ final class Workflow implements WorkflowInterface
         /** @var ParametersInterface $responseParameters */
         $responseParameters = $this->provided->get($reference->job());
         if (! $responseParameters->has($reference->parameter())) {
-            throw new OutOfRangeException(
+            throw new OutOfBoundsException(
                 message('Reference %reference% not found, response key %parameter% is not declared by %job%')
                     ->withCode('%reference%', $reference->__toString())
                     ->withStrong('%parameter%', $reference->parameter())
@@ -175,7 +175,7 @@ final class Workflow implements WorkflowInterface
         try {
             /** @var array<string> $expected */
             $expected = $this->expected->get($value->job());
-        } catch (OutOfRangeException) {
+        } catch (OutOfBoundsException) {
             $expected = [];
         }
         $expected[] = $value->parameter();

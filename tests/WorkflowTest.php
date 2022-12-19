@@ -17,7 +17,7 @@ use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
@@ -120,7 +120,7 @@ final class WorkflowTest extends TestCase
 
     public function testWithMissingReference(): void
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessage('Incompatible declaration');
         $this->expectExceptionMessage('job2 (argument@foo)');
         $this->expectExceptionMessage('Reference ${job1:missing} not found');

@@ -19,7 +19,7 @@ use Chevere\String\Exceptions\CtypeSpaceException;
 use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Graph;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -31,7 +31,7 @@ final class GraphTest extends TestCase
     public function testEmpty(): void
     {
         $graph = new Graph();
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $graph->hasDependencies('j0');
     }
 

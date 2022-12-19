@@ -19,7 +19,7 @@ use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
@@ -35,7 +35,7 @@ final class JobsTest extends TestCase
         $jobs = new Jobs();
         $this->assertSame([], $jobs->keys());
         $this->assertSame([], iterator_to_array($jobs->getIterator()));
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $jobs->get('j1');
     }
 
@@ -115,7 +115,7 @@ final class JobsTest extends TestCase
 
     public function testWithDependsMissing(): void
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessageMatches('/undeclared dependencies\: j0$/');
         new Jobs(
             j1: job(TestActionNoParams::class),
@@ -200,7 +200,7 @@ final class JobsTest extends TestCase
 
     public function testMissingReference(): void
     {
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessage('Job two has undeclared dependencies: zero');
         new Jobs(
             one: job(
@@ -231,8 +231,7 @@ final class JobsTest extends TestCase
 
     public function testWithRunIfUndeclaredJob(): void
     {
-        $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Job job not found');
+        $this->expectException(OutOfBoundsException::class);
         new Jobs(
             j1: job(TestActionNoParams::class)
                 ->withRunIf(
@@ -243,8 +242,7 @@ final class JobsTest extends TestCase
 
     public function testWithRunIfUndeclaredJobKey(): void
     {
-        $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Parameter parameter not found');
+        $this->expectException(OutOfBoundsException::class);
         new Jobs(
             j1: job(TestActionNoParams::class),
             j2: job(TestActionNoParams::class)
@@ -326,7 +324,7 @@ final class JobsTest extends TestCase
         );
         $j4 = job(TestActionNoParams::class)
             ->withRunIf(reference('j5', 'missing'));
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $jobs->withAdded(j4:$j4);
     }
 }

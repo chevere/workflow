@@ -21,7 +21,7 @@ use Chevere\DataStructure\Vector;
 use function Chevere\DataStructure\vectorToArray;
 use function Chevere\Message\message;
 use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Type\Interfaces\TypeInterface;
 use function Chevere\Type\typeBoolean;
@@ -233,15 +233,7 @@ final class Jobs implements JobsInterface
             return;
         }
 
-        try {
-            /** @var JobInterface $runIfJob */
-            $runIfJob = $this->map->get($runIf->job());
-        } catch (OutOfRangeException $e) {
-            throw new OutOfRangeException(
-                message('Job %job% not found')
-                    ->withCode('%job%', $runIf->job())
-            );
-        }
+        $runIfJob = $this->map->get($runIf->job());
         $action = $runIfJob->getAction();
         $parameter = $action->getResponseParameters()
             ->get($runIf->parameter());
@@ -289,7 +281,7 @@ final class Jobs implements JobsInterface
                 vectorToArray($this->jobs)
             );
 
-            throw new OutOfRangeException(
+            throw new OutOfBoundsException(
                 message('Job %job% has undeclared dependencies: %dependencies%')
                     ->withCode('%job%', $job)
                     ->withCode('%dependencies%', implode(', ', $missing))

@@ -19,7 +19,7 @@ use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionParam;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\ArgumentCountError;
-use Chevere\Throwable\Exceptions\OutOfRangeException;
+use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
@@ -51,7 +51,7 @@ final class RunTest extends TestCase
         );
         $this->assertSame($workflow, $run->workflow());
         $this->assertSame($arguments, $run->arguments()->toArray());
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $run->getResponse('not-found');
     }
 
@@ -93,7 +93,7 @@ final class RunTest extends TestCase
         $arguments = [
             'foo' => 'hola',
         ];
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         (new Run($workflow, ...$arguments))
             ->withResponse(
                 'not-found',
@@ -139,7 +139,7 @@ final class RunTest extends TestCase
     {
         $workflow = workflow();
         $run = new Run($workflow);
-        $this->expectException(OutOfRangeException::class);
+        $this->expectException(OutOfBoundsException::class);
         $run->withSkip('job1', 'job2');
     }
 }
