@@ -32,7 +32,7 @@ final class FunctionsTest extends TestCase
     public function testFunctionJob(): void
     {
         $args = [
-            'action' => TestActionNoParamsIntegerResponse::class,
+            'action' => new TestActionNoParamsIntegerResponse(),
         ];
         $job = job(...$args);
         $this->assertEquals(new Job(...$args), $job);

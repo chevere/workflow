@@ -30,7 +30,6 @@ use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
-use Iterator;
 
 final class Jobs implements JobsInterface
 {
@@ -71,12 +70,6 @@ final class Jobs implements JobsInterface
         $this->putAdded(...$jobs);
     }
 
-    public function keys(): array
-    {
-        /** @var array<string> */
-        return $this->map->keys();
-    }
-
     public function graph(): array
     {
         return $this->graph->toArray();
@@ -96,12 +89,6 @@ final class Jobs implements JobsInterface
     {
         /** @var JobInterface */
         return $this->map->get($job);
-    }
-
-    #[\ReturnTypeWillChange]
-    public function getIterator(): Iterator
-    {
-        return $this->map->getIterator();
     }
 
     public function has(string $job): bool
@@ -150,7 +137,7 @@ final class Jobs implements JobsInterface
 
     private function storeReferences(string $name, JobInterface $job): void
     {
-        $action = $job->getAction();
+        $action = $job->action();
         foreach ($action->responseParameters() as $key => $parameter) {
             $this->references = $this->references
                 ->withPut(
@@ -164,7 +151,7 @@ final class Jobs implements JobsInterface
     private function handleArguments(string $name, JobInterface $job): void
     {
         foreach ($job->arguments() as $parameter => $argument) {
-            $action = $job->getAction();
+            $action = $job->action();
             /** @var TypeInterface $type */
             $type = $action->parameters()->get($parameter)->type();
             $property = match (true) {
@@ -232,9 +219,7 @@ final class Jobs implements JobsInterface
         if (! $runIf instanceof ReferenceInterface) {
             return;
         }
-
-        $runIfJob = $this->map->get($runIf->job());
-        $action = $runIfJob->getAction();
+        $action = $this->get($runIf->job())->action();
         $parameter = $action->getResponseParameters()
             ->get($runIf->parameter());
         if ($parameter->type()->primitive() !== 'boolean') {

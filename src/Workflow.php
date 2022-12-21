@@ -86,7 +86,7 @@ final class Workflow implements WorkflowInterface
 
     private function putParameters(string $name, JobInterface $job): void
     {
-        $action = $job->getAction();
+        $action = $job->action();
         $parameters = $action->parameters();
         $this->provided = $this->provided->withPut(
             ...[

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Container\Container;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
@@ -38,10 +39,9 @@ function workflow(JobInterface ...$job): WorkflowInterface
 /**
  * Creates a JobInterface instance for the given action and arguments.
  *
- * @param string $action Action name
- * @param mixed ...$argument Action arguments (raw, reference or variable)
+ * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function job(string $action, mixed ...$argument): JobInterface
+function job(ActionInterface $action, mixed ...$argument): JobInterface
 {
     return new Job($action, ...$argument);
 }

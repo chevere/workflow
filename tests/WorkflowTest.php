@@ -19,7 +19,6 @@ use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use function Chevere\Workflow\reference;
@@ -32,7 +31,7 @@ final class WorkflowTest extends TestCase
 {
     public function testConstruct(): void
     {
-        $job = new Job(TestActionNoParams::class);
+        $job = job(new TestActionNoParams());
         $jobs = new Jobs(job: $job);
         $workflow = new Workflow($jobs);
         $this->assertCount(0, $workflow->getJobResponseParameters('job'));
@@ -43,7 +42,7 @@ final class WorkflowTest extends TestCase
 
     public function testWithAdded(): void
     {
-        $job = new Job(TestActionNoParams::class);
+        $job = job(new TestActionNoParams());
         $jobs = new Jobs(job1: $job);
         $workflow = new Workflow($jobs);
         $workflowWithAddedStep = $workflow->withAddedJob(job2: $job);
@@ -58,8 +57,8 @@ final class WorkflowTest extends TestCase
 
     public function testWithAddedJobWithArguments(): void
     {
-        $job = new Job(
-            TestActionParamFooResponseBar::class,
+        $job = job(
+            new TestActionParamFooResponseBar(),
             foo: 'foo'
         );
         $workflow = (new Workflow(new Jobs(job: $job)))
@@ -73,8 +72,8 @@ final class WorkflowTest extends TestCase
     {
         $workflow = new Workflow(
             new Jobs(
-                job1: new Job(
-                    TestActionParamFooResponseBar::class,
+                job1:job(
+                    new TestActionParamFooResponseBar(),
                     foo: variable('foo')
                 ),
             )
@@ -84,11 +83,11 @@ final class WorkflowTest extends TestCase
         $this->assertTrue($workflow->parameters()->has('foo'));
         $workflow = $workflow
             ->withAddedJob(
-                job2: (new Job(
-                    TestActionParams::class,
+                job2: job(
+                    new TestActionParams(),
                     foo: variable('foo'),
                     bar: variable('foo')
-                ))->withRunIf(variable('boolean'))
+                )->withRunIf(variable('boolean'))
             );
         $this->assertTrue($workflow->parameters()->has('foo'));
     }
@@ -97,8 +96,8 @@ final class WorkflowTest extends TestCase
     {
         $workflow = new Workflow(
             new Jobs(
-                job1: new Job(
-                    TestActionParamFooResponseBar::class,
+                job1:job(
+                    new TestActionParamFooResponseBar(),
                     foo: variable('foo')
                 ),
             )
@@ -108,8 +107,8 @@ final class WorkflowTest extends TestCase
         $this->assertTrue($workflow->parameters()->has('foo'));
         $workflow = $workflow
             ->withAddedJob(
-                job2: new Job(
-                    TestActionParamsFooBarResponse2::class,
+                job2:job(
+                    new TestActionParamsFooBarResponse2(),
                     foo: reference(job: 'job1', parameter: 'bar'),
                     bar: variable('foo')
                 )
@@ -127,11 +126,11 @@ final class WorkflowTest extends TestCase
         $this->expectExceptionMessage('not declared by job1');
         workflow(
             job1: job(
-                TestActionParamFooResponseBar::class,
+                new TestActionParamFooResponseBar(),
                 foo: variable('foo')
             ),
             job2: job(
-                TestActionParams::class,
+                new TestActionParams(),
                 foo: reference(job: 'job1', parameter: 'missing'),
                 bar: variable('foo')
             )

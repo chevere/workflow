@@ -29,9 +29,7 @@ interface JobInterface
 
     public function withDepends(string ...$jobs): self;
 
-    public function action(): string;
-
-    public function getAction(): ActionInterface;
+    public function action(): ActionInterface;
 
     /**
      * @return array<string, mixed>

@@ -49,15 +49,15 @@ final class RunnerTest extends TestCase
             ],
         ];
         $job1 = job(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsRunArguments['job1']
         );
         $job2 = job(
-            TestActionParamsFooBarResponse2::class,
+            new TestActionParamsFooBarResponse2(),
             ...$jobsRunArguments['job2']
         );
         $job3 = job(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsRunArguments['job3']
         )->withIsSync();
         $jobs = [
@@ -109,15 +109,15 @@ final class RunnerTest extends TestCase
             ],
         ];
         $job1 = job(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsVariables['job1']
         );
         $job2 = job(
-            TestActionParamsFooBarResponse2::class,
+            new TestActionParamsFooBarResponse2(),
             ...$jobsVariables['job2']
         );
         $job3 = job(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsVariables['job3']
         )->withIsSync();
         $jobs = [
@@ -169,15 +169,15 @@ final class RunnerTest extends TestCase
             ],
         ];
         $job1 = job(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsReferences['job1']
         );
         $job2 = job(
-            TestActionParamsFooBarResponse2::class,
+            new TestActionParamsFooBarResponse2(),
             ...$jobsReferences['job2']
         );
         $job3 = job(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsReferences['job3']
         )->withIsSync();
         $jobs = [
@@ -200,7 +200,7 @@ final class RunnerTest extends TestCase
     {
         $container = new Container();
         $name = 'variable';
-        $job = job(TestActionNoParams::class)->withRunIf(variable($name));
+        $job = job(new TestActionNoParams())->withRunIf(variable($name));
         $workflow = workflow(job1: $job);
         $arguments = [
             $name => true,
@@ -209,7 +209,7 @@ final class RunnerTest extends TestCase
         $runner = new Runner($run, $container);
         $runner = $runner->withRunJob('job1');
         $this->assertSame(
-            $job->getAction()->run(),
+            $job->action()->run(),
             $runner->run()->getResponse('job1')->data()
         );
         $arguments = [
@@ -228,10 +228,10 @@ final class RunnerTest extends TestCase
     public function testRunIfReference(): void
     {
         $container = new Container();
-        $job1 = job(TestActionNoParamsBooleanResponses::class);
-        $job2 = job(TestActionNoParamsBooleanResponses::class);
-        $job3 = job(TestActionNoParamsIntegerResponse::class);
-        $job4 = job(TestActionNoParamsIntegerResponse::class);
+        $job1 = job(new TestActionNoParamsBooleanResponses());
+        $job2 = job(new TestActionNoParamsBooleanResponses());
+        $job3 = job(new TestActionNoParamsIntegerResponse());
+        $job4 = job(new TestActionNoParamsIntegerResponse());
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIf(reference('job1', 'true')),
@@ -265,7 +265,7 @@ final class RunnerTest extends TestCase
     {
         foreach ($jobs as $name => $job) {
             $this->assertSame(
-                $job->getAction()->run(...$runArguments[$name]),
+                $job->action()->run(...$runArguments[$name]),
                 $run->getResponse($name)->data()
             );
         }

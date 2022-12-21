@@ -21,14 +21,10 @@ use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\String\AssertString;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use Chevere\Throwable\Exceptions\UnexpectedValueException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
-use ReflectionClass;
-use ReflectionException;
 
 final class Job implements JobInterface
 {
@@ -52,31 +48,12 @@ final class Job implements JobInterface
     private VectorInterface $runIf;
 
     public function __construct(
-        private string $action,
+        private ActionInterface $action,
         mixed ...$actionParameter
     ) {
         $this->runIf = new Vector();
-
-        try {
-            // @phpstan-ignore-next-line
-            $reflection = new ReflectionClass($this->action);
-        } catch (ReflectionException $e) {
-            throw new InvalidArgumentException(
-                message("Class %action% doesn't exists")
-                    ->withCode('%action%', $this->action)
-            );
-        }
-        if (! $reflection->implementsInterface(ActionInterface::class)) {
-            throw new UnexpectedValueException(
-                message('Action %action% must implement %interface% interface')
-                    ->withCode('%action%', $this->action)
-                    ->withCode('%interface%', ActionInterface::class)
-            );
-        }
         $this->dependencies = new Vector();
-        /** @var ActionInterface $instance */
-        $instance = $reflection->newInstance();
-        $this->parameters = $instance->parameters();
+        $this->parameters = $action->parameters();
         $this->arguments = [];
         $this->setArguments(...$actionParameter);
     }
@@ -125,15 +102,9 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function action(): string
+    public function action(): ActionInterface
     {
         return $this->action;
-    }
-
-    public function getAction(): ActionInterface
-    {
-        /** @var ActionInterface */
-        return new $this->action();
     }
 
     public function arguments(): array
@@ -176,7 +147,7 @@ final class Job implements JobInterface
             throw new BadMethodCallException(
                 message('Missing argument(s) [%arguments%] for %action%')
                     ->withCode('%arguments%', implode(', ', $missing))
-                    ->withCode('%action%', $this->action)
+                    ->withCode('%action%', $this->action::class)
             );
         }
         $this->arguments = $values;
@@ -201,7 +172,7 @@ final class Job implements JobInterface
             throw new ArgumentCountError(
                 message('Method %method% of %action% requires %countRequired% arguments %parameters% (provided %countProvided% %provided%)')
                     ->withStrong('%method%', 'run')
-                    ->withStrong('%action%', $this->action)
+                    ->withStrong('%action%', $this->action::class)
                     ->withCode('%countRequired%', strval($countRequired))
                     ->withCode('%provided%', $provided)
                     ->withCode('%countProvided%', strval($countProvided))

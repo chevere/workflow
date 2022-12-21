@@ -21,7 +21,6 @@ use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use Chevere\Workflow\Job;
 use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Run;
@@ -36,8 +35,8 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job: new Job(
-                    TestActionParam::class,
+                job: job(
+                    new TestActionParam(),
                     foo: variable('foo'),
                 )
             );
@@ -59,12 +58,12 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: new Job(
-                    TestActionParam::class,
+                job0: job(
+                    new TestActionParam(),
                     foo: variable('foo')
                 ),
-                job1: new Job(
-                    TestActionParams::class,
+                job1: job(
+                    new TestActionParams(),
                     foo: variable('baz'),
                     bar: variable('bar')
                 )
@@ -85,8 +84,8 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: new Job(
-                    TestActionParam::class,
+                job0: job(
+                    new TestActionParam(),
                     foo: variable('foo')
                 )
             );
@@ -105,9 +104,9 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: new Job(TestActionNoParams::class),
-                job1: new Job(
-                    TestActionParam::class,
+                job0: job(new TestActionNoParams()),
+                job1: job(
+                    new TestActionParam(),
                     foo: variable('foo')
                 )
             );
@@ -122,8 +121,8 @@ final class RunTest extends TestCase
     public function testWithSkip(): void
     {
         $workflow = workflow(
-            job1: job(TestActionNoParams::class),
-            job2: job(TestActionNoParams::class)
+            job1: job(new TestActionNoParams()),
+            job2: job(new TestActionNoParams())
         );
         $run = new Run($workflow);
         $this->assertCount(0, $run->skip());

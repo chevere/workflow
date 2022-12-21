@@ -204,74 +204,8 @@ final class GraphTest extends TestCase
         $graph->withPut('job', $this->getJob()->withDepends('123'));
     }
 
-    public function _testPodcast(): void
-    {
-        $graph = new Graph();
-        $graph = $graph
-            ->withPut(
-                'ReleaseOnTransistorFM',
-                $this->getJob()->withDepends(
-                    'ProcessPodcast',
-                    'OptimizePodcast'
-                )
-            )
-            ->withPut(
-                'ReleaseOnApplePodcasts',
-                $this->getJob()->withDepends(
-                    'ProcessPodcast',
-                    'OptimizePodcast'
-                )
-            )
-            ->withPut(
-                'CreateAudioTranscription',
-                $this->getJob()->withDepends(
-                    'ProcessPodcast'
-                )
-            )
-            ->withPut(
-                'TranslateAudioTranscription',
-                $this->getJob()->withDepends(
-                    'CreateAudioTranscription'
-                )
-            )
-            ->withPut(
-                'NotifySubscribers',
-                $this->getJob()->withDepends(
-                    'ReleaseOnTransistorFM',
-                    'ReleaseOnApplePodcasts'
-                )
-            )
-            ->withPut(
-                'SendTweetAboutNewPodcast',
-                $this->getJob()->withDepends(
-                    'TranslateAudioTranscription',
-                    'ReleaseOnTransistorFM',
-                    'ReleaseOnApplePodcasts'
-                )
-            );
-        $expected = [
-            [
-                'ProcessPodcast',
-                'OptimizePodcast',
-            ],
-            [
-                'CreateAudioTranscription',
-                'ReleaseOnTransistorFM',
-                'ReleaseOnApplePodcasts',
-            ],
-            [
-                'TranslateAudioTranscription',
-                'NotifySubscribers',
-            ],
-            [
-                'SendTweetAboutNewPodcast',
-            ],
-        ];
-        $this->assertSame($expected, $graph->toArray());
-    }
-
     private function getJob(): JobInterface
     {
-        return job(TestActionNoParams::class);
+        return job(new TestActionNoParams());
     }
 }

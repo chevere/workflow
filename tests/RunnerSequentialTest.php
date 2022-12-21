@@ -46,11 +46,11 @@ final class RunnerSequentialTest extends TestCase
         $action = new TestActionFileWrite();
         $workflow = workflow(
             j1: job(
-                TestActionFileWrite::class,
+                new TestActionFileWrite(),
                 file: $file,
             ),
             j2: job(
-                TestActionFileWrite::class,
+                new TestActionFileWrite(),
                 file: $file,
             )->withDepends('j1'),
         );
