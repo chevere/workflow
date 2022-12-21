@@ -129,7 +129,6 @@ final class Job implements JobInterface
 
     private function setArguments(mixed ...$argument): void
     {
-        /** @var array<string, mixed> $argument */
         $this->assertArgumentsCount($argument);
         $values = [];
         $missing = [];

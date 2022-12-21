@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
+use Chevere\Attribute\StringAttribute;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use function Chevere\Parameter\parameters;
 use function Chevere\Parameter\stringParameter;
@@ -23,12 +24,16 @@ class TestActionParamFooResponseBar extends Action
     public function getResponseParameters(): ParametersInterface
     {
         return parameters(
-            bar: stringParameter()
+            bar: stringParameter('/^bar$/')
         );
     }
 
-    public function run(string $foo): array
-    {
-        return [];
+    public function run(
+        #[StringAttribute('/^foo$/')]
+        string $foo
+    ): array {
+        return [
+            'bar' => 'bar',
+        ];
     }
 }

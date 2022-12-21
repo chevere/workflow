@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Map;
 use function Chevere\Message\message;
 use function Chevere\Parameter\booleanParameter;
@@ -32,14 +31,14 @@ final class Workflow implements WorkflowInterface
     private ParametersInterface $parameters;
 
     /**
-     * @var MapInterface<string[]>
+     * @var Map<string[]>
      */
-    private MapInterface $expected;
+    private Map $expected;
 
     /**
-     * @var MapInterface<ParametersInterface>
+     * @var Map<ParametersInterface>
      */
-    private MapInterface $provided;
+    private Map $provided;
 
     public function __construct(
         private JobsInterface $jobs

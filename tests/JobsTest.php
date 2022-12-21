@@ -187,7 +187,7 @@ final class JobsTest extends TestCase
         $jobs = new Jobs(
             one: job(
                 new TestActionParamFooResponseBar(),
-                foo: 'foo'
+                foo: 'should fail!'
             ),
             two: job(
                 new TestActionParamFooResponseBar(),
