@@ -13,7 +13,7 @@
     ],
     "require": {
         "amphp/parallel": "^1.4",
-        "chevere/chevere": "^2.0.x-dev"
+        "chevere/chevere": "^2.0"
     },
     "require-dev": {
         "chevere/var-dump": "^0.7.1",
@@ -42,6 +42,7 @@
     "scripts": {
         "all": [
             "composer phpstan",
+            "composer test",
             "composer test-rep",
             "composer infection"
         ],
