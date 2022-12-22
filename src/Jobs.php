@@ -20,11 +20,13 @@ use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
 use function Chevere\DataStructure\vectorToArray;
 use function Chevere\Message\message;
+use function Chevere\Parameter\booleanParameter;
+use Chevere\Parameter\Interfaces\BooleanParameterInterface;
+use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Throwable\Errors\TypeError;
+use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use Chevere\Type\Interfaces\TypeInterface;
-use function Chevere\Type\typeBoolean;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
@@ -46,12 +48,12 @@ final class Jobs implements JobsInterface
     private GraphInterface $graph;
 
     /**
-     * @var MapInterface<TypeInterface>
+     * @var MapInterface<ParameterInterface>
      */
     private MapInterface $variables;
 
     /**
-     * @var MapInterface<TypeInterface>
+     * @var MapInterface<ParameterInterface>
      */
     private MapInterface $references;
 
@@ -142,7 +144,7 @@ final class Jobs implements JobsInterface
             $this->references = $this->references
                 ->withPut(
                     ...[
-                        strval(reference($name, $key)) => $parameter->type(),
+                        strval(reference($name, $key)) => $parameter,
                     ]
                 );
         }
@@ -150,61 +152,76 @@ final class Jobs implements JobsInterface
 
     private function handleArguments(string $name, JobInterface $job): void
     {
-        foreach ($job->arguments() as $parameter => $argument) {
+        foreach ($job->arguments() as $argument => $value) {
             $action = $job->action();
-            /** @var TypeInterface $type */
-            $type = $action->parameters()->get($parameter)->type();
+            $parameter = $action->parameters()->get($argument);
             $property = match (true) {
-                $argument instanceof VariableInterface => 'variables',
-                $argument instanceof ReferenceInterface => 'references',
+                $value instanceof VariableInterface => 'variables',
+                $value instanceof ReferenceInterface => 'references',
                 default => false
             };
             if (! $property) {
                 continue;
             }
-            /** @var VariableInterface|ReferenceInterface $argument */
+            /** @var VariableInterface|ReferenceInterface $value */
             try {
-                $this->mapSubjectType($property, $type, $argument);
+                $this->mapParameter($name, $argument, $property, $parameter, $value);
             } catch (TypeError $e) {
                 throw new TypeError(
                     message($e->getMessage())
-                        ->withTranslate('%parameter%', $parameter)
+                        ->withTranslate('%parameter%', $argument)
                         ->withTranslate('%job%', $name)
                 );
             }
         }
     }
 
-    private function mapSubjectType(
+    private function mapParameter(
+        string $job,
+        string $argument,
         string $property,
-        TypeInterface $type,
-        VariableInterface|ReferenceInterface $argument,
+        ParameterInterface $parameter,
+        VariableInterface|ReferenceInterface $value,
     ): void {
-        /** @var MapInterface<TypeInterface> $map */
+        /** @var MapInterface<ParameterInterface> $map */
         $map = $this->{$property};
         $subject = 'Reference';
-        $key = strval($argument);
-        if ($argument instanceof VariableInterface) {
+        $key = strval($value);
+        if ($value instanceof VariableInterface) {
             $subject = 'Variable';
-            $key = $argument->__toString();
+            $key = $value->__toString();
         }
         if (! $map->has($key)) {
             $map = $map->withPut(...[
-                $key => $type,
+                $key => $parameter,
             ]);
             $this->{$property} = $map;
 
             return;
         }
-        /** @var TypeInterface $typeStored */
-        $typeStored = $map->get($key);
-        if ($typeStored->primitive() !== $type->primitive()) {
+        /** @var ParameterInterface $stored */
+        $stored = $map->get($key);
+        if ($stored::class !== $parameter::class) {
             throw new TypeError(
-                message('%subject% %key% is of type %type%, parameter %parameter% expects %typeExpected% on job %job%.')
-                    ->withCode('%type%', $typeStored->primitive())
-                    ->withCode('%typeExpected%', $type->primitive())
+                message('%subject% %key% is of type %type%, parameter %parameter% expects %expected% on job %job%.')
+                    ->withCode('%type%', $stored->type()->primitive())
+                    ->withCode('%expected%', $parameter->type()->primitive())
                     ->withTranslate('%subject%', $subject)
                     ->withTranslate('%key%', $key)
+            );
+        }
+
+        try {
+            $stored->assertCompatible($parameter);
+        } catch (InvalidArgumentException $e) {
+            throw new InvalidArgumentException(
+                message('%subject% %key% conflict for parameter %parameter% on Job %job% (%message%).')
+                    ->withCode('%subject%', $subject)
+                    ->withCode('%key%', $key)
+                    ->withCode('%parameter%', $argument)
+                    ->withTranslate('%subject%', $subject)
+                    ->withTranslate('%job%', $job)
+                    ->withTranslate('%message%', $e->getMessage())
             );
         }
     }
@@ -234,19 +251,19 @@ final class Jobs implements JobsInterface
             $this->variables = $this->variables
                 ->withPut(
                     ...[
-                        $runIf->__toString() => typeBoolean(),
+                        $runIf->__toString() => booleanParameter(),
                     ]
                 );
 
             return;
         }
-        /** @var TypeInterface $type */
-        $type = $this->variables->get($runIf->__toString());
-        if ($type->primitive() !== 'boolean') {
+        /** @var ParameterInterface $parameter */
+        $parameter = $this->variables->get($runIf->__toString());
+        if (! ($parameter instanceof BooleanParameterInterface)) {
             throw new TypeError(
-                message('Variable %variable% (previously declared as %type%) is not of type boolean at job %job%')
+                message('Variable %variable% (previously declared as %type%) is not of type boolean at Job %job%')
                     ->withCode('%variable%', $runIf->__toString())
-                    ->withCode('%type%', $type->primitive())
+                    ->withCode('%type%', $parameter->type()->primitive())
                     ->withCode('%job%', $name)
             );
         }

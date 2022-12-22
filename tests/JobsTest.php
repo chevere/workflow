@@ -13,12 +13,15 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Parameter\Interfaces\BooleanParameterInterface;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsBooleanResponses;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\_resources\src\TestActionParamFooResponse1;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\TypeError;
+use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use function Chevere\Workflow\job;
@@ -184,17 +187,22 @@ final class JobsTest extends TestCase
 
     public function testWithReferenceShouldFail(): void
     {
-        $jobs = new Jobs(
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            <<<STRING
+            Reference one:bar conflict for parameter foo on Job two (Expected regex /^bar$/, provided /^.*$/)
+            STRING
+        );
+        new Jobs(
             one: job(
                 new TestActionParamFooResponseBar(),
-                foo: 'foo'
+                foo: 'bar'
             ),
             two: job(
-                new TestActionParamFooResponseBar(),
+                new TestActionParamFooResponse1(),
                 foo: reference('one', 'bar')
             )
         );
-        $this->assertSame(['one:bar', 'two:bar'], $jobs->references()->keys());
     }
 
     public function testMissingReference(): void
@@ -267,15 +275,21 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidVariableType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Variable theFoo (previously declared as string) is not of type boolean at job j2');
+        $this->expectExceptionMessage('Variable theFoo (previously declared as string) is not of type boolean at Job j2');
         new Jobs(
             j1: job(
                 new TestActionParams(),
                 foo: variable('theFoo'),
                 bar: 'bar'
-            ),
-            j2: job(new TestActionNoParams())
+            )
                 ->withRunIf(
+                    variable('true')
+                ),
+            j2: job(
+                new TestActionNoParams()
+            )
+                ->withRunIf(
+                    variable('true'),
                     variable('theFoo')
                 ),
         );
@@ -293,7 +307,7 @@ final class JobsTest extends TestCase
                 ),
         );
         $this->assertTrue($jobs->variables()->has($name));
-        $this->assertSame('boolean', $jobs->variables()->get($name)->primitive());
+        $this->assertInstanceOf(BooleanParameterInterface::class, $jobs->variables()->get($name));
     }
 
     public function testWithRunIfReference(): void

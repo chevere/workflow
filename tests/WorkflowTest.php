@@ -15,8 +15,6 @@ namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
-use Chevere\Tests\_resources\src\TestActionParams;
-use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use function Chevere\Workflow\job;
@@ -59,7 +57,7 @@ final class WorkflowTest extends TestCase
     {
         $job = job(
             new TestActionParamFooResponseBar(),
-            foo: 'foo'
+            foo: 'bar'
         );
         $workflow = (new Workflow(new Jobs(job: $job)))
             ->withAddedJob(name: $job);
@@ -84,9 +82,8 @@ final class WorkflowTest extends TestCase
         $workflow = $workflow
             ->withAddedJob(
                 job2: job(
-                    new TestActionParams(),
+                    new TestActionParamFooResponseBar(),
                     foo: variable('foo'),
-                    bar: variable('foo')
                 )->withRunIf(variable('boolean'))
             );
         $this->assertTrue($workflow->parameters()->has('foo'));
@@ -108,9 +105,8 @@ final class WorkflowTest extends TestCase
         $workflow = $workflow
             ->withAddedJob(
                 job2:job(
-                    new TestActionParamsFooBarResponse2(),
-                    foo: reference(job: 'job1', parameter: 'bar'),
-                    bar: variable('foo')
+                    new TestActionParamFooResponseBar(),
+                    foo: reference('job1', 'bar'),
                 )
             );
         $this->assertContains('job1', $workflow->jobs()->get('job2')->dependencies());
@@ -127,12 +123,11 @@ final class WorkflowTest extends TestCase
         workflow(
             job1: job(
                 new TestActionParamFooResponseBar(),
-                foo: variable('foo')
+                foo: 'bar'
             ),
             job2: job(
-                new TestActionParams(),
-                foo: reference(job: 'job1', parameter: 'missing'),
-                bar: variable('foo')
+                new TestActionParamFooResponseBar(),
+                foo: reference('job1', 'missing'),
             )
         );
     }
