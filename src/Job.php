@@ -17,10 +17,9 @@ use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use function Chevere\Message\message;
-use Chevere\Parameter\Arguments;
+use function Chevere\Parameter\assertArgument;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Parameter\Parameters;
 use Chevere\String\AssertString;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
@@ -183,16 +182,7 @@ final class Job implements JobInterface
         if ($value instanceof ReferenceInterface || $value instanceof VariableInterface) {
             return;
         }
-        $parameters = [
-            $name => $parameter,
-        ];
-        $arguments = [
-            $name => $value,
-        ];
-        new Arguments(
-            new Parameters(...$parameters),
-            ...$arguments
-        );
+        assertArgument($parameter, $name, $value);
     }
 
     private function inferDependencies(mixed $argument): void
