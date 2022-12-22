@@ -21,7 +21,7 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
  */
 interface JobInterface
 {
-    public function withArguments(mixed ...$namedArguments): self;
+    public function withArguments(mixed ...$argument): self;
 
     public function withRunIf(ReferenceInterface|VariableInterface ...$context): self;
 

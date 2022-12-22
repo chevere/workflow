@@ -117,21 +117,21 @@ final class Jobs implements JobsInterface
         ]);
     }
 
-    private function putAdded(JobInterface ...$jobs): void
+    private function putAdded(JobInterface ...$job): void
     {
-        foreach ($jobs as $name => $job) {
-            $this->jobDependencies = $job->dependencies();
+        foreach ($job as $name => $item) {
+            $this->jobDependencies = $item->dependencies();
             $name = strval($name);
-            $this->addMap($name, $job);
+            $this->addMap($name, $item);
             $this->jobs = $this->jobs->withPush($name);
-            $this->handleArguments($name, $job);
-            foreach ($job->runIf() as $runIf) {
+            $this->handleArguments($name, $item);
+            foreach ($item->runIf() as $runIf) {
                 $this->handleRunIfReference($runIf);
                 $this->handleRunIfVariable($name, $runIf);
             }
-            $this->storeReferences($name, $job);
+            $this->storeReferences($name, $item);
             $this->assertDependencies($name);
-            $this->graph = $this->graph->withPut($name, $job);
+            $this->graph = $this->graph->withPut($name, $item);
         }
     }
 
@@ -164,11 +164,7 @@ final class Jobs implements JobsInterface
             }
             /** @var VariableInterface|ReferenceInterface $argument */
             try {
-                $this->{$property} = $this->mapSubjectType(
-                    $argument,
-                    $this->{$property},
-                    $type
-                );
+                $this->mapSubjectType($property, $type, $argument);
             } catch (TypeError $e) {
                 throw new TypeError(
                     message($e->getMessage())
@@ -179,15 +175,13 @@ final class Jobs implements JobsInterface
         }
     }
 
-    /**
-     * @param MapInterface<TypeInterface> $map
-     * @return MapInterface<TypeInterface>
-     */
     private function mapSubjectType(
+        string $property,
+        TypeInterface $type,
         VariableInterface|ReferenceInterface $argument,
-        MapInterface $map,
-        TypeInterface $type
-    ): MapInterface {
+    ): void {
+        /** @var MapInterface<TypeInterface> $map */
+        $map = $this->{$property};
         $subject = 'Reference';
         $key = strval($argument);
         if ($argument instanceof VariableInterface) {
@@ -195,9 +189,12 @@ final class Jobs implements JobsInterface
             $key = $argument->__toString();
         }
         if (! $map->has($key)) {
-            return $map->withPut(...[
+            $map = $map->withPut(...[
                 $key => $type,
             ]);
+            $this->{$property} = $map;
+
+            return;
         }
         /** @var TypeInterface $typeStored */
         $typeStored = $map->get($key);
@@ -210,8 +207,6 @@ final class Jobs implements JobsInterface
                     ->withTranslate('%key%', $key)
             );
         }
-
-        return $map;
     }
 
     private function handleRunIfReference(mixed $runIf): void

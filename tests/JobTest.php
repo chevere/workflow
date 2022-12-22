@@ -19,59 +19,96 @@ use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionObjectConflict;
-use Chevere\Tests\_resources\src\TestActionParams;
-use Chevere\Tests\_resources\src\TestActionParamsAlt;
+use Chevere\Tests\_resources\src\TestActionParam;
+use Chevere\Tests\_resources\src\TestActionParamStringAttribute;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use function Chevere\Workflow\reference;
 use function Chevere\Workflow\variable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class JobTest extends TestCase
 {
-    public function testArgumentCountError(): void
+    public function testArgumentCountErrorEmpty(): void
     {
         $this->expectException(ArgumentCountError::class);
-        $this->expectExceptionMessage('requires 0 arguments');
-        $this->expectExceptionMessage('provided 2 foo, bar');
+        $this->expectExceptionMessage(
+            TestActionNoParams::class
+            . '::run requires 0 argument(s)'
+        );
         new Job(
             new TestActionNoParams(),
-            foo: 'foo',
-            bar: 'invalid extra argument'
+            foo: 'extra',
+        );
+    }
+
+    public function testArgumentCountErrorRequired(): void
+    {
+        $this->expectException(ArgumentCountError::class);
+        $this->expectExceptionMessage(
+            TestActionParam::class
+            . '::run requires 1 argument(s) [foo]'
+        );
+        new Job(
+            new TestActionParam(),
         );
     }
 
     public function testWithArgumentCountError(): void
     {
+        $job = new Job(new TestActionNoParams());
         $this->expectException(ArgumentCountError::class);
-        new Job(
-            new TestActionNoParams(),
-            foo: 'foo',
-            bar: 'invalid extra argument'
+        $job->withArguments(
+            foo: 'extra',
         );
     }
 
-    public function testConstruct(): void
+    public function testRawArguments(): void
     {
-        $action = new TestActionParamsAlt();
-        $parameters = [
-            'foo' => variable('foo'),
-            'bar' => variable('bar'),
+        $action = new TestActionParamStringAttribute();
+        $success = [
+            'foo' => 'foo',
         ];
-        $arguments = [
-            'foo' => '1',
-            'bar' => 123,
-        ];
-        $job = new Job($action, ...$parameters);
+        $job = new Job($action, ...$success);
         $this->assertSame($action, $job->action());
-        $this->assertSame($parameters, $job->arguments());
-        $taskWithArgument = $job->withArguments(...$arguments);
-        $this->assertNotSame($job, $taskWithArgument);
-        $this->assertSame($arguments, $taskWithArgument->arguments());
-        $job = new Job($action, ...$arguments);
-        $this->assertSame($arguments, $job->arguments());
+        $this->assertSame($success, $job->arguments());
+        $success = [
+            'foo' => 'bar',
+        ];
+        $jobWithArguments = $job->withArguments(...$success);
+        $this->assertNotSame($job, $jobWithArguments);
+        $this->assertSame($success, $jobWithArguments->arguments());
+        $fail = [
+            'foo' => '1',
+        ];
+        $this->expectException(InvalidArgumentException::class);
+        new Job($action, ...$fail);
+    }
+
+    public function testVariableArguments(): void
+    {
+        $action = new TestActionParamStringAttribute();
+        $success = [
+            'foo' => variable('foo'),
+        ];
+        $job = new Job($action, ...$success);
+        $this->assertSame($action, $job->action());
+        $this->assertSame($success, $job->arguments());
+    }
+
+    public function testReferenceArguments(): void
+    {
+        $action = new TestActionParamStringAttribute();
+        $success = [
+            'foo' => reference('job1', 'output'),
+        ];
+        $job = new Job($action, ...$success);
+        $this->assertSame($action, $job->action());
+        $this->assertSame($success, $job->arguments());
+        $this->assertContains('job1', $job->dependencies());
     }
 
     public function testWithIsSync(): void
@@ -103,22 +140,12 @@ final class JobTest extends TestCase
         $job->withDepends('bar', 'foo', 'foo');
     }
 
-    public function testWithWrongDepends(): void
+    public function testWithWrongDependencies(): void
     {
         $job = new Job(new TestActionNoParamsIntegerResponse());
         $this->assertSame([], vectorToArray($job->dependencies()));
         $this->expectException(EmptyException::class);
         $job->withDepends('');
-    }
-
-    public function testWithJobReference(): void
-    {
-        $job = new Job(
-            new TestActionParams(),
-            foo: reference('step1', 'bar'),
-            bar: reference('step1', 'bar')
-        );
-        $this->assertContains('step1', $job->dependencies());
     }
 
     public function testWithRunIfVariable(): void
@@ -159,7 +186,7 @@ final class JobTest extends TestCase
         );
         new Job(
             new TestActionObjectConflict(),
-            baz: reference(job: 'step1', parameter: 'bar'),
+            baz: 'baz',
             bar: variable('foo')
         );
     }

@@ -14,11 +14,14 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
+use Chevere\Attribute\StringAttribute;
 
-class TestActionParam extends Action
+class TestActionParamStringAttribute extends Action
 {
-    public function run(string $foo): array
-    {
+    public function run(
+        #[StringAttribute('/^foo|bar$/')]
+        string $foo
+    ): array {
         return [];
     }
 }

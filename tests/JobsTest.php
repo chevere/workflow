@@ -182,12 +182,12 @@ final class JobsTest extends TestCase
         );
     }
 
-    public function testWithReference(): void
+    public function testWithReferenceShouldFail(): void
     {
         $jobs = new Jobs(
             one: job(
                 new TestActionParamFooResponseBar(),
-                foo: 'should fail!'
+                foo: 'foo'
             ),
             two: job(
                 new TestActionParamFooResponseBar(),

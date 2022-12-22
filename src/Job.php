@@ -17,7 +17,10 @@ use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use function Chevere\Message\message;
+use Chevere\Parameter\Arguments;
+use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
+use Chevere\Parameter\Parameters;
 use Chevere\String\AssertString;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
@@ -49,19 +52,19 @@ final class Job implements JobInterface
 
     public function __construct(
         private ActionInterface $action,
-        mixed ...$actionParameter
+        mixed ...$argument
     ) {
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
         $this->parameters = $action->parameters();
         $this->arguments = [];
-        $this->setArguments(...$actionParameter);
+        $this->setArguments(...$argument);
     }
 
-    public function withArguments(mixed ...$namedArguments): JobInterface
+    public function withArguments(mixed ...$argument): JobInterface
     {
         $new = clone $this;
-        $new->setArguments(...$namedArguments);
+        $new->setArguments(...$argument);
 
         return $new;
     }
@@ -133,10 +136,11 @@ final class Job implements JobInterface
         $values = [];
         $missing = [];
         foreach ($this->parameters as $name => $parameter) {
-            $item = $argument[$name] ?? null;
-            if ($item !== null) {
-                $values[$name] = $item;
-                $this->inferDependencies($item);
+            $value = $argument[$name] ?? null;
+            if ($value !== null) {
+                $values[$name] = $value;
+                $this->inferDependencies($value);
+                $this->assertParameter($name, $parameter, $value);
             } elseif ($this->parameters->isRequired($name)) {
                 $missing[] = $parameter->type()->typeHinting()
                     . " {$name}";
@@ -162,22 +166,33 @@ final class Job implements JobInterface
         if ($countRequired > $countProvided
             || $countRequired !== $countProvided
         ) {
-            $provided = implode(', ', array_keys($arguments));
-            $parameters = implode(
-                ', ',
-                $this->parameters->required()
-            );
+            $parameters = implode(', ', $this->parameters->required());
+            $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
             throw new ArgumentCountError(
-                message('Method %method% of %action% requires %countRequired% arguments %parameters% (provided %countProvided% %provided%)')
-                    ->withStrong('%method%', 'run')
-                    ->withStrong('%action%', $this->action::class)
+                message('%symbol% requires %countRequired% argument(s) %parameters%')
+                    ->withCode('%symbol%', $this->action::class . '::run')
                     ->withCode('%countRequired%', strval($countRequired))
-                    ->withCode('%provided%', $provided)
-                    ->withCode('%countProvided%', strval($countProvided))
                     ->withCode('%parameters%', $parameters)
             );
         }
+    }
+
+    private function assertParameter(string $name, ParameterInterface $parameter, mixed $value): void
+    {
+        if ($value instanceof ReferenceInterface || $value instanceof VariableInterface) {
+            return;
+        }
+        $parameters = [
+            $name => $parameter,
+        ];
+        $arguments = [
+            $name => $value,
+        ];
+        new Arguments(
+            new Parameters(...$parameters),
+            ...$arguments
+        );
     }
 
     private function inferDependencies(mixed $argument): void
