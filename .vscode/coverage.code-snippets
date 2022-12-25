@@ -1,0 +1,30 @@
+{
+    "coverage-ignore": {
+        "description": "Code coverage ignore tag",
+        "prefix": "cov-ignore",
+        "body": [
+            "@codeCoverageIgnore"
+        ]
+    },
+    "coverage-ignore-start": {
+        "description": "Code coverage ignore start tag",
+        "prefix": "cov-ignore-start",
+        "body": [
+            "@codeCoverageIgnoreStart"
+        ]
+    },
+    "coverage-ignore-end": {
+        "description": "Code coverage ignore end tag",
+        "prefix": "cov-ignore-end",
+        "body": [
+            "@codeCoverageIgnoreEnd"
+        ]
+    },
+    "coverage-infection-ignore-all": {
+        "description": "Comment infection ignore all",
+        "prefix": "comment-infection-ignore-all",
+        "body": [
+            "@infection-ignore-all.",
+        ]
+    },
+}

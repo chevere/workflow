@@ -1,0 +1,50 @@
+{
+    "docblock-construct": {
+        "description": "Docblock construct",
+        "prefix": "docblock-construct",
+        "body": [
+            "/**",
+            " * Does?",
+            " */"
+        ]
+    },
+    "docblock-instance": {
+        "description": "Docblock instance",
+        "prefix": "docblock-instance",
+        "body": [
+            "/**",
+            " * Provides access to the ${1:name} instance.",
+            " */"
+        ]
+    },
+    "docblock-immutable": {
+        "description": "Docblock immutable",
+        "prefix": "docblock-immutable",
+        "body": [
+            "/**",
+            " * Return an instance with the specified ${1:name}.",
+            " *",
+            " * This method MUST retain the state of the current instance, and return",
+            " * an instance that contains the specified ${1:name}.",
+            " */"
+        ]
+    },
+    "docblock-boolean": {
+        "description": "Docblock boolean",
+        "prefix": "docblock-boolean",
+        "body": [
+            "/**",
+            " * Indicates whether the instance has ${1:name}.",
+            " */"
+        ]
+    },
+    "docblock-interface": {
+        "description": "Docblock interface",
+        "prefix": "docblock-interface",
+        "body": [
+            "/**",
+            " * Describes the component in charge of ${1:doing}.",
+            " */"
+        ]
+    }
+}
