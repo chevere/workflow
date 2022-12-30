@@ -105,7 +105,7 @@ final class JobTest extends TestCase
         $success = [
             'foo' => reference('job1', 'output'),
         ];
-        $job = new Job($action, ...$success);
+        $job = new Job($action, true, ...$success);
         $this->assertSame($action, $job->action());
         $this->assertSame($success, $job->arguments());
         $this->assertContains('job1', $job->dependencies());
@@ -114,8 +114,11 @@ final class JobTest extends TestCase
     public function testWithIsSync(): void
     {
         $job = new Job(new TestActionNoParams());
-        $this->assertFalse($job->isSync());
+        $this->assertNotTrue($job->isSync());
         $jobWithSync = $job->withIsSync();
+        $this->assertNotSame($job, $jobWithSync);
+        $this->assertTrue($jobWithSync->isSync());
+        $jobWithSync = $job->withIsSync(true);
         $this->assertNotSame($job, $jobWithSync);
         $this->assertTrue($jobWithSync->isSync());
     }

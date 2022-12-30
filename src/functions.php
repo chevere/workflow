@@ -37,13 +37,31 @@ function workflow(JobInterface ...$job): WorkflowInterface
 }
 
 /**
- * Creates a JobInterface instance for the given action and arguments.
+ * Creates a synchronous Job instance for the given action and arguments.
  *
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
+function sync(ActionInterface $action, mixed ...$argument): JobInterface
+{
+    return new Job($action, true, ...$argument);
+}
+
+/**
+ * Creates an asynchronous Job instance for the given action and arguments.
+ *
+ * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
+ */
+function async(ActionInterface $action, mixed ...$argument): JobInterface
+{
+    return new Job($action, false, ...$argument);
+}
+
+/**
+ * @deprecated Use sync() and async() instead
+ */
 function job(ActionInterface $action, mixed ...$argument): JobInterface
 {
-    return new Job($action, ...$argument);
+    return new Job($action, false, ...$argument);
 }
 
 /**

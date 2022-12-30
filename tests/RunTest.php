@@ -21,7 +21,7 @@ use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use function Chevere\Workflow\job;
+use function Chevere\Workflow\async;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Run;
 use function Chevere\Workflow\variable;
@@ -35,7 +35,7 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job: job(
+                job: async(
                     new TestActionParam(),
                     foo: variable('foo'),
                 )
@@ -58,11 +58,11 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: job(
+                job0: async(
                     new TestActionParam(),
                     foo: variable('foo')
                 ),
-                job1: job(
+                job1: async(
                     new TestActionParams(),
                     foo: variable('baz'),
                     bar: variable('bar')
@@ -84,7 +84,7 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: job(
+                job0: async(
                     new TestActionParam(),
                     foo: variable('foo')
                 )
@@ -104,8 +104,8 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: job(new TestActionNoParams()),
-                job1: job(
+                job0: async(new TestActionNoParams()),
+                job1: async(
                     new TestActionParam(),
                     foo: variable('foo')
                 )
@@ -121,8 +121,8 @@ final class RunTest extends TestCase
     public function testWithSkip(): void
     {
         $workflow = workflow(
-            job1: job(new TestActionNoParams()),
-            job2: job(new TestActionNoParams())
+            job1: async(new TestActionNoParams()),
+            job2: async(new TestActionNoParams())
         );
         $run = new Run($workflow);
         $this->assertCount(0, $run->skip());

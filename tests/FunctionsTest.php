@@ -14,9 +14,10 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use function Chevere\Workflow\async;
 use Chevere\Workflow\Job;
-use function Chevere\Workflow\job;
 use Chevere\Workflow\Jobs;
+use function Chevere\Workflow\sync;
 use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
@@ -29,12 +30,23 @@ final class FunctionsTest extends TestCase
         $this->assertEquals(new Workflow(new Jobs()), $workflow);
     }
 
-    public function testFunctionJob(): void
+    public function testFunctionSync(): void
     {
         $args = [
             'action' => new TestActionNoParamsIntegerResponse(),
         ];
-        $job = job(...$args);
+        $job = sync(...$args);
+        $args['isSync'] = true;
+        $this->assertEquals(new Job(...$args), $job);
+    }
+
+    public function testFunctionAsync(): void
+    {
+        $args = [
+            'action' => new TestActionNoParamsIntegerResponse(),
+        ];
+        $job = async(...$args);
+        $args['isSync'] = false;
         $this->assertEquals(new Job(...$args), $job);
     }
 }

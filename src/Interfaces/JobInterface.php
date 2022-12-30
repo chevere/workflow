@@ -25,7 +25,15 @@ interface JobInterface
 
     public function withRunIf(ReferenceInterface|VariableInterface ...$context): self;
 
-    public function withIsSync(): self;
+    /**
+     * Return an instance with the specified sync flag.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified sync flag.
+     *
+     * @param bool $flag True for sync, false for async.
+     */
+    public function withIsSync(bool $flag = true): self;
 
     public function withDepends(string ...$jobs): self;
 

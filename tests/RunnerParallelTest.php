@@ -15,7 +15,7 @@ namespace Chevere\Tests;
 
 use function Chevere\Filesystem\fileForPath;
 use Chevere\Tests\_resources\src\TestActionFileWrite;
-use function Chevere\Workflow\job;
+use function Chevere\Workflow\async;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
 use PHPUnit\Framework\TestCase;
@@ -29,11 +29,11 @@ final class RunnerParallelTest extends TestCase
         $file->create();
         $file->put('');
         $workflow = workflow(
-            j1: job(
+            j1: async(
                 new TestActionFileWrite(),
                 file: $file,
             ),
-            j2: job(
+            j2: async(
                 new TestActionFileWrite(),
                 file: $file,
             ),

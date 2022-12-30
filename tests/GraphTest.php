@@ -21,9 +21,9 @@ use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
+use function Chevere\Workflow\async;
 use Chevere\Workflow\Graph;
 use Chevere\Workflow\Interfaces\JobInterface;
-use function Chevere\Workflow\job;
 use PHPUnit\Framework\TestCase;
 
 final class GraphTest extends TestCase
@@ -109,8 +109,8 @@ final class GraphTest extends TestCase
             'jx',
             $this->getJob()->withDepends('j0', 'j1')
         );
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync());
-        $graph = $graph->withPut('j1', $this->getJob()->withIsSync());
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('j1', $this->getJob()->withIsSync(true));
         $this->assertSame(
             [
                 ['j0'],
@@ -136,9 +136,9 @@ final class GraphTest extends TestCase
             'jy',
             $this->getJob()->withDepends('j2', 'j3', 'j4')
         );
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync());
-        $graph = $graph->withPut('j2', $this->getJob()->withIsSync());
-        $graph = $graph->withPut('jy', $this->getJob()->withIsSync());
+        $graph = $graph->withPut('j2', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('jy', $this->getJob()->withIsSync(true));
         $this->assertSame(
             [
                 ['j0'],
@@ -206,6 +206,6 @@ final class GraphTest extends TestCase
 
     private function getJob(): JobInterface
     {
-        return job(new TestActionNoParams());
+        return async(new TestActionNoParams());
     }
 }

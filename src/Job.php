@@ -42,8 +42,6 @@ final class Job implements JobInterface
 
     private ParametersInterface $parameters;
 
-    private bool $isSync = false;
-
     /**
      * @var VectorInterface<ReferenceInterface|VariableInterface>
      */
@@ -51,6 +49,7 @@ final class Job implements JobInterface
 
     public function __construct(
         private ActionInterface $action,
+        private bool $isSync = false,
         mixed ...$argument
     ) {
         $this->runIf = new Vector();
@@ -88,10 +87,10 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withIsSync(): JobInterface
+    public function withIsSync(bool $flag = true): JobInterface
     {
         $new = clone $this;
-        $new->isSync = true;
+        $new->isSync = $flag;
 
         return $new;
     }

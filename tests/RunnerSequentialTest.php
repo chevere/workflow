@@ -17,7 +17,7 @@ use function Chevere\Filesystem\directoryForPath;
 use Chevere\Filesystem\File;
 use Chevere\Filesystem\Interfaces\DirectoryInterface;
 use Chevere\Tests\_resources\src\TestActionFileWrite;
-use function Chevere\Workflow\job;
+use function Chevere\Workflow\async;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
 use PHPUnit\Framework\TestCase;
@@ -45,11 +45,11 @@ final class RunnerSequentialTest extends TestCase
         $file->put('');
         $action = new TestActionFileWrite();
         $workflow = workflow(
-            j1: job(
+            j1: async(
                 new TestActionFileWrite(),
                 file: $file,
             ),
-            j2: job(
+            j2: async(
                 new TestActionFileWrite(),
                 file: $file,
             )->withDepends('j1'),
