@@ -61,7 +61,7 @@ function async(ActionInterface $action, mixed ...$argument): JobInterface
  */
 function job(ActionInterface $action, mixed ...$argument): JobInterface
 {
-    return new Job($action, false, ...$argument);
+    return async($action, ...$argument);
 }
 
 /**
