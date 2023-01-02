@@ -21,7 +21,7 @@
 
 ![Workflow](.github/banner/workflow-logo.svg)
 
-## Quick-start
+## Quick start
 
 Install with [Composer](https://getcomposer.org):
 
