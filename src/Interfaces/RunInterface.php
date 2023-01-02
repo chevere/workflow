@@ -27,6 +27,9 @@ use Iterator;
  */
 interface RunInterface extends MappedInterface
 {
+    /**
+     * @return array<string> Names for jobs with responses.
+     */
     public function keys(): array;
 
     /**
@@ -65,7 +68,7 @@ interface RunInterface extends MappedInterface
     /**
      * Iterator for job responses.
      *
-     * @return Iterator<string, ResponseInterface>
+     * @return Iterator<string, ResponseInterface> Job name to ResponseInterface instance
      */
     public function getIterator(): Iterator;
 }

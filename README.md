@@ -21,6 +21,59 @@
 
 ![Workflow](.github/banner/workflow-logo.svg)
 
+## Quick-start
+
+Install with [Composer](https://getcomposer.org):
+
+```sh
+composer install chevere/workflow
+```
+
+Create a Workflow by passing named jobs.
+
+* `async` for asynchronous non-blocking jobs
+* `sync` for synchronous blocking jobs
+* `variable` for defining a variable
+* `reference` to define a reference to a previous job
+
+```php
+use function Chevere\Workflow\workflow;
+use function Chevere\Workflow\sync;
+use function Chevere\Workflow\async;
+use function Chevere\Workflow\variable;
+
+$workflow = workflow(
+    thumb: async(
+        new ImageResize(),
+        file: variable('file'),
+        fit: 'thumbnail',
+    ),
+    poster: async(
+        new ImageResize(),
+        file: variable('file'),
+        fit: 'poster',
+    ),
+    store: sync(
+        new StoreFiles(),
+        reference('thumb', 'out'),
+        reference('poster', 'out'),
+    )
+);
+```
+
+Run your Workflow:
+
+```php
+use function Chevere\Workflow\run;
+
+$variables = [
+    'file' => '/path/to/file'
+];
+$run = run($workflow, $variables);
+```
+
+Variable `$run` will be assigned to an object implementing `RunInterface`, which you can query for obtaining data from the Workflow runtime.
+
 ## Documentation
 
 Documentation is available at [chevere.org](https://chevere.org/packages/workflow).
