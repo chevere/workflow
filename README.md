@@ -4,11 +4,11 @@
 
 ![Chevere](chevere.svg)
 
-[![Build](https://img.shields.io/github/actions/workflow/status/chevere/workflow/test.yml?branch=0.7&style=flat-square)](https://github.com/chevere/workflow/actions)
+[![Build](https://img.shields.io/github/actions/workflow/status/chevere/workflow/test.yml?branch=0.8&style=flat-square)](https://github.com/chevere/workflow/actions)
 ![Code size](https://img.shields.io/github/languages/code-size/chevere/workflow?style=flat-square)
 [![Apache-2.0](https://img.shields.io/github/license/chevere/workflow?style=flat-square)](LICENSE)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%209-blueviolet?style=flat-square)](https://phpstan.org/)
-[![Mutation testing badge](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fchevere%2Fworkflow%2F0.7)](https://dashboard.stryker-mutator.io/reports/github.com/chevere/workflow/0.7)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fchevere%2Fworkflow%2F0.8)](https://dashboard.stryker-mutator.io/reports/github.com/chevere/workflow/0.8)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=alert_status)](https://sonarcloud.io/dashboard?id=chevere_workflow)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=chevere_workflow)
@@ -23,7 +23,7 @@
 
 ## Quick start
 
-Install with [Composer](https://getcomposer.org):
+Install with [Composer](https://getcomposer.org).
 
 ```sh
 composer install chevere/workflow
