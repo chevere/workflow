@@ -44,17 +44,17 @@ use function Chevere\Workflow\variable;
 
 $workflow = workflow(
     thumb: async(
-        new ImageResize(),
+        ImageResize::class,
         file: variable('file'),
         fit: 'thumbnail',
     ),
     poster: async(
-        new ImageResize(),
+        ImageResize::class,
         file: variable('file'),
         fit: 'poster',
     ),
     store: sync(
-        new StoreFiles(),
+        StoreFiles::class,
         reference('thumb', 'out'),
         reference('poster', 'out'),
     )
@@ -80,7 +80,7 @@ Documentation is available at [chevere.org](https://chevere.org/packages/workflo
 
 ## License
 
-Copyright 2022 [Rodolfo Berrios A.](https://rodolfoberrios.com/)
+Copyright 2023 [Rodolfo Berrios A.](https://rodolfoberrios.com/)
 
 This software is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full license text.
 
