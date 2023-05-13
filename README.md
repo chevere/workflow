@@ -26,7 +26,7 @@
 Install with [Composer](https://getcomposer.org).
 
 ```sh
-composer install chevere/workflow
+composer require chevere/workflow
 ```
 
 Create a Workflow by passing named jobs.
