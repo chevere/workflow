@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Action\Interfaces\ActionNameInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use function Chevere\Message\message;
-use function Chevere\Parameter\assertArgument;
+use function Chevere\Parameter\assertNamedArgument;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\String\AssertString;
+use Chevere\String\StringAssert;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\OverflowException;
@@ -48,13 +48,13 @@ final class Job implements JobInterface
     private VectorInterface $runIf;
 
     public function __construct(
-        private ActionInterface $action,
+        private ActionNameInterface $actionName,
         private bool $isSync = false,
         mixed ...$argument
     ) {
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
-        $this->parameters = $action->parameters();
+        $this->parameters = $actionName->__toString()::getParameters();
         $this->arguments = [];
         $this->setArguments(...$argument);
     }
@@ -103,9 +103,9 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function action(): ActionInterface
+    public function actionName(): ActionNameInterface
     {
-        return $this->action;
+        return $this->actionName;
     }
 
     public function arguments(): array
@@ -148,7 +148,7 @@ final class Job implements JobInterface
             throw new BadMethodCallException(
                 message('Missing argument(s) [%arguments%] for %action%')
                     ->withCode('%arguments%', implode(', ', $missing))
-                    ->withCode('%action%', $this->action::class)
+                    ->withCode('%action%', $this->actionName->__toString())
             );
         }
         $this->arguments = $values;
@@ -164,12 +164,12 @@ final class Job implements JobInterface
         if ($countRequired > $countProvided
             || $countRequired !== $countProvided
         ) {
-            $parameters = implode(', ', $this->parameters->required());
+            $parameters = implode(', ', $this->parameters->required()->toArray());
             $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
             throw new ArgumentCountError(
                 message('%symbol% requires %countRequired% argument(s) %parameters%')
-                    ->withCode('%symbol%', $this->action::class . '::run')
+                    ->withCode('%symbol%', $this->actionName->__toString() . '::run')
                     ->withCode('%countRequired%', strval($countRequired))
                     ->withCode('%parameters%', $parameters)
             );
@@ -181,7 +181,7 @@ final class Job implements JobInterface
         if ($value instanceof ReferenceInterface || $value instanceof VariableInterface) {
             return;
         }
-        assertArgument($parameter, $name, $value);
+        assertNamedArgument($name, $parameter, $value);
     }
 
     private function inferDependencies(mixed $argument): void
@@ -220,7 +220,7 @@ final class Job implements JobInterface
             );
         }
         foreach ($dependencies as $dependency) {
-            (new AssertString($dependency))
+            (new StringAssert($dependency))
                 ->notEmpty()
                 ->notCtypeDigit()
                 ->notCtypeSpace();

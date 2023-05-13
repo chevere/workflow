@@ -14,16 +14,16 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use function Chevere\Parameter\booleanParameter;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use function Chevere\Parameter\parameters;
+use function Chevere\Parameter\arrayp;
+use function Chevere\Parameter\boolean;
+use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 
 final class TestActionNoParamsFalseResponse extends Action
 {
-    public function getResponseParameters(): ParametersInterface
+    public static function acceptResponse(): ArrayTypeParameterInterface
     {
-        return parameters(
-            key: booleanParameter()
+        return arrayp(
+            key: boolean()
         );
     }
 

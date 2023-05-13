@@ -18,9 +18,8 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use function Chevere\DataStructure\vectorToArray;
 use function Chevere\Message\message;
-use function Chevere\Parameter\booleanParameter;
+use function Chevere\Parameter\boolean;
 use Chevere\Parameter\Interfaces\BooleanParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Throwable\Errors\TypeError;
@@ -139,8 +138,8 @@ final class Jobs implements JobsInterface
 
     private function storeReferences(string $name, JobInterface $job): void
     {
-        $action = $job->action();
-        foreach ($action->responseParameters() as $key => $parameter) {
+        $action = $job->actionName()->__toString();
+        foreach ($action::acceptResponse()->parameters() as $key => $parameter) {
             $this->references = $this->references
                 ->withPut(
                     ...[
@@ -153,8 +152,8 @@ final class Jobs implements JobsInterface
     private function handleArguments(string $name, JobInterface $job): void
     {
         foreach ($job->arguments() as $argument => $value) {
-            $action = $job->action();
-            $parameter = $action->parameters()->get($argument);
+            $action = $job->actionName()->__toString();
+            $parameter = $action::getParameters()->get($argument);
             $property = match (true) {
                 $value instanceof VariableInterface => 'variables',
                 $value instanceof ReferenceInterface => 'references',
@@ -231,9 +230,8 @@ final class Jobs implements JobsInterface
         if (! $runIf instanceof ReferenceInterface) {
             return;
         }
-        $action = $this->get($runIf->job())->action();
-        $parameter = $action->getResponseParameters()
-            ->get($runIf->parameter());
+        $action = $this->get($runIf->job())->actionName()->__toString();
+        $parameter = $action::acceptResponse()->parameters()->get($runIf->parameter());
         if ($parameter->type()->primitive() !== 'boolean') {
             throw new TypeError(
                 message('Reference %reference% must be of type boolean')
@@ -251,7 +249,7 @@ final class Jobs implements JobsInterface
             $this->variables = $this->variables
                 ->withPut(
                     ...[
-                        $runIf->__toString() => booleanParameter(),
+                        $runIf->__toString() => boolean(),
                     ]
                 );
 
@@ -271,11 +269,11 @@ final class Jobs implements JobsInterface
 
     private function assertDependencies(string $job): void
     {
-        $dependencies = vectorToArray($this->jobDependencies);
+        $dependencies = $this->jobDependencies->toArray();
         if (! $this->jobs->contains(...$dependencies)) {
             $missing = array_diff(
                 $dependencies,
-                vectorToArray($this->jobs)
+                $this->jobs->toArray()
             );
 
             throw new OutOfBoundsException(

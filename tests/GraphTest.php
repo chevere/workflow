@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use function Chevere\DataStructure\vectorToArray;
 use Chevere\String\Exceptions\CtypeDigitException;
 use Chevere\String\Exceptions\CtypeSpaceException;
 use Chevere\String\Exceptions\EmptyException;
@@ -157,11 +156,11 @@ final class GraphTest extends TestCase
         $graph = $graph->withPut('j0', $this->getJob());
         $this->assertTrue($graph->hasDependencies('j0'));
         $this->assertFalse($graph->hasDependencies('j0', 'jn'));
-        $this->assertSame([], vectorToArray($graph->get('j0')));
+        $this->assertSame([], $graph->get('j0')->toArray());
         $graph = $graph->withPut('j1', $this->getJob());
         $graph = $graph->withPut('j2', $this->getJob()->withDepends('j0'));
         $this->assertTrue($graph->hasDependencies('j2', 'j0'));
-        $this->assertSame(['j0'], vectorToArray($graph->get('j2')));
+        $this->assertSame(['j0'], $graph->get('j2')->toArray());
         $expected = [
             ['j0', 'j1'],
             ['j2'],
@@ -206,6 +205,6 @@ final class GraphTest extends TestCase
 
     private function getJob(): JobInterface
     {
-        return async(new TestActionNoParams());
+        return async(TestActionNoParams::class);
     }
 }

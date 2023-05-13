@@ -30,11 +30,11 @@ final class RunnerParallelTest extends TestCase
         $file->put('');
         $workflow = workflow(
             j1: async(
-                new TestActionFileWrite(),
+                TestActionFileWrite::class,
                 file: $file,
             ),
             j2: async(
-                new TestActionFileWrite(),
+                TestActionFileWrite::class,
                 file: $file,
             ),
         );

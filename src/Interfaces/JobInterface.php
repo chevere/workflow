@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
-use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Action\Interfaces\ActionNameInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 
 /**
@@ -37,7 +37,7 @@ interface JobInterface
 
     public function withDepends(string ...$jobs): self;
 
-    public function action(): ActionInterface;
+    public function actionName(): ActionNameInterface;
 
     /**
      * @return array<string, mixed>

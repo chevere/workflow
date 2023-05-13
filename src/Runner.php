@@ -34,6 +34,7 @@ final class Runner implements RunnerInterface
 {
     public function __construct(
         private RunInterface $run,
+        // @phpstan-ignore-next-line
         private ContainerInterface $container
     ) {
     }
@@ -79,8 +80,10 @@ final class Runner implements RunnerInterface
                 return $new;
             }
         }
-        $action = $job->action()->withContainer($new->container);
         $arguments = $new->getJobArguments($job);
+        $action = $job->actionName()->__toString();
+        /** @var ActionInterface $action */
+        $action = new $action();
         $response = $new->getActionResponse($action, $arguments);
         $new->addJobResponse($name, $response);
 

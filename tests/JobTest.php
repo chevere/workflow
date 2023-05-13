@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use function Chevere\DataStructure\vectorToArray;
+use Chevere\Action\ActionName;
 use Chevere\Filesystem\Interfaces\PathInterface;
 use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\_resources\src\TestActionNoParams;
@@ -39,8 +39,9 @@ final class JobTest extends TestCase
             TestActionNoParams::class
             . '::run requires 0 argument(s)'
         );
+        $actionName = new ActionName(TestActionNoParams::class);
         new Job(
-            new TestActionNoParams(),
+            $actionName,
             foo: 'extra',
         );
     }
@@ -52,14 +53,14 @@ final class JobTest extends TestCase
             TestActionParam::class
             . '::run requires 1 argument(s) [foo]'
         );
-        new Job(
-            new TestActionParam(),
-        );
+        $actionName = new ActionName(TestActionParam::class);
+        new Job($actionName);
     }
 
     public function testWithArgumentCountError(): void
     {
-        $job = new Job(new TestActionNoParams());
+        $actionName = new ActionName(TestActionNoParams::class);
+        $job = new Job($actionName);
         $this->expectException(ArgumentCountError::class);
         $job->withArguments(
             foo: 'extra',
@@ -68,12 +69,12 @@ final class JobTest extends TestCase
 
     public function testRawArguments(): void
     {
-        $action = new TestActionParamStringAttribute();
+        $actionName = new ActionName(TestActionParamStringAttribute::class);
         $success = [
             'foo' => 'foo',
         ];
-        $job = new Job($action, ...$success);
-        $this->assertSame($action, $job->action());
+        $job = new Job($actionName, false, ...$success);
+        $this->assertSame($actionName, $job->actionName());
         $this->assertSame($success, $job->arguments());
         $success = [
             'foo' => 'bar',
@@ -85,35 +86,36 @@ final class JobTest extends TestCase
             'foo' => '1',
         ];
         $this->expectException(InvalidArgumentException::class);
-        new Job($action, ...$fail);
+        new Job($actionName, false, ...$fail);
     }
 
     public function testVariableArguments(): void
     {
-        $action = new TestActionParamStringAttribute();
+        $actionName = new ActionName(TestActionParamStringAttribute::class);
         $success = [
             'foo' => variable('foo'),
         ];
-        $job = new Job($action, ...$success);
-        $this->assertSame($action, $job->action());
+        $job = new Job($actionName, false, ...$success);
+        $this->assertSame($actionName, $job->actionName());
         $this->assertSame($success, $job->arguments());
     }
 
     public function testReferenceArguments(): void
     {
-        $action = new TestActionParamStringAttribute();
+        $actionName = new ActionName(TestActionParamStringAttribute::class);
         $success = [
             'foo' => reference('job1', 'output'),
         ];
-        $job = new Job($action, true, ...$success);
-        $this->assertSame($action, $job->action());
+        $job = new Job($actionName, true, ...$success);
+        $this->assertSame($actionName, $job->actionName());
         $this->assertSame($success, $job->arguments());
         $this->assertContains('job1', $job->dependencies());
     }
 
     public function testWithIsSync(): void
     {
-        $job = new Job(new TestActionNoParams());
+        $actionName = new ActionName(TestActionNoParams::class);
+        $job = new Job($actionName);
         $this->assertNotTrue($job->isSync());
         $jobWithSync = $job->withIsSync();
         $this->assertNotSame($job, $jobWithSync);
@@ -125,18 +127,20 @@ final class JobTest extends TestCase
 
     public function testWithDependencies(): void
     {
-        $job = new Job(new TestActionNoParamsIntegerResponse());
-        $this->assertSame([], vectorToArray($job->dependencies()));
+        $actionName = new ActionName(TestActionNoParamsIntegerResponse::class);
+        $job = new Job($actionName);
+        $this->assertSame([], $job->dependencies()->toArray());
         $job = $job->withDepends('foo', 'bar');
-        $this->assertSame(['foo', 'bar'], vectorToArray($job->dependencies()));
+        $this->assertSame(['foo', 'bar'], $job->dependencies()->toArray());
         $job = $job->withDepends('foo', 'bar', 'wea');
-        $this->assertSame(['foo', 'bar', 'wea'], vectorToArray($job->dependencies()));
+        $this->assertSame(['foo', 'bar', 'wea'], $job->dependencies()->toArray());
     }
 
     public function testWithDependenciesOverflow(): void
     {
-        $job = new Job(new TestActionNoParamsIntegerResponse());
-        $this->assertSame([], vectorToArray($job->dependencies()));
+        $actionName = new ActionName(TestActionNoParamsIntegerResponse::class);
+        $job = new Job($actionName);
+        $this->assertSame([], $job->dependencies()->toArray());
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Job dependencies must be unique');
         $this->expectExceptionMessage('repeated foo');
@@ -145,20 +149,22 @@ final class JobTest extends TestCase
 
     public function testWithWrongDependencies(): void
     {
-        $job = new Job(new TestActionNoParamsIntegerResponse());
-        $this->assertSame([], vectorToArray($job->dependencies()));
+        $actionName = new ActionName(TestActionNoParamsIntegerResponse::class);
+        $job = new Job($actionName);
+        $this->assertSame([], $job->dependencies()->toArray());
         $this->expectException(EmptyException::class);
         $job->withDepends('');
     }
 
     public function testWithRunIfVariable(): void
     {
-        $job = new Job(new TestActionNoParams());
+        $actionName = new ActionName(TestActionNoParams::class);
+        $job = new Job($actionName);
         $variable = variable('wea');
         $job = $job->withRunIf($variable);
         $this->assertSame(
             [$variable],
-            vectorToArray($job->runIf())
+            $job->runIf()->toArray()
         );
         $this->expectException(OverflowException::class);
         $job->withRunIf($variable, $variable);
@@ -166,12 +172,13 @@ final class JobTest extends TestCase
 
     public function testWithRunIfReference(): void
     {
-        $job = new Job(new TestActionNoParams());
+        $actionName = new ActionName(TestActionNoParams::class);
+        $job = new Job($actionName);
         $reference = reference('jobN', 'parameter');
         $job = $job->withRunIf($reference);
         $this->assertSame(
             [$reference],
-            vectorToArray($job->runIf())
+            $job->runIf()->toArray()
         );
         $this->assertTrue($job->dependencies()->contains('jobN'));
         $this->expectException(OverflowException::class);
@@ -188,7 +195,7 @@ final class JobTest extends TestCase
             . TestActionObjectConflict::class
         );
         new Job(
-            new TestActionObjectConflict(),
+            new ActionName(TestActionObjectConflict::class),
             baz: 'baz',
             bar: variable('foo')
         );

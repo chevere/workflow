@@ -57,7 +57,7 @@ final class Run implements RunInterface
         $this->uuid = Uuid::uuid4()->toString();
         $this->arguments = new Arguments(
             $workflow->parameters(),
-            ...$variable
+            $variable
         );
         $this->map = new Map();
         $this->skip = new Vector();
@@ -96,7 +96,7 @@ final class Run implements RunInterface
         $new->workflow->jobs()->get($job);
         $tryArguments = new Arguments(
             $new->workflow->getJobResponseParameters($job),
-            ...$response->data()
+            $response->data()
         );
         $tryArguments->parameters();
         $new->map = $new->map->withPut(...[

@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use function Chevere\Parameter\integerParameter;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Parameter\Parameters;
+use function Chevere\Parameter\arrayp;
+use function Chevere\Parameter\integer;
+use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 
 /**
  * @method array run()
@@ -31,9 +31,9 @@ final class TestActionNoParamsIntegerResponse extends Action
         return 'test';
     }
 
-    public function getResponseParameters(): ParametersInterface
+    public static function acceptResponse(): ArrayTypeParameterInterface
     {
-        return new Parameters(id: integerParameter());
+        return arrayp(id: integer());
     }
 
     public function run(): array

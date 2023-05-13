@@ -29,7 +29,7 @@ final class WorkflowTest extends TestCase
 {
     public function testConstruct(): void
     {
-        $job = async(new TestActionNoParams());
+        $job = async(TestActionNoParams::class);
         $jobs = new Jobs(job: $job);
         $workflow = new Workflow($jobs);
         $this->assertCount(0, $workflow->getJobResponseParameters('job'));
@@ -40,7 +40,7 @@ final class WorkflowTest extends TestCase
 
     public function testWithAdded(): void
     {
-        $job = async(new TestActionNoParams());
+        $job = async(TestActionNoParams::class);
         $jobs = new Jobs(job1: $job);
         $workflow = new Workflow($jobs);
         $workflowWithAddedStep = $workflow->withAddedJob(job2: $job);
@@ -56,7 +56,7 @@ final class WorkflowTest extends TestCase
     public function testWithAddedJobWithArguments(): void
     {
         $job = async(
-            new TestActionParamFooResponseBar(),
+            TestActionParamFooResponseBar::class,
             foo: 'bar'
         );
         $workflow = (new Workflow(new Jobs(job: $job)))
@@ -71,7 +71,7 @@ final class WorkflowTest extends TestCase
         $workflow = new Workflow(
             new Jobs(
                 job1: async(
-                    new TestActionParamFooResponseBar(),
+                    TestActionParamFooResponseBar::class,
                     foo: variable('foo')
                 ),
             )
@@ -82,7 +82,7 @@ final class WorkflowTest extends TestCase
         $workflow = $workflow
             ->withAddedJob(
                 job2: async(
-                    new TestActionParamFooResponseBar(),
+                    TestActionParamFooResponseBar::class,
                     foo: variable('foo'),
                 )->withRunIf(variable('boolean'))
             );
@@ -94,7 +94,7 @@ final class WorkflowTest extends TestCase
         $workflow = new Workflow(
             new Jobs(
                 job1: async(
-                    new TestActionParamFooResponseBar(),
+                    TestActionParamFooResponseBar::class,
                     foo: variable('foo')
                 ),
             )
@@ -105,7 +105,7 @@ final class WorkflowTest extends TestCase
         $workflow = $workflow
             ->withAddedJob(
                 job2: async(
-                    new TestActionParamFooResponseBar(),
+                    TestActionParamFooResponseBar::class,
                     foo: reference('job1', 'bar'),
                 )
             );
@@ -122,11 +122,11 @@ final class WorkflowTest extends TestCase
         $this->expectExceptionMessage('not declared by job1');
         workflow(
             job1: async(
-                new TestActionParamFooResponseBar(),
+                TestActionParamFooResponseBar::class,
                 foo: 'bar'
             ),
             job2: async(
-                new TestActionParamFooResponseBar(),
+                TestActionParamFooResponseBar::class,
                 foo: reference('job1', 'missing'),
             )
         );

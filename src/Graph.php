@@ -15,10 +15,8 @@ namespace Chevere\Workflow;
 
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
-use function Chevere\DataStructure\mapToArray;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use function Chevere\DataStructure\vectorToArray;
 use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\GraphInterface;
@@ -60,9 +58,7 @@ final class Graph implements GraphInterface
         if ($new->map->has($name)) {
             /** @var VectorInterface<string> $existing */
             $existing = $new->map->get($name);
-            $existingArray = vectorToArray($existing);
-            $vectorArray = vectorToArray($vector);
-            $merge = array_merge($existingArray, $vectorArray);
+            $merge = array_merge($existing->toArray(), $vector->toArray());
             $vector = new Vector(...$merge);
         }
         $new->handleDependencyUpdate($name, $vector);
@@ -125,13 +121,13 @@ final class Graph implements GraphInterface
      */
     private function getSortAsc(): array
     {
-        $array = mapToArray($this->map);
+        $array = $this->map->toArray();
         // @phpstan-ignore-next-line
         uasort($array, function (VectorInterface $a, VectorInterface $b) {
             return match (true) {
-                $b->contains(...vectorToArray($a)) => -1,
+                $b->contains(...$a->toArray()) => -1,
                 // @infection-ignore-all
-                $a->contains(...vectorToArray($b)) => 1,
+                $a->contains(...$b->toArray()) => 1,
                 default => 0
             };
         });
@@ -165,7 +161,7 @@ final class Graph implements GraphInterface
             $aux++;
         }
         /** @var array<int, array<int, string>> */
-        $array = vectorToArray($vector);
+        $array = $vector->toArray();
 
         return array_values(
             array_filter($array)

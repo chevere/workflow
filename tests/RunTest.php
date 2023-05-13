@@ -13,12 +13,11 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use function Chevere\DataStructure\vectorToArray;
+use ArgumentCountError;
 use Chevere\Response\Response;
 use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionParam;
 use Chevere\Tests\_resources\src\TestActionParams;
-use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use function Chevere\Workflow\async;
@@ -36,7 +35,7 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 job: async(
-                    new TestActionParam(),
+                    TestActionParam::class,
                     foo: variable('foo'),
                 )
             );
@@ -59,11 +58,11 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 job0: async(
-                    new TestActionParam(),
+                    TestActionParam::class,
                     foo: variable('foo')
                 ),
                 job1: async(
-                    new TestActionParams(),
+                    TestActionParams::class,
                     foo: variable('baz'),
                     bar: variable('bar')
                 )
@@ -85,7 +84,7 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 job0: async(
-                    new TestActionParam(),
+                    TestActionParam::class,
                     foo: variable('foo')
                 )
             );
@@ -104,9 +103,9 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: async(new TestActionNoParams()),
+                job0: async(TestActionNoParams::class),
                 job1: async(
-                    new TestActionParam(),
+                    TestActionParam::class,
                     foo: variable('foo')
                 )
             );
@@ -121,15 +120,15 @@ final class RunTest extends TestCase
     public function testWithSkip(): void
     {
         $workflow = workflow(
-            job1: async(new TestActionNoParams()),
-            job2: async(new TestActionNoParams())
+            job1: async(TestActionNoParams::class),
+            job2: async(TestActionNoParams::class)
         );
         $run = new Run($workflow);
         $this->assertCount(0, $run->skip());
         $immutable = $run->withSkip('job1', 'job2');
         $this->assertNotSame($run, $immutable);
         $this->assertCount(2, $immutable->skip());
-        $this->assertSame(['job1', 'job2'], vectorToArray($immutable->skip()));
+        $this->assertSame(['job1', 'job2'], $immutable->skip()->toArray());
         $this->expectException(OverflowException::class);
         $immutable->withSkip('job1');
     }

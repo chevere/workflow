@@ -14,15 +14,15 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Parameter\Parameters;
-use Chevere\Parameter\StringParameter;
+use function Chevere\Parameter\arrayp;
+use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
+use function Chevere\Parameter\string;
 
 class TestActionParamFooResponse1 extends Action
 {
-    public function getResponseParameters(): ParametersInterface
+    public static function acceptResponse(): ArrayTypeParameterInterface
     {
-        return new Parameters(response1: new StringParameter());
+        return arrayp(response1: string());
     }
 
     public function run(string $foo): array

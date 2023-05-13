@@ -15,7 +15,7 @@ namespace Chevere\Workflow;
 
 use Chevere\DataStructure\Map;
 use function Chevere\Message\message;
-use function Chevere\Parameter\booleanParameter;
+use function Chevere\Parameter\boolean;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
@@ -85,11 +85,11 @@ final class Workflow implements WorkflowInterface
 
     private function putParameters(string $name, JobInterface $job): void
     {
-        $action = $job->action();
-        $parameters = $action->parameters();
+        $action = $job->actionName()->__toString();
+        $parameters = $action::getParameters();
         $this->provided = $this->provided->withPut(
             ...[
-                $name => $action->responseParameters(),
+                $name => $action::acceptResponse()->parameters(),
             ]
         );
         foreach ($job->arguments() as $argument => $value) {
@@ -147,7 +147,7 @@ final class Workflow implements WorkflowInterface
 
     private function putJobConditions(JobInterface $job): void
     {
-        $parameter = booleanParameter();
+        $parameter = boolean();
         foreach ($job->runIf() as $value) {
             $this->putVariableReference($value, $parameter);
         }

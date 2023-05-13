@@ -15,16 +15,16 @@ namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
 use Chevere\Attribute\StringAttribute;
-use Chevere\Parameter\Interfaces\ParametersInterface;
-use function Chevere\Parameter\parameters;
-use function Chevere\Parameter\stringParameter;
+use function Chevere\Parameter\arrayp;
+use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
+use function Chevere\Parameter\string;
 
 class TestActionParamFooResponseBar extends Action
 {
-    public function getResponseParameters(): ParametersInterface
+    public static function acceptResponse(): ArrayTypeParameterInterface
     {
-        return parameters(
-            bar: stringParameter('/^bar$/')
+        return arrayp(
+            bar: string('/^bar$/')
         );
     }
 
