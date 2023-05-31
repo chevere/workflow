@@ -99,9 +99,7 @@ final class Run implements RunInterface
             $response->data()
         );
         $tryArguments->parameters();
-        $new->map = $new->map->withPut(...[
-            $job => $response,
-        ]);
+        $new->map = $new->map->withPut($job, $response);
 
         return $new;
     }

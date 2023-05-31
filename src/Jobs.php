@@ -113,9 +113,7 @@ final class Jobs implements JobsInterface
                     ->withCode('%name%', $name)
             );
         }
-        $this->map = $this->map->withPut(...[
-            $name => $job,
-        ]);
+        $this->map = $this->map->withPut($name, $job);
     }
 
     private function putAdded(JobInterface ...$job): void
@@ -142,9 +140,8 @@ final class Jobs implements JobsInterface
         foreach ($action::acceptResponse()->parameters() as $key => $parameter) {
             $this->references = $this->references
                 ->withPut(
-                    ...[
-                        strval(reference($name, $key)) => $parameter,
-                    ]
+                    strval(reference($name, $key)),
+                    $parameter,
                 );
         }
     }
@@ -191,9 +188,7 @@ final class Jobs implements JobsInterface
             $key = $value->__toString();
         }
         if (! $map->has($key)) {
-            $map = $map->withPut(...[
-                $key => $parameter,
-            ]);
+            $map = $map->withPut($key, $parameter);
             $this->{$property} = $map;
 
             return;
@@ -248,9 +243,8 @@ final class Jobs implements JobsInterface
         if (! $this->variables->has($runIf->__toString())) {
             $this->variables = $this->variables
                 ->withPut(
-                    ...[
-                        $runIf->__toString() => boolean(),
-                    ]
+                    $runIf->__toString(),
+                    boolean(),
                 );
 
             return;

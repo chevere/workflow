@@ -88,9 +88,8 @@ final class Workflow implements WorkflowInterface
         $action = $job->actionName()->__toString();
         $parameters = $action::getParameters();
         $this->provided = $this->provided->withPut(
-            ...[
-                $name => $action::acceptResponse()->parameters(),
-            ]
+            $name,
+            $action::acceptResponse()->parameters(),
         );
         foreach ($job->arguments() as $argument => $value) {
             try {
@@ -116,9 +115,10 @@ final class Workflow implements WorkflowInterface
             return;
         }
         $this->parameters = $this->parameters
-            ->withAddedRequired(...[
-                $variable->__toString() => $parameter,
-            ]);
+            ->withAddedRequired(
+                $variable->__toString(),
+                $parameter,
+            );
     }
 
     private function assertPreviousReference(
@@ -179,8 +179,6 @@ final class Workflow implements WorkflowInterface
         }
         $expected[] = $value->parameter();
         $this->expected = $this->expected
-            ->withPut(...[
-                $value->job() => $expected,
-            ]);
+            ->withPut($value->job(), $expected);
     }
 }

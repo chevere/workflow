@@ -50,9 +50,7 @@ final class Graph implements GraphInterface
         foreach ($vector as $dependency) {
             if (! $new->has($dependency)) {
                 $new->map = $new->map
-                    ->withPut(...[
-                        $dependency => new Vector(),
-                    ]);
+                    ->withPut($dependency, new Vector());
             }
         }
         if ($new->map->has($name)) {
@@ -62,9 +60,7 @@ final class Graph implements GraphInterface
             $vector = new Vector(...$merge);
         }
         $new->handleDependencyUpdate($name, $vector);
-        $new->map = $new->map->withPut(...[
-            $name => $vector,
-        ]);
+        $new->map = $new->map->withPut($name, $vector);
         if ($job->isSync()) {
             $new->syncJobs = $new->syncJobs->withPush($name);
         }
@@ -196,9 +192,7 @@ final class Graph implements GraphInterface
             if ($findJob !== null) {
                 $update = $update->withRemove($findJob);
             }
-            $this->map = $this->map->withPut(...[
-                $dependency => $update,
-            ]);
+            $this->map = $this->map->withPut($dependency, $update);
         }
     }
 }
