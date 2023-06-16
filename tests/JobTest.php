@@ -20,7 +20,7 @@ use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionObjectConflict;
 use Chevere\Tests\_resources\src\TestActionParam;
-use Chevere\Tests\_resources\src\TestActionParamStringAttribute;
+use Chevere\Tests\_resources\src\TestActionParamStringRegex;
 use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\OverflowException;
@@ -69,7 +69,7 @@ final class JobTest extends TestCase
 
     public function testRawArguments(): void
     {
-        $actionName = new ActionName(TestActionParamStringAttribute::class);
+        $actionName = new ActionName(TestActionParamStringRegex::class);
         $success = [
             'foo' => 'foo',
         ];
@@ -91,7 +91,7 @@ final class JobTest extends TestCase
 
     public function testVariableArguments(): void
     {
-        $actionName = new ActionName(TestActionParamStringAttribute::class);
+        $actionName = new ActionName(TestActionParamStringRegex::class);
         $success = [
             'foo' => variable('foo'),
         ];
@@ -102,7 +102,7 @@ final class JobTest extends TestCase
 
     public function testReferenceArguments(): void
     {
-        $actionName = new ActionName(TestActionParamStringAttribute::class);
+        $actionName = new ActionName(TestActionParamStringRegex::class);
         $success = [
             'foo' => reference('job1', 'output'),
         ];
