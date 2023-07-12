@@ -20,10 +20,10 @@ use Chevere\Tests\_resources\src\TestActionNoParams;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use function Chevere\Workflow\async;
 use Chevere\Workflow\Graph;
 use Chevere\Workflow\Interfaces\JobInterface;
 use PHPUnit\Framework\TestCase;
+use function Chevere\Workflow\async;
 
 final class GraphTest extends TestCase
 {

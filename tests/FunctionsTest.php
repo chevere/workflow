@@ -15,13 +15,13 @@ namespace Chevere\Tests;
 
 use Chevere\Action\ActionName;
 use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
-use function Chevere\Workflow\async;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\Jobs;
-use function Chevere\Workflow\sync;
-use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
+use function Chevere\Workflow\async;
+use function Chevere\Workflow\sync;
+use function Chevere\Workflow\workflow;
 
 final class FunctionsTest extends TestCase
 {

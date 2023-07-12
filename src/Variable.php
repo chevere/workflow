@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use function Chevere\Message\message;
 use Chevere\Regex\Regex;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use function Chevere\Message\message;
 
 final class Variable implements VariableInterface
 {

@@ -20,17 +20,17 @@ use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\_resources\src\TestActionParamFooResponse1;
 use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
-use function Chevere\Workflow\async;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
-use function Chevere\Workflow\reference;
 use Chevere\Workflow\Run;
-use function Chevere\Workflow\run;
 use Chevere\Workflow\Runner;
+use PHPUnit\Framework\TestCase;
+use function Chevere\Workflow\async;
+use function Chevere\Workflow\reference;
+use function Chevere\Workflow\run;
 use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
-use PHPUnit\Framework\TestCase;
 
 final class RunnerTest extends TestCase
 {

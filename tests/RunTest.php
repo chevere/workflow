@@ -20,13 +20,13 @@ use Chevere\Tests\_resources\src\TestActionParam;
 use Chevere\Tests\_resources\src\TestActionParams;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use function Chevere\Workflow\async;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Run;
-use function Chevere\Workflow\variable;
-use function Chevere\Workflow\workflow;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
+use function Chevere\Workflow\async;
+use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
 
 final class RunTest extends TestCase
 {

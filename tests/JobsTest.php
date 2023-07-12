@@ -24,12 +24,12 @@ use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
-use function Chevere\Workflow\async;
 use Chevere\Workflow\Jobs;
+use PHPUnit\Framework\TestCase;
+use function Chevere\Workflow\async;
 use function Chevere\Workflow\reference;
 use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
-use PHPUnit\Framework\TestCase;
 
 final class JobsTest extends TestCase
 {

@@ -16,8 +16,6 @@ namespace Chevere\Workflow;
 use Chevere\Action\Interfaces\ActionNameInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
-use function Chevere\Message\message;
-use function Chevere\Parameter\assertNamedArgument;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\String\StringAssert;
@@ -27,6 +25,9 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use function Chevere\Action\getParameters;
+use function Chevere\Message\message;
+use function Chevere\Parameter\assertNamedArgument;
 
 final class Job implements JobInterface
 {
@@ -54,7 +55,7 @@ final class Job implements JobInterface
     ) {
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
-        $this->parameters = $actionName->__toString()::getParameters();
+        $this->parameters = getParameters($actionName->__toString());
         $this->arguments = [];
         $this->setArguments(...$argument);
     }

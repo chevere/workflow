@@ -25,10 +25,10 @@ use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
-use function Chevere\Workflow\reference;
-use function Chevere\Workflow\variable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use function Chevere\Workflow\reference;
+use function Chevere\Workflow\variable;
 
 final class JobTest extends TestCase
 {

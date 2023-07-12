@@ -18,8 +18,6 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use function Chevere\Message\message;
-use function Chevere\Parameter\boolean;
 use Chevere\Parameter\Interfaces\BooleanParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Throwable\Errors\TypeError;
@@ -31,6 +29,9 @@ use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use function Chevere\Action\getParameters;
+use function Chevere\Message\message;
+use function Chevere\Parameter\boolean;
 
 final class Jobs implements JobsInterface
 {
@@ -150,7 +151,7 @@ final class Jobs implements JobsInterface
     {
         foreach ($job->arguments() as $argument => $value) {
             $action = $job->actionName()->__toString();
-            $parameter = $action::getParameters()->get($argument);
+            $parameter = getParameters($action)->get($argument);
             $property = match (true) {
                 $value instanceof VariableInterface => 'variables',
                 $value instanceof ReferenceInterface => 'references',

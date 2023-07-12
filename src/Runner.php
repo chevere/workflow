@@ -13,12 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use function Amp\Parallel\Worker\enqueueCallable;
 use Amp\Promise;
-use function Amp\Promise\all;
-use function Amp\Promise\wait;
 use Chevere\Action\Interfaces\ActionInterface;
-use function Chevere\Message\message;
 use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -29,6 +25,10 @@ use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Psr\Container\ContainerInterface;
 use Throwable;
+use function Amp\Parallel\Worker\enqueueCallable;
+use function Amp\Promise\all;
+use function Amp\Promise\wait;
+use function Chevere\Message\message;
 
 final class Runner implements RunnerInterface
 {
@@ -90,11 +90,11 @@ final class Runner implements RunnerInterface
         return $new;
     }
 
-    private function getRunIfCondition(VariableInterface | ReferenceInterface $runIf): bool
+    private function getRunIfCondition(VariableInterface|ReferenceInterface $runIf): bool
     {
         /** @var boolean */
         return $runIf instanceof VariableInterface
-                ? $this->run->arguments()->getBoolean($runIf->__toString())
+                ? $this->run->arguments()->cast($runIf->__toString())->boolean()
                 : $this->run->getResponse($runIf->job())->data()[$runIf->parameter()];
     }
 

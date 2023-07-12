@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
+use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\integer;
-use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 
 /**
  * @method array run()

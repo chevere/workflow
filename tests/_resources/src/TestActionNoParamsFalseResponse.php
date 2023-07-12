@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Chevere\Tests\_resources\src;
 
 use Chevere\Action\Action;
+use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\boolean;
-use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 
 final class TestActionNoParamsFalseResponse extends Action
 {

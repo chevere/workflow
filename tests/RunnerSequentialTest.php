@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use function Chevere\Filesystem\directoryForPath;
 use Chevere\Filesystem\File;
 use Chevere\Filesystem\Interfaces\DirectoryInterface;
 use Chevere\Tests\_resources\src\TestActionFileWrite;
+use PHPUnit\Framework\TestCase;
+use function Chevere\Filesystem\directoryForPath;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
-use PHPUnit\Framework\TestCase;
 
 final class RunnerSequentialTest extends TestCase
 {

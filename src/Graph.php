@@ -17,10 +17,10 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use function Chevere\Message\message;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
+use function Chevere\Message\message;
 
 final class Graph implements GraphInterface
 {

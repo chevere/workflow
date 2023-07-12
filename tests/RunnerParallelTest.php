@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use function Chevere\Filesystem\fileForPath;
 use Chevere\Tests\_resources\src\TestActionFileWrite;
+use PHPUnit\Framework\TestCase;
+use function Chevere\Filesystem\fileForPath;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
-use PHPUnit\Framework\TestCase;
 
 final class RunnerParallelTest extends TestCase
 {
