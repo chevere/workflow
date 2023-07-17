@@ -118,7 +118,6 @@ final class Graph implements GraphInterface
     private function getSortAsc(): array
     {
         $array = $this->map->toArray();
-        // @phpstan-ignore-next-line
         uasort($array, function (VectorInterface $a, VectorInterface $b) {
             return match (true) {
                 $b->contains(...$a->toArray()) => -1,
@@ -128,7 +127,6 @@ final class Graph implements GraphInterface
             };
         });
 
-        // @phpstan-ignore-next-line
         return $array;
     }
 
