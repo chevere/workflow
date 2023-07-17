@@ -11,10 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 use Chevere\Filesystem\Interfaces\FileInterface;
+use Chevere\Parameter\Interfaces\ParameterInterface;
+use function Chevere\Parameter\string;
 
 final class TestActionFileWrite extends Action
 {
@@ -23,7 +25,12 @@ final class TestActionFileWrite extends Action
         return 'test';
     }
 
-    public function run(FileInterface $file): array
+    public static function acceptResponse(): ParameterInterface
+    {
+        return string();
+    }
+
+    public function run(FileInterface $file): string
     {
         $fp = fopen($file->path()->__toString(), 'a+');
         fwrite($fp, '^');
@@ -31,6 +38,7 @@ final class TestActionFileWrite extends Action
         fwrite($fp, '$');
         fclose($fp);
 
-        return [];
+        return 'string';
+        // return [];
     }
 }

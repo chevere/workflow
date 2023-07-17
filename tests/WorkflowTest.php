@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestActionNoParams;
-use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
+use Chevere\Tests\src\TestActionNoParams;
+use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Jobs;

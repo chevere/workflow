@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Action\ActionName;
-use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;

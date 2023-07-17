@@ -15,7 +15,6 @@ namespace Chevere\Workflow;
 
 use Amp\Promise;
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -95,17 +94,18 @@ final class Runner implements RunnerInterface
         /** @var boolean */
         return $runIf instanceof VariableInterface
                 ? $this->run->arguments()->cast($runIf->__toString())->boolean()
-                : $this->run->getResponse($runIf->job())->data()[$runIf->parameter()];
+                : $this->run->getResponse($runIf->job())[$runIf->parameter()];
     }
 
     /**
-     * @param array<string, mixed> $arguments
+     * @phpstan-ignore-next-line
      */
     private function getActionResponse(
         ActionInterface $action,
         array $arguments
-    ): ResponseInterface {
+    ): array {
         try {
+            // @phpstan-ignore-next-line
             return $action->getResponse(...$arguments);
         } catch (Throwable $e) { // @codeCoverageIgnoreStart
             $actionTrace = $e->getTrace()[1] ?? [];
@@ -147,14 +147,16 @@ final class Runner implements RunnerInterface
                 continue;
             }
             /** @var ReferenceInterface $value */
-            $arguments[$name] = $this->run->getResponse($value->job())
-                ->data()[$value->parameter()];
+            $arguments[$name] = $this->run->getResponse($value->job())[$value->parameter()];
         }
 
         return $arguments;
     }
 
-    private function addJobResponse(string $name, ResponseInterface $response): void
+    /**
+     * @phpstan-ignore-next-line
+     */
+    private function addJobResponse(string $name, array $response): void
     {
         $this->run = $this->run->withResponse($name, $response);
     }

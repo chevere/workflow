@@ -15,7 +15,7 @@ namespace Chevere\Tests;
 
 use Chevere\Filesystem\File;
 use Chevere\Filesystem\Interfaces\DirectoryInterface;
-use Chevere\Tests\_resources\src\TestActionFileWrite;
+use Chevere\Tests\src\TestActionFileWrite;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Filesystem\directoryForPath;
 use function Chevere\Workflow\async;
@@ -43,7 +43,6 @@ final class RunnerSequentialTest extends TestCase
         $file->removeIfExists();
         $file->create();
         $file->put('');
-        $action = new TestActionFileWrite();
         $workflow = workflow(
             j1: async(
                 TestActionFileWrite::class,

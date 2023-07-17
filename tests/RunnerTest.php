@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Container\Container;
-use Chevere\Tests\_resources\src\TestActionNoParams;
-use Chevere\Tests\_resources\src\TestActionNoParamsBooleanResponses;
-use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
-use Chevere\Tests\_resources\src\TestActionParamFooResponse1;
-use Chevere\Tests\_resources\src\TestActionParamsFooBarResponse2;
+use Chevere\Tests\src\TestActionNoParams;
+use Chevere\Tests\src\TestActionNoParamsBooleanResponses;
+use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\src\TestActionParamFooResponse1;
+use Chevere\Tests\src\TestActionParamsFooBarResponse2;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -202,7 +202,7 @@ final class RunnerTest extends TestCase
         $action = new $action();
         $this->assertSame(
             $action->run(),
-            $runner->run()->getResponse('job1')->data()
+            $runner->run()->getResponse('job1')
         );
         $arguments = [
             $name => false,
@@ -263,7 +263,7 @@ final class RunnerTest extends TestCase
             $action = new $actionName();
             $this->assertSame(
                 $action->run(...$runArguments[$name]),
-                $run->getResponse($name)->data()
+                $run->getResponse($name)
             );
         }
     }

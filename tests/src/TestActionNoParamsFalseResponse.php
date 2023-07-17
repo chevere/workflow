@@ -11,29 +11,26 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Attributes\Regex;
 use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 use function Chevere\Parameter\arrayp;
-use function Chevere\Parameter\string;
+use function Chevere\Parameter\boolean;
 
-class TestActionParamFooResponseBar extends Action
+final class TestActionNoParamsFalseResponse extends Action
 {
     public static function acceptResponse(): ArrayTypeParameterInterface
     {
         return arrayp(
-            bar: string('/^bar$/')
+            key: boolean()
         );
     }
 
-    public function run(
-        #[Regex('/^bar$/')]
-        string $foo
-    ): array {
+    public function run(): array
+    {
         return [
-            'bar' => 'bar',
+            'key' => false,
         ];
     }
 }

@@ -11,13 +11,13 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 
-class TestActionParam extends Action
+class TestActionParamsAlt extends Action
 {
-    public function run(string $foo): array
+    public function run(string $foo, int $bar): array
     {
         return [];
     }

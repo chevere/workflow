@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Parameter\Interfaces\BooleanParameterInterface;
-use Chevere\Tests\_resources\src\TestActionNoParams;
-use Chevere\Tests\_resources\src\TestActionNoParamsBooleanResponses;
-use Chevere\Tests\_resources\src\TestActionNoParamsIntegerResponse;
-use Chevere\Tests\_resources\src\TestActionParamFooResponse1;
-use Chevere\Tests\_resources\src\TestActionParamFooResponseBar;
-use Chevere\Tests\_resources\src\TestActionParams;
+use Chevere\Tests\src\TestActionNoParams;
+use Chevere\Tests\src\TestActionNoParamsBooleanResponses;
+use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\src\TestActionParamFooResponse1;
+use Chevere\Tests\src\TestActionParamFooResponseBar;
+use Chevere\Tests\src\TestActionParams;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;

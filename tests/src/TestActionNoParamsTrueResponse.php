@@ -11,14 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\boolean;
 
-final class TestActionNoParamsFalseResponse extends Action
+final class TestActionNoParamsTrueResponse extends Action
 {
     public static function acceptResponse(): ArrayTypeParameterInterface
     {
@@ -30,7 +30,7 @@ final class TestActionNoParamsFalseResponse extends Action
     public function run(): array
     {
         return [
-            'key' => false,
+            'key' => true,
         ];
     }
 }

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\_resources\src\TestActionFileWrite;
+use Chevere\Tests\src\TestActionFileWrite;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Filesystem\fileForPath;
 use function Chevere\Workflow\async;

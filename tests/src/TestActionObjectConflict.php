@@ -11,17 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Attributes\Regex;
+use Chevere\Filesystem\Interfaces\PathInterface;
 
-class TestActionParamStringRegex extends Action
+class TestActionObjectConflict extends Action
 {
-    public function run(
-        #[Regex('/^foo|bar$/')]
-        string $foo
-    ): array {
+    public function run(PathInterface $path, string $bar): array
+    {
         return [];
     }
 }

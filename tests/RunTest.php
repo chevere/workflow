@@ -15,9 +15,9 @@ namespace Chevere\Tests;
 
 use ArgumentCountError;
 use Chevere\Response\Response;
-use Chevere\Tests\_resources\src\TestActionNoParams;
-use Chevere\Tests\_resources\src\TestActionParam;
-use Chevere\Tests\_resources\src\TestActionParams;
+use Chevere\Tests\src\TestActionNoParams;
+use Chevere\Tests\src\TestActionParam;
+use Chevere\Tests\src\TestActionParams;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Jobs;
@@ -73,10 +73,9 @@ final class RunTest extends TestCase
             'baz' => 'ql',
         ];
         $run = (new Run($workflow, ...$arguments));
-        $workflowRunWithStepResponse = $run
-            ->withResponse('job0', new Response());
+        $workflowRunWithStepResponse = $run->withResponse('job0', []);
         $this->assertNotSame($run, $workflowRunWithStepResponse);
-        $this->assertSame([], $workflowRunWithStepResponse->getResponse('job0')->data());
+        $this->assertSame([], $workflowRunWithStepResponse->getResponse('job0'));
     }
 
     public function testWithAddedNotFound(): void
@@ -95,7 +94,7 @@ final class RunTest extends TestCase
         (new Run($workflow, ...$arguments))
             ->withResponse(
                 'not-found',
-                new Response()
+                []
             );
     }
 

@@ -11,17 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 
-/**
- * @method array run(string $foo, string $bar)
- *    return []
- */
-class TestActionParams extends Action
+final class TestActionNoParams extends Action
 {
-    public function run(string $foo, string $bar): array
+    public function getDescription(): string
+    {
+        return 'test';
+    }
+
+    public function run(): array
     {
         return [];
     }

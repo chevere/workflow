@@ -17,13 +17,12 @@ use Chevere\DataStructure\Interfaces\MappedInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Response\Interfaces\ResponseInterface;
-use Chevere\Throwable\Errors\ArgumentCountError;
 use Iterator;
 
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
  *
- * @extends MappedInterface<ResponseInterface>
+ * @extends MappedInterface<array>
  */
 interface RunInterface extends MappedInterface
 {
@@ -54,21 +53,23 @@ interface RunInterface extends MappedInterface
     public function skip(): VectorInterface;
 
     /**
-     * @throws ArgumentCountError
+     * @phpstan-ignore-next-line
      */
-    public function withResponse(string $job, ResponseInterface $response): self;
+    public function withResponse(string $job, array $response): self;
 
     public function withSkip(string ...$job): self;
 
     /**
      * Provides access to the ResponseInterface instance for the given `$job`.
+     * @phpstan-ignore-next-line
      */
-    public function getResponse(string $job): ResponseInterface;
+    public function getResponse(string $job): array;
 
     /**
      * Iterator for job responses.
      *
-     * @return Iterator<string, ResponseInterface> Job name to ResponseInterface instance
+     * @return Iterator<string, array> Job name to ResponseInterface instance
+     * @phpstan-ignore-next-line
      */
     public function getIterator(): Iterator;
 }

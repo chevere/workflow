@@ -20,7 +20,6 @@ use Chevere\DataStructure\Vector;
 use Chevere\Message\Interfaces\MessageInterface;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
-use Chevere\Response\Interfaces\ResponseInterface;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -32,7 +31,7 @@ use function Chevere\VariableSupport\deepCopy;
 final class Run implements RunInterface
 {
     /**
-     * @template-use MapTrait<ResponseInterface>
+     * @template-use MapTrait<array>
      */
     use MapTrait;
 
@@ -89,14 +88,17 @@ final class Run implements RunInterface
         return $this->skip;
     }
 
-    public function withResponse(string $job, ResponseInterface $response): RunInterface
+    /**
+     * @phpstan-ignore-next-line
+     */
+    public function withResponse(string $job, array $response): RunInterface
     {
         $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
         $new = clone $this;
         $new->workflow->jobs()->get($job);
         $tryArguments = new Arguments(
             $new->workflow->getJobResponseParameters($job),
-            $response->data()
+            $response
         );
         $tryArguments->parameters();
         $new->map = $new->map->withPut($job, $response);
@@ -118,8 +120,9 @@ final class Run implements RunInterface
 
     /**
      * @throws OutOfBoundsException
+     * @phpstan-ignore-next-line
      */
-    public function getResponse(string $name): ResponseInterface
+    public function getResponse(string $name): array
     {
         return $this->map->get($name);
     }

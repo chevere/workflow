@@ -11,26 +11,24 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\string;
 
-class TestActionParamsFooBarResponse2 extends Action
+class TestActionParamFooResponse1 extends Action
 {
     public static function acceptResponse(): ArrayTypeParameterInterface
     {
-        return arrayp(response2: string());
+        return arrayp(response1: string());
     }
 
-    public function run(
-        string $foo,
-        string $bar
-    ): array {
+    public function run(string $foo): array
+    {
         return [
-            'response2' => "{$foo}^{$bar}",
+            'response1' => $foo,
         ];
     }
 }

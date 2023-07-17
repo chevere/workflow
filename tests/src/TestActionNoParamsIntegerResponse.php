@@ -11,24 +11,35 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Tests\_resources\src;
+namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ArrayTypeParameterInterface;
 use function Chevere\Parameter\arrayp;
-use function Chevere\Parameter\string;
+use function Chevere\Parameter\integer;
 
-class TestActionParamFooResponse1 extends Action
+/**
+ * @method array run()
+ *     return [
+ *        'id' => (int) The id,
+ *     ]
+ */
+final class TestActionNoParamsIntegerResponse extends Action
 {
-    public static function acceptResponse(): ArrayTypeParameterInterface
+    public function getDescription(): string
     {
-        return arrayp(response1: string());
+        return 'test';
     }
 
-    public function run(string $foo): array
+    public static function acceptResponse(): ArrayTypeParameterInterface
+    {
+        return arrayp(id: integer());
+    }
+
+    public function run(): array
     {
         return [
-            'response1' => $foo,
+            'id' => 123,
         ];
     }
 }
