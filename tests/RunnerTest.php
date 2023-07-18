@@ -202,7 +202,7 @@ final class RunnerTest extends TestCase
         $action = new $action();
         $this->assertSame(
             $action->run(),
-            $runner->run()->getResponse('job1')
+            $runner->run()->getResponse('job1')->array()
         );
         $arguments = [
             $name => false,
@@ -234,7 +234,7 @@ final class RunnerTest extends TestCase
         $runner = new Runner($run, $container);
         foreach ($workflow->jobs()->keys() as $name) {
             $runner = $runner->withRunJob($name);
-            $runner->run()->getResponse($name);
+            $runner->run()->getResponse($name)->array();
         }
         $workflow = workflow(
             job1: $job1,
@@ -263,7 +263,7 @@ final class RunnerTest extends TestCase
             $action = new $actionName();
             $this->assertSame(
                 $action->run(...$runArguments[$name]),
-                $run->getResponse($name)
+                $run->getResponse($name)->array()
             );
         }
     }
