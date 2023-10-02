@@ -13,10 +13,10 @@
     ],
     "require": {
         "amphp/parallel": "^1.4",
-        "chevere/chevere": "^3.0.x-dev"
+        "chevere/chevere": "^3.2"
     },
     "require-dev": {
-        "chevere/var-dump": "^0.8.x-dev",
+        "chevere/var-dump": "^0.9",
         "phpstan/phpstan": "^1.9",
         "phpunit/phpunit": "^9.5",
         "symplify/easy-coding-standard": "^11.1"
@@ -42,21 +42,34 @@
         "all": [
             "composer phpstan",
             "composer test",
-            "composer test-rep",
-            "composer infection"
+            "composer test-coverage",
+            "composer infection -- --skip-initial-tests --coverage=build/logs"
         ],
-        "infection": "infection --only-covered -j10",
+        "infection": [
+            "Composer\\Config::disableProcessTimeout",
+            "infection --only-covered -j10"
+        ],
+        "infection-filter": "sh -c 'sh -c \"composer infection -- --filter=$0 --test-framework-options=--filter=$0\"' $1",
         "phpstan": "vendor/bin/phpstan analyze src/ --memory-limit 512M --level 9",
-        "test": "vendor/bin/phpunit -c phpunit.xml",
-        "test-rep": "vendor/bin/phpunit -c phpunit-report.xml",
-        "update-cs": "mkdir -p .ecs && cd .ecs && curl -O https://raw.githubusercontent.com/chevere/code-style/main/.ecs/ecs-chevere.php"
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "vendor/bin/phpunit -c phpunit.xml"
+        ],
+        "test-coverage": [
+            "Composer\\Config::disableProcessTimeout",
+            "vendor/bin/phpunit -c phpunit-coverage.xml"
+        ],
+        "cs-update": "mkdir -p .ecs && cd .ecs && curl -O https://raw.githubusercontent.com/chevere/code-style/main/.ecs/ecs-chevere.php",
+        "cs-fix": "vendor/bin/ecs --config='.ecs/ecs.php' check src --fix"
     },
     "scripts-descriptions": {
         "all": "Runs all checks",
         "infection": "Runs infection",
+        "infection-filter": "Runs infection (filtered)",
         "phpstan": "Runs phpstan",
         "test": "Run test suite",
-        "test-rep": "Run test suite (report)",
-        "update-cs": "Update Chevere code style definition"
+        "test-coverage": "Run test suite (coverage)",
+        "cs-update": "Update Chevere code style definition",
+        "cs-fix": "Update Chevere code style definition"
     }
 }
