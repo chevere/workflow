@@ -17,7 +17,7 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=coverage)](https://sonarcloud.io/dashboard?id=chevere_workflow)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=sqale_index)](https://sonarcloud.io/dashboard?id=chevere_workflow)
 [![CodeFactor](https://www.codefactor.io/repository/github/chevere/workflow/badge)](https://www.codefactor.io/repository/github/chevere/workflow)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/9e33004e8791436f9e7e39093f3fd5e4)](https://www.codacy.com/gh/chevere/workflow/dashboard)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/9e33004e8791436f9e7e39093f3fd5e4)](https://app.codacy.com/gh/chevere/workflow/dashboard)
 
 ![Workflow](.github/banner/workflow-logo.svg)
 
@@ -33,8 +33,8 @@ Create a Workflow by passing named jobs.
 
 * `async` for asynchronous non-blocking jobs
 * `sync` for synchronous blocking jobs
-* `variable` for defining a variable
-* `reference` to define a reference to a previous job
+* `variable` for defining a workflow-level variable
+* `reference` to define a reference to a previous job result
 
 ```php
 use function Chevere\Workflow\workflow;
