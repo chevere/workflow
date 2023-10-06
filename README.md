@@ -45,7 +45,7 @@ use function Chevere\Workflow\variable;
 $workflow = workflow(
     thumb: async(
         ImageResize::class,
-        file: variable('file'),
+        file: variable('image'),
         fit: 'thumbnail',
     ),
     poster: async(
@@ -53,12 +53,68 @@ $workflow = workflow(
         file: variable('file'),
         fit: 'poster',
     ),
-    store: sync(
-        StoreFiles::class,
-        reference('thumb', 'out'),
-        reference('poster', 'out'),
+    storeThumb: async(
+        StoreFile::class,
+        file: reference('thumb', 'out'),
+        path: variable('savePath'),
+    ),
+    storePoster: async(
+        StoreFile::class,
+        file: reference('poster', 'out'),
+        path: variable('savePath'),
     )
 );
+```
+
+Workflow detects when an `async` job depends on other jobs and it will auto-depend when using references. The graph for the workflow above looks like this:
+
+```plain
+//$workflow->jobs()->graph();
+[
+    ['thumb', 'poster'],
+    ['storeThumb', 'storePoster'],
+];
+```
+
+Actions `ImageResize` and `StoreFile` refers to individual re-usable actions:
+
+```php
+use Chevere\Action\Action;
+
+class ImageResize extends Action
+{
+    public static function acceptResponse(): ParameterInterface
+    {
+        return arrayp(
+            out: string()
+        );
+    }
+
+    protected function run(string $file, string $fit): array
+    {
+        // ...
+        return [
+            'out' => 'path/to/resized-image'
+        ];
+    }
+}
+```
+
+```php
+use Chevere\Action\Action;
+
+class StoreFile extends Action
+{
+    public static function acceptResponse(): ParameterInterface
+    {
+        return null();
+    }
+
+    protected function run(string $file, string $path): void
+    {
+        // ...
+    }
+}
 ```
 
 Run your Workflow:
@@ -67,7 +123,8 @@ Run your Workflow:
 use function Chevere\Workflow\run;
 
 $variables = [
-    'file' => '/path/to/file'
+    'image' => '/path/to/image-to-upload',
+    'savePath' => '/path/to/storage/'
 ];
 $run = run($workflow, $variables);
 ```
