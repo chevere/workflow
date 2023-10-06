@@ -38,8 +38,7 @@ final class RunnerParallelTest extends TestCase
                 file: $file,
             ),
         );
-        $arguments = [];
-        run($workflow, ...$arguments);
+        run($workflow);
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
             '^^$$'

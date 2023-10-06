@@ -20,6 +20,7 @@ use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\BooleanParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
+use Chevere\Parameter\Interfaces\ParametersAccessInterface;
 use Chevere\Throwable\Errors\TypeError;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -139,6 +140,9 @@ final class Jobs implements JobsInterface
     {
         $action = $job->actionName()->__toString();
         // TODO: Support for mixed, void, ParameterAccessInterface
+        if (! ($action::acceptResponse() instanceof ParametersAccessInterface)) {
+            return;
+        }
         foreach ($action::acceptResponse()->parameters() as $key => $parameter) {
             $this->references = $this->references
                 ->withPut(

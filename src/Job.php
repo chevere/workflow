@@ -161,11 +161,11 @@ final class Job implements JobInterface
     private function assertArgumentsCount(array $arguments): void
     {
         $countProvided = count($arguments);
-        $countRequired = count($this->parameters->required());
+        $countRequired = count($this->parameters->requiredKeys());
         if ($countRequired > $countProvided
             || $countRequired !== $countProvided
         ) {
-            $parameters = implode(', ', $this->parameters->required()->toArray());
+            $parameters = implode(', ', $this->parameters->requiredKeys()->toArray());
             $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
             throw new ArgumentCountError(

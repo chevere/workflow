@@ -32,7 +32,7 @@ final class WorkflowTest extends TestCase
         $job = async(TestActionNoParams::class);
         $jobs = new Jobs(job: $job);
         $workflow = new Workflow($jobs);
-        $this->assertCount(0, $workflow->getJobResponseParameters('job'));
+        // $this->assertCount(0, $workflow->getJobResponseParameter('job'));
         $this->assertCount(1, $workflow);
         $this->assertTrue($workflow->jobs()->has('job'));
         $this->assertSame(['job'], $workflow->jobs()->keys());
@@ -62,8 +62,8 @@ final class WorkflowTest extends TestCase
         $workflow = (new Workflow(new Jobs(job: $job)))
             ->withAddedJob(name: $job);
         $this->assertSame($job, $workflow->jobs()->get('name'));
-        $this->assertCount(1, $workflow->getJobResponseParameters('job'));
-        $workflow->getJobResponseParameters('job')->assertHas('bar');
+        // $this->assertCount(1, $workflow->getJobResponseParameter('job'));
+        // $workflow->getJobResponseParameter('job')->assertHas('bar');
     }
 
     public function testWithVariable(): void

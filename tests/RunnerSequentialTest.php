@@ -53,8 +53,7 @@ final class RunnerSequentialTest extends TestCase
                 file: $file,
             )->withDepends('j1'),
         );
-        $arguments = [];
-        run($workflow, ...$arguments);
+        run($workflow);
         $this->assertStringEqualsFile(
             $file->path()->__toString(),
             str_repeat('^$', 2)

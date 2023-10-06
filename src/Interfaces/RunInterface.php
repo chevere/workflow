@@ -16,12 +16,12 @@ namespace Chevere\Workflow\Interfaces;
 use Chevere\DataStructure\Interfaces\MappedInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
-use Chevere\Parameter\Interfaces\CastInterface;
+use Chevere\Parameter\Interfaces\CastArgumentInterface;
 
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
  *
- * @extends MappedInterface<CastInterface>
+ * @extends MappedInterface<CastArgumentInterface>
  */
 interface RunInterface extends MappedInterface
 {
@@ -51,12 +51,12 @@ interface RunInterface extends MappedInterface
      */
     public function skip(): VectorInterface;
 
-    public function withResponse(string $job, CastInterface $response): self;
+    public function withResponse(string $job, CastArgumentInterface $response): self;
 
     public function withSkip(string ...$job): self;
 
     /**
      * Provides access to the ResponseInterface instance for the given `$job`.
      */
-    public function getResponse(string $job): CastInterface;
+    public function getResponse(string $job): CastArgumentInterface;
 }

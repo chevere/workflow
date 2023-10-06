@@ -15,6 +15,7 @@ namespace Chevere\Workflow;
 
 use Chevere\DataStructure\Map;
 use Chevere\Parameter\Interfaces\ParameterInterface;
+use Chevere\Parameter\Interfaces\ParametersAccessInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -26,6 +27,7 @@ use Chevere\Workflow\Interfaces\WorkflowInterface;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\boolean;
+use function Chevere\Parameter\parameters;
 
 final class Workflow implements WorkflowInterface
 {
@@ -37,7 +39,7 @@ final class Workflow implements WorkflowInterface
     private Map $expected;
 
     /**
-     * @var Map<ParametersInterface>
+     * @var Map<ParameterInterface>
      */
     private Map $provided;
 
@@ -78,9 +80,9 @@ final class Workflow implements WorkflowInterface
      * @throws \TypeError
      * @throws OutOfBoundsException
      */
-    public function getJobResponseParameters(string $job): ParametersInterface
+    public function getJobResponseParameter(string $job): ParameterInterface
     {
-        /** @var ParametersInterface */
+        /** @var ParameterInterface */
         return $this->provided->get($job);
     }
 
@@ -88,10 +90,7 @@ final class Workflow implements WorkflowInterface
     {
         $action = $job->actionName()->__toString();
         $parameters = getParameters($action);
-        $this->provided = $this->provided->withPut(
-            $name,
-            $action::acceptResponse()->parameters(),
-        );
+        $this->provided = $this->provided->withPut($name, $action::acceptResponse());
         foreach ($job->arguments() as $argument => $value) {
             try {
                 $parameter = $parameters->get($argument);
@@ -125,9 +124,13 @@ final class Workflow implements WorkflowInterface
     private function assertPreviousReference(
         ReferenceInterface $reference
     ): void {
-        /** @var ParametersInterface $responseParameters */
-        $responseParameters = $this->provided->get($reference->job());
-        if (! $responseParameters->has($reference->parameter())) {
+        /** @var ParameterInterface $responseParameter */
+        $responseParameter = $this->provided->get($reference->job());
+        $parameters = parameters();
+        if ($responseParameter instanceof ParametersAccessInterface) {
+            $parameters = $responseParameter->parameters();
+        }
+        if (! $parameters->has($reference->parameter())) {
             throw new OutOfBoundsException(
                 message('Reference %reference% not found, response key %parameter% is not declared by %job%')
                     ->withCode('%reference%', $reference->__toString())
