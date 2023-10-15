@@ -27,7 +27,7 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Jobs;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
-use function Chevere\Workflow\responseKey;
+use function Chevere\Workflow\response;
 use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
 
@@ -201,7 +201,7 @@ final class JobsTest extends TestCase
             ),
             two: async(
                 TestActionParamFooResponse1::class,
-                foo: responseKey('one', 'bar')
+                foo: response('one', 'bar')
             )
         );
     }
@@ -216,7 +216,7 @@ final class JobsTest extends TestCase
             ),
             two: async(
                 TestActionParamFooResponseBar::class,
-                foo: responseKey('zero', 'key')
+                foo: response('zero', 'key')
             )
         );
     }
@@ -231,8 +231,8 @@ final class JobsTest extends TestCase
             ),
             two: async(
                 TestActionParams::class,
-                foo: responseKey('one', 'id'),
-                bar: responseKey('one', 'id')
+                foo: response('one', 'id'),
+                bar: response('one', 'id')
             )
         );
     }
@@ -243,7 +243,7 @@ final class JobsTest extends TestCase
         new Jobs(
             j1: async(TestActionNoParams::class)
                 ->withRunIf(
-                    responseKey('job', 'parameter')
+                    response('job', 'parameter')
                 ),
         );
     }
@@ -255,7 +255,7 @@ final class JobsTest extends TestCase
             j1: async(TestActionNoParams::class),
             j2: async(TestActionNoParams::class)
                 ->withRunIf(
-                    responseKey('j1', 'parameter')
+                    response('j1', 'parameter')
                 ),
         );
     }
@@ -268,7 +268,7 @@ final class JobsTest extends TestCase
             j1: async(TestActionNoParamsIntegerResponse::class),
             j2: async(TestActionNoParams::class)
                 ->withRunIf(
-                    responseKey('j1', 'id')
+                    response('j1', 'id')
                 ),
         );
     }
@@ -313,8 +313,8 @@ final class JobsTest extends TestCase
 
     public function testWithRunIfReference(): void
     {
-        $true = responseKey('j1', 'true');
-        $false = responseKey('j1', 'false');
+        $true = response('j1', 'true');
+        $false = response('j1', 'false');
         $jobs = new Jobs(
             j1: async(
                 TestActionNoParamsBooleanResponses::class,
@@ -337,7 +337,7 @@ final class JobsTest extends TestCase
             $jobs->references()->has($true->__toString(), $false->__toString())
         );
         $j4 = async(TestActionNoParams::class)
-            ->withRunIf(responseKey('j5', 'missing'));
+            ->withRunIf(response('j5', 'missing'));
         $this->expectException(OutOfBoundsException::class);
         $jobs->withAdded(j4: $j4);
     }
@@ -353,7 +353,7 @@ final class JobsTest extends TestCase
             ),
             job2: async(
                 TestActionParamFooResponseBar::class,
-                foo: responseKey('job1', 'missing'),
+                foo: response('job1', 'missing'),
             )
         );
     }
@@ -369,7 +369,7 @@ final class JobsTest extends TestCase
             ),
             job2: async(
                 TestActionParamFooResponseBar::class,
-                foo: responseKey('job1', 'baz'),
+                foo: response('job1', 'baz'),
             )
         );
     }

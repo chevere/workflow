@@ -27,7 +27,7 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use function Chevere\Workflow\responseKey;
+use function Chevere\Workflow\response;
 use function Chevere\Workflow\variable;
 
 final class JobTest extends TestCase
@@ -104,7 +104,7 @@ final class JobTest extends TestCase
     {
         $actionName = new ActionName(TestActionParamStringRegex::class);
         $success = [
-            'foo' => responseKey('job1', 'output'),
+            'foo' => response('job1', 'output'),
         ];
         $job = new Job($actionName, true, ...$success);
         $this->assertSame($actionName, $job->actionName());
@@ -174,7 +174,7 @@ final class JobTest extends TestCase
     {
         $actionName = new ActionName(TestActionNoParams::class);
         $job = new Job($actionName);
-        $reference = responseKey('jobN', 'parameter');
+        $reference = response('jobN', 'parameter');
         $job = $job->withRunIf($reference);
         $this->assertSame(
             [$reference],

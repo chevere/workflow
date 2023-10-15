@@ -140,12 +140,11 @@ final class Jobs implements JobsInterface
     private function storeReferences(string $job, JobInterface $item): void
     {
         $action = $item->actionName()->__toString();
-        // TODO: Support for mixed, void, ParameterAccessInterface
         if ($action::acceptResponse() instanceof ParametersAccessInterface) {
             foreach ($action::acceptResponse()->parameters() as $key => $parameter) {
                 $this->references = $this->references
                     ->withPut(
-                        strval(responseKey($job, $key)),
+                        strval(response($job, $key)),
                         $parameter,
                     );
             }

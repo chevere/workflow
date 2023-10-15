@@ -66,23 +66,14 @@ function async(string $action, mixed ...$argument): JobInterface
 }
 
 /**
- * Creates a reference to the response for the given job and key.
+ * Creates a reference to the response for the given job and key (if any).
  *
  * @param string $job Job
+ * @param ?string $key Job response key (optional)
  */
-function responseKey(string $job, string $key): ResponseReferenceInterface
+function response(string $job, ?string $key = null): ResponseReferenceInterface
 {
     return new ResponseReference($job, $key);
-}
-
-/**
- * Creates a reference to the response for the given job.
- *
- * @param string $job Job
- */
-function response(string $job): ResponseReferenceInterface
-{
-    return new ResponseReference($job, null);
 }
 
 /**
