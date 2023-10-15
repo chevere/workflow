@@ -15,6 +15,7 @@ namespace Chevere\Tests;
 
 use Chevere\Filesystem\File;
 use Chevere\Filesystem\Interfaces\DirectoryInterface;
+use Chevere\Filesystem\Interfaces\FileInterface;
 use Chevere\Tests\src\TestActionFileWrite;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Filesystem\directoryForPath;
@@ -26,10 +27,15 @@ final class RunnerSequentialTest extends TestCase
 {
     private DirectoryInterface $directory;
 
+    private FileInterface $file;
+
     protected function setUp(): void
     {
-        $this->directory = directoryForPath(__DIR__ . '/_resources/temp');
+        $this->directory = directoryForPath(__DIR__ . '/_resources');
         $this->directory->createIfNotExists();
+        $this->file = new File(
+            $this->directory->path()->getChild('output-sequential')
+        );
     }
 
     protected function tearDown(): void
@@ -39,25 +45,24 @@ final class RunnerSequentialTest extends TestCase
 
     public function testSequentialRunner(): void
     {
-        $file = new File($this->directory->path()->getChild('output-sequential'));
-        $file->removeIfExists();
-        $file->create();
-        $file->put('');
+        $this->file->removeIfExists();
+        $this->file->create();
+        $this->file->put('');
         $workflow = workflow(
             j1: async(
                 TestActionFileWrite::class,
-                file: $file,
+                file: $this->file,
             ),
             j2: async(
                 TestActionFileWrite::class,
-                file: $file,
+                file: $this->file,
             )->withDepends('j1'),
         );
         run($workflow);
         $this->assertStringEqualsFile(
-            $file->path()->__toString(),
-            str_repeat('^$', 2)
+            $this->file->path()->__toString(),
+            '^$^$'
         );
-        $file->removeIfExists();
+        $this->file->removeIfExists();
     }
 }

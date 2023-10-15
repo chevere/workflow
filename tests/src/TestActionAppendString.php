@@ -15,22 +15,17 @@ namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParameterInterface;
-use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\string;
 
-class TestActionParamsFooBarResponse2 extends Action
+final class TestActionAppendString extends Action
 {
     public static function acceptResponse(): ParameterInterface
     {
-        return arrayp(response2: string());
+        return string();
     }
 
-    public function run(
-        string $foo,
-        string $bar
-    ): array {
-        return [
-            'response2' => "{$foo}^{$bar}",
-        ];
+    public function run(string $string): string
+    {
+        return "{$string}!";
     }
 }

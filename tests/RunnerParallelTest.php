@@ -13,36 +13,56 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Filesystem\File;
+use Chevere\Filesystem\Interfaces\DirectoryInterface;
+use Chevere\Filesystem\Interfaces\FileInterface;
 use Chevere\Tests\src\TestActionFileWrite;
 use PHPUnit\Framework\TestCase;
-use function Chevere\Filesystem\fileForPath;
+use function Chevere\Filesystem\directoryForPath;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
 
 final class RunnerParallelTest extends TestCase
 {
+    private DirectoryInterface $directory;
+
+    private FileInterface $file;
+
+    protected function setUp(): void
+    {
+        $this->directory = directoryForPath(__DIR__ . '/_resources');
+        $this->directory->createIfNotExists();
+        $this->file = new File(
+            $this->directory->path()->getChild('output-parallel')
+        );
+    }
+
+    protected function tearDown(): void
+    {
+        $this->directory->removeIfExists();
+    }
+
     public function testParallelRunner(): void
     {
-        $file = fileForPath(__DIR__ . '/_resources/output-parallel');
-        $file->removeIfExists();
-        $file->create();
-        $file->put('');
+        $this->file->removeIfExists();
+        $this->file->create();
+        $this->file->put('');
         $workflow = workflow(
             j1: async(
                 TestActionFileWrite::class,
-                file: $file,
+                file: $this->file,
             ),
             j2: async(
                 TestActionFileWrite::class,
-                file: $file,
+                file: $this->file,
             ),
         );
         run($workflow);
         $this->assertStringEqualsFile(
-            $file->path()->__toString(),
+            $this->file->path()->__toString(),
             '^^$$'
         );
-        $file->removeIfExists();
+        $this->file->removeIfExists();
     }
 }

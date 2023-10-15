@@ -19,7 +19,7 @@ use Chevere\Parameter\Interfaces\CastArgumentInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Chevere\Workflow\Interfaces\ReferenceInterface;
+use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
@@ -90,12 +90,12 @@ final class Runner implements RunnerInterface
         return $new;
     }
 
-    private function getRunIfCondition(VariableInterface|ReferenceInterface $runIf): bool
+    private function getRunIfCondition(VariableInterface|ResponseReferenceInterface $runIf): bool
     {
         /** @var boolean */
         return $runIf instanceof VariableInterface
                 ? $this->run->arguments()->required($runIf->__toString())->boolean()
-                : $this->run->getResponse($runIf->job())->array()[$runIf->parameter()];
+                : $this->run->getResponse($runIf->job())->array()[$runIf->key()];
     }
 
     /**
@@ -132,9 +132,9 @@ final class Runner implements RunnerInterface
     {
         $arguments = [];
         foreach ($job->arguments() as $name => $value) {
-            $isReference = $value instanceof ReferenceInterface;
+            $isResponseReference = $value instanceof ResponseReferenceInterface;
             $isVariable = $value instanceof VariableInterface;
-            if (! ($isReference || $isVariable)) {
+            if (! ($isResponseReference || $isVariable)) {
                 $arguments[$name] = $value;
 
                 continue;
@@ -146,8 +146,15 @@ final class Runner implements RunnerInterface
 
                 continue;
             }
-            /** @var ReferenceInterface $value */
-            $arguments[$name] = $this->run->getResponse($value->job())->array()[$value->parameter()];
+            /** @var ResponseReferenceInterface $value */
+            if ($value->key() === null) {
+                $arguments[$name] = $this->run->getResponse($value->job())->mixed();
+
+                continue;
+            }
+
+            /** @var ResponseReferenceInterface $value */
+            $arguments[$name] = $this->run->getResponse($value->job())->array()[$value->key()];
         }
 
         return $arguments;

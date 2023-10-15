@@ -13,17 +13,17 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Tests\src\TestActionAppendString;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
-use function Chevere\Workflow\reference;
+use function Chevere\Workflow\response;
+use function Chevere\Workflow\run;
 use function Chevere\Workflow\variable;
-use function Chevere\Workflow\workflow;
 
 final class WorkflowTest extends TestCase
 {
@@ -32,7 +32,6 @@ final class WorkflowTest extends TestCase
         $job = async(TestActionNoParams::class);
         $jobs = new Jobs(job: $job);
         $workflow = new Workflow($jobs);
-        // $this->assertCount(0, $workflow->getJobResponseParameter('job'));
         $this->assertCount(1, $workflow);
         $this->assertTrue($workflow->jobs()->has('job'));
         $this->assertSame(['job'], $workflow->jobs()->keys());
@@ -62,8 +61,6 @@ final class WorkflowTest extends TestCase
         $workflow = (new Workflow(new Jobs(job: $job)))
             ->withAddedJob(name: $job);
         $this->assertSame($job, $workflow->jobs()->get('name'));
-        // $this->assertCount(1, $workflow->getJobResponseParameter('job'));
-        // $workflow->getJobResponseParameter('job')->assertHas('bar');
     }
 
     public function testWithVariable(): void
@@ -91,44 +88,20 @@ final class WorkflowTest extends TestCase
 
     public function testWithReference(): void
     {
-        $workflow = new Workflow(
-            new Jobs(
-                job1: async(
-                    TestActionParamFooResponseBar::class,
-                    foo: variable('foo')
-                ),
-            )
-        );
-        $this->assertTrue($workflow->jobs()->has('job1'));
-        $this->assertTrue($workflow->jobs()->variables()->has('foo'));
-        $this->assertTrue($workflow->parameters()->has('foo'));
-        $workflow = $workflow
-            ->withAddedJob(
-                job2: async(
-                    TestActionParamFooResponseBar::class,
-                    foo: reference('job1', 'bar'),
-                )
-            );
-        $this->assertContains('job1', $workflow->jobs()->get('job2')->dependencies());
-        $this->assertTrue($workflow->parameters()->has('foo'));
-    }
-
-    public function testWithMissingReference(): void
-    {
-        $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Incompatible declaration');
-        $this->expectExceptionMessage('job2 (argument@foo)');
-        $this->expectExceptionMessage('Reference ${job1:missing} not found');
-        $this->expectExceptionMessage('not declared by job1');
-        workflow(
+        $jobs = new Jobs(
             job1: async(
-                TestActionParamFooResponseBar::class,
-                foo: 'bar'
+                TestActionAppendString::class,
+                string: 'test',
             ),
             job2: async(
-                TestActionParamFooResponseBar::class,
-                foo: reference('job1', 'missing'),
+                TestActionAppendString::class,
+                string: response('job1'),
             )
         );
+        $workflow = new Workflow($jobs);
+        $this->assertTrue($workflow->jobs()->has('job1'));
+        $this->assertContains('job1', $workflow->jobs()->get('job2')->dependencies());
+        $run = run($workflow);
+        $this->assertSame('test!!', $run->getResponse('job2')->string());
     }
 }

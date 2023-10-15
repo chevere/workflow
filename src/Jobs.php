@@ -28,8 +28,9 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
-use Chevere\Workflow\Interfaces\ReferenceInterface;
+use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use Throwable;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\boolean;
@@ -136,43 +137,49 @@ final class Jobs implements JobsInterface
         }
     }
 
-    private function storeReferences(string $name, JobInterface $job): void
+    private function storeReferences(string $job, JobInterface $item): void
     {
-        $action = $job->actionName()->__toString();
+        $action = $item->actionName()->__toString();
         // TODO: Support for mixed, void, ParameterAccessInterface
-        if (! ($action::acceptResponse() instanceof ParametersAccessInterface)) {
-            return;
-        }
-        foreach ($action::acceptResponse()->parameters() as $key => $parameter) {
+        if ($action::acceptResponse() instanceof ParametersAccessInterface) {
+            foreach ($action::acceptResponse()->parameters() as $key => $parameter) {
+                $this->references = $this->references
+                    ->withPut(
+                        strval(responseKey($job, $key)),
+                        $parameter,
+                    );
+            }
+        } else {
             $this->references = $this->references
                 ->withPut(
-                    strval(reference($name, $key)),
-                    $parameter,
+                    strval(response($job)),
+                    $action::acceptResponse(),
                 );
         }
     }
 
-    private function handleArguments(string $name, JobInterface $job): void
+    private function handleArguments(string $job, JobInterface $item): void
     {
-        foreach ($job->arguments() as $argument => $value) {
-            $action = $job->actionName()->__toString();
+        foreach ($item->arguments() as $argument => $value) {
+            $action = $item->actionName()->__toString();
             $parameter = getParameters($action)->get($argument);
-            $property = match (true) {
+            $collection = match (true) {
                 $value instanceof VariableInterface => 'variables',
-                $value instanceof ReferenceInterface => 'references',
+                $value instanceof ResponseReferenceInterface => 'references',
                 default => false
             };
-            if (! $property) {
+            if (! $collection) {
                 continue;
             }
-            /** @var VariableInterface|ReferenceInterface $value */
+
             try {
-                $this->mapParameter($name, $argument, $property, $parameter, $value);
-            } catch (TypeError $e) {
-                throw new TypeError(
+                /** @var VariableInterface|ResponseReferenceInterface $value */
+                $this->mapParameter($job, $argument, $collection, $parameter, $value);
+            } catch (Throwable $e) {
+                throw new $e(
                     message($e->getMessage())
                         ->withTranslate('%parameter%', $argument)
-                        ->withTranslate('%job%', $name)
+                        ->withTranslate('%job%', $job)
                 );
             }
         }
@@ -181,33 +188,49 @@ final class Jobs implements JobsInterface
     private function mapParameter(
         string $job,
         string $argument,
-        string $property,
+        string $collection,
         ParameterInterface $parameter,
-        VariableInterface|ReferenceInterface $value,
+        VariableInterface|ResponseReferenceInterface $value,
     ): void {
         /** @var MapInterface<ParameterInterface> $map */
-        $map = $this->{$property};
+        $map = $this->{$collection};
         $subject = 'Reference';
-        $key = strval($value);
+        $identifier = strval($value);
         if ($value instanceof VariableInterface) {
             $subject = 'Variable';
-            $key = $value->__toString();
+        } else {
+            try {
+                /** @var JobInterface $referenceJob */
+                $referenceJob = $this->map->get($value->job());
+                /** @var ParameterInterface $acceptResponse */
+                $acceptResponse = $referenceJob->actionName()->__toString()::acceptResponse();
+                if ($value->key() !== null) {
+                    /** @var ParametersAccessInterface $acceptResponse */
+                    $acceptResponse->parameters()->get($value->key());
+                }
+            } catch (OutOfBoundsException) {
+                throw new OutOfBoundsException(
+                    message('%subject% %key% not found at job %job%')
+                        ->withTranslate('%subject%', $subject)
+                        ->withTranslate('%key%', $identifier)
+                );
+            }
         }
-        if (! $map->has($key)) {
-            $map = $map->withPut($key, $parameter);
-            $this->{$property} = $map;
+        if (! $map->has($identifier)) {
+            $map = $map->withPut($identifier, $parameter);
+            $this->{$collection} = $map;
 
             return;
         }
         /** @var ParameterInterface $stored */
-        $stored = $map->get($key);
+        $stored = $map->get($identifier);
         if ($stored::class !== $parameter::class) {
             throw new TypeError(
-                message('%subject% %key% is of type %type%, parameter %parameter% expects %expected% on job %job%.')
+                message('%subject% %key% is of type %type%, parameter %parameter% expects %expected% at job %job%')
                     ->withCode('%type%', $stored->type()->primitive())
                     ->withCode('%expected%', $parameter->type()->primitive())
                     ->withTranslate('%subject%', $subject)
-                    ->withTranslate('%key%', $key)
+                    ->withTranslate('%key%', $identifier)
             );
         }
 
@@ -217,7 +240,7 @@ final class Jobs implements JobsInterface
             throw new InvalidArgumentException(
                 message('%subject% %key% conflict for parameter %parameter% on Job %job% (%message%).')
                     ->withCode('%subject%', $subject)
-                    ->withCode('%key%', $key)
+                    ->withCode('%key%', $identifier)
                     ->withCode('%parameter%', $argument)
                     ->withTranslate('%subject%', $subject)
                     ->withTranslate('%job%', $job)
@@ -228,11 +251,11 @@ final class Jobs implements JobsInterface
 
     private function handleRunIfReference(mixed $runIf): void
     {
-        if (! $runIf instanceof ReferenceInterface) {
+        if (! $runIf instanceof ResponseReferenceInterface) {
             return;
         }
         $action = $this->get($runIf->job())->actionName()->__toString();
-        $parameter = $action::acceptResponse()->parameters()->get($runIf->parameter());
+        $parameter = $action::acceptResponse()->parameters()->get($runIf->key());
         if ($parameter->type()->primitive() !== 'boolean') {
             throw new TypeError(
                 message('Reference %reference% must be of type boolean')

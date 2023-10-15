@@ -27,7 +27,7 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Jobs;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
-use function Chevere\Workflow\reference;
+use function Chevere\Workflow\responseKey;
 use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
 
@@ -201,7 +201,7 @@ final class JobsTest extends TestCase
             ),
             two: async(
                 TestActionParamFooResponse1::class,
-                foo: reference('one', 'bar')
+                foo: responseKey('one', 'bar')
             )
         );
     }
@@ -209,14 +209,14 @@ final class JobsTest extends TestCase
     public function testMissingReference(): void
     {
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Job two has undeclared dependencies: zero');
+        $this->expectExceptionMessage('Reference zero:key not found at job two');
         new Jobs(
             one: async(
                 TestActionNoParams::class
             ),
             two: async(
                 TestActionParamFooResponseBar::class,
-                foo: reference('zero', 'key')
+                foo: responseKey('zero', 'key')
             )
         );
     }
@@ -224,15 +224,15 @@ final class JobsTest extends TestCase
     public function testWrongReferenceType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference one:id is of type integer, parameter foo expects string on job two');
+        $this->expectExceptionMessage('Reference one:id is of type integer, parameter foo expects string at job two');
         new Jobs(
             one: async(
                 TestActionNoParamsIntegerResponse::class,
             ),
             two: async(
                 TestActionParams::class,
-                foo: reference('one', 'id'),
-                bar: reference('one', 'id')
+                foo: responseKey('one', 'id'),
+                bar: responseKey('one', 'id')
             )
         );
     }
@@ -243,7 +243,7 @@ final class JobsTest extends TestCase
         new Jobs(
             j1: async(TestActionNoParams::class)
                 ->withRunIf(
-                    reference('job', 'parameter')
+                    responseKey('job', 'parameter')
                 ),
         );
     }
@@ -255,7 +255,7 @@ final class JobsTest extends TestCase
             j1: async(TestActionNoParams::class),
             j2: async(TestActionNoParams::class)
                 ->withRunIf(
-                    reference('j1', 'parameter')
+                    responseKey('j1', 'parameter')
                 ),
         );
     }
@@ -268,7 +268,7 @@ final class JobsTest extends TestCase
             j1: async(TestActionNoParamsIntegerResponse::class),
             j2: async(TestActionNoParams::class)
                 ->withRunIf(
-                    reference('j1', 'id')
+                    responseKey('j1', 'id')
                 ),
         );
     }
@@ -313,8 +313,8 @@ final class JobsTest extends TestCase
 
     public function testWithRunIfReference(): void
     {
-        $true = reference('j1', 'true');
-        $false = reference('j1', 'false');
+        $true = responseKey('j1', 'true');
+        $false = responseKey('j1', 'false');
         $jobs = new Jobs(
             j1: async(
                 TestActionNoParamsBooleanResponses::class,
@@ -337,8 +337,40 @@ final class JobsTest extends TestCase
             $jobs->references()->has($true->__toString(), $false->__toString())
         );
         $j4 = async(TestActionNoParams::class)
-            ->withRunIf(reference('j5', 'missing'));
+            ->withRunIf(responseKey('j5', 'missing'));
         $this->expectException(OutOfBoundsException::class);
         $jobs->withAdded(j4: $j4);
+    }
+
+    public function testWithMissingReference(): void
+    {
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessage('Reference job1:missing not found at job job2');
+        new Jobs(
+            job1: async(
+                TestActionParamFooResponseBar::class,
+                foo: 'bar'
+            ),
+            job2: async(
+                TestActionParamFooResponseBar::class,
+                foo: responseKey('job1', 'missing'),
+            )
+        );
+    }
+
+    public function testWithInvalidTypeReference(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Reference job1:baz is of type float, parameter foo expects string at job job2');
+        new Jobs(
+            job1: async(
+                TestActionParamFooResponseBar::class,
+                foo: 'bar'
+            ),
+            job2: async(
+                TestActionParamFooResponseBar::class,
+                foo: responseKey('job1', 'baz'),
+            )
+        );
     }
 }

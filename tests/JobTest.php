@@ -27,7 +27,7 @@ use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use function Chevere\Workflow\reference;
+use function Chevere\Workflow\responseKey;
 use function Chevere\Workflow\variable;
 
 final class JobTest extends TestCase
@@ -100,11 +100,11 @@ final class JobTest extends TestCase
         $this->assertSame($success, $job->arguments());
     }
 
-    public function testReferenceArguments(): void
+    public function testReferenceResponseKey(): void
     {
         $actionName = new ActionName(TestActionParamStringRegex::class);
         $success = [
-            'foo' => reference('job1', 'output'),
+            'foo' => responseKey('job1', 'output'),
         ];
         $job = new Job($actionName, true, ...$success);
         $this->assertSame($actionName, $job->actionName());
@@ -174,7 +174,7 @@ final class JobTest extends TestCase
     {
         $actionName = new ActionName(TestActionNoParams::class);
         $job = new Job($actionName);
-        $reference = reference('jobN', 'parameter');
+        $reference = responseKey('jobN', 'parameter');
         $job = $job->withRunIf($reference);
         $this->assertSame(
             [$reference],

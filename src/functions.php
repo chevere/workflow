@@ -17,7 +17,7 @@ use Chevere\Action\ActionName;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Container\Container;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Chevere\Workflow\Interfaces\ReferenceInterface;
+use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
@@ -38,7 +38,7 @@ function workflow(JobInterface ...$job): WorkflowInterface
 }
 
 /**
- * Creates a synchronous Job instance for the given action and arguments.
+ * Creates a synchronous job for the given action and arguments.
  *
  * @param class-string<ActionInterface> $action
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
@@ -51,31 +51,42 @@ function sync(string $action, mixed ...$argument): JobInterface
 }
 
 /**
- * Creates an asynchronous Job instance for the given action and arguments.
+ * Creates an asynchronous job for the given action and arguments.
  *
  * @param class-string<ActionInterface> $action
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
 function async(string $action, mixed ...$argument): JobInterface
 {
-    $action = new ActionName($action);
-
-    return new Job($action, false, ...$argument);
+    return new Job(
+        new ActionName($action),
+        false,
+        ...$argument
+    );
 }
 
 /**
- * Creates a ReferenceInterface instance for the given job and parameter.
+ * Creates a reference to the response for the given job and key.
  *
- * @param string $job Job name
- * @param string $parameter Response parameter name
+ * @param string $job Job
  */
-function reference(string $job, string $parameter): ReferenceInterface
+function responseKey(string $job, string $key): ResponseReferenceInterface
 {
-    return new Reference($job, $parameter);
+    return new ResponseReference($job, $key);
 }
 
 /**
- * Creates a VariableInterface instance for the given name.
+ * Creates a reference to the response for the given job.
+ *
+ * @param string $job Job
+ */
+function response(string $job): ResponseReferenceInterface
+{
+    return new ResponseReference($job, null);
+}
+
+/**
+ * Creates a workflow variable.
  *
  * @param string $name Variable name
  */

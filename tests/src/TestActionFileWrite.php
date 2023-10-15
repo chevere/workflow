@@ -20,11 +20,6 @@ use function Chevere\Parameter\null;
 
 final class TestActionFileWrite extends Action
 {
-    public function getDescription(): string
-    {
-        return 'test';
-    }
-
     public static function acceptResponse(): ParameterInterface
     {
         return null();

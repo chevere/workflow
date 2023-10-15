@@ -23,7 +23,7 @@ use Chevere\Throwable\Errors\ArgumentCountError;
 use Chevere\Throwable\Exceptions\BadMethodCallException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Chevere\Workflow\Interfaces\ReferenceInterface;
+use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
@@ -44,7 +44,7 @@ final class Job implements JobInterface
     private ParametersInterface $parameters;
 
     /**
-     * @var VectorInterface<ReferenceInterface|VariableInterface>
+     * @var VectorInterface<ResponseReferenceInterface|VariableInterface>
      */
     private VectorInterface $runIf;
 
@@ -68,7 +68,7 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIf(ReferenceInterface|VariableInterface ...$context): JobInterface
+    public function withRunIf(ResponseReferenceInterface|VariableInterface ...$context): JobInterface
     {
         $new = clone $this;
         $new->runIf = new Vector();
@@ -179,7 +179,7 @@ final class Job implements JobInterface
 
     private function assertParameter(string $name, ParameterInterface $parameter, mixed $value): void
     {
-        if ($value instanceof ReferenceInterface || $value instanceof VariableInterface) {
+        if ($value instanceof ResponseReferenceInterface || $value instanceof VariableInterface) {
             return;
         }
         assertNamedArgument($name, $parameter, $value);
@@ -187,7 +187,8 @@ final class Job implements JobInterface
 
     private function inferDependencies(mixed $argument): void
     {
-        if (! ($argument instanceof ReferenceInterface)) {
+        $condition = $argument instanceof ResponseReferenceInterface;
+        if (! $condition) {
             return;
         }
         if ($this->dependencies->contains($argument->job())) {

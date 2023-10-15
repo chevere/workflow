@@ -21,7 +21,6 @@ use Chevere\Message\Interfaces\MessageInterface;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\CastArgumentInterface;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
@@ -113,12 +112,9 @@ final class Run implements RunInterface
         return $new;
     }
 
-    /**
-     * @throws OutOfBoundsException
-     */
-    public function getResponse(string $name): CastArgumentInterface
+    public function getResponse(string $job): CastArgumentInterface
     {
-        return $this->map->get($name);
+        return $this->map->get($job);
     }
 
     private function assertNoSkipOverflow(string $job, MessageInterface $message): void

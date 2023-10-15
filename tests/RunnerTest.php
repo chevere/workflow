@@ -26,7 +26,7 @@ use Chevere\Workflow\Run;
 use Chevere\Workflow\Runner;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
-use function Chevere\Workflow\reference;
+use function Chevere\Workflow\responseKey;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
@@ -163,12 +163,12 @@ final class RunnerTest extends TestCase
         );
         $job2 = async(
             TestActionParamsFooBarResponse2::class,
-            foo: reference('job1', 'response1'),
-            bar: reference('job1', 'response1'),
+            foo: responseKey('job1', 'response1'),
+            bar: responseKey('job1', 'response1'),
         );
         $job3 = sync(
             TestActionParamFooResponse1::class,
-            foo: reference('job2', 'response2'),
+            foo: responseKey('job2', 'response2'),
         );
         $jobs = [
             'job1' => $job1,
@@ -226,8 +226,8 @@ final class RunnerTest extends TestCase
         $job4 = async(TestActionNoParamsIntegerResponse::class);
         $workflow = workflow(
             job1: $job1,
-            job2: $job2->withRunIf(reference('job1', 'true')),
-            job3: $job3->withRunIf(reference('job1', 'true')),
+            job2: $job2->withRunIf(responseKey('job1', 'true')),
+            job3: $job3->withRunIf(responseKey('job1', 'true')),
             job4: $job4->withDepends('job3')
         );
         $run = new Run($workflow);
@@ -238,8 +238,8 @@ final class RunnerTest extends TestCase
         }
         $workflow = workflow(
             job1: $job1,
-            job2: $job2->withRunIf(reference('job1', 'true'), reference('job1', 'false')),
-            job3: $job3->withRunIf(reference('job1', 'true'), reference('job1', 'false')),
+            job2: $job2->withRunIf(responseKey('job1', 'true'), responseKey('job1', 'false')),
+            job3: $job3->withRunIf(responseKey('job1', 'true'), responseKey('job1', 'false')),
             job4: $job1->withDepends('job3')
         );
         $run = new Run($workflow);

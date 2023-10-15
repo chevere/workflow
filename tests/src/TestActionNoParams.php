@@ -17,11 +17,6 @@ use Chevere\Action\Action;
 
 final class TestActionNoParams extends Action
 {
-    public function getDescription(): string
-    {
-        return 'test';
-    }
-
     public function run(): array
     {
         return [];

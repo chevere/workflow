@@ -15,12 +15,9 @@ namespace Chevere\Workflow\Interfaces;
 
 use Stringable;
 
-/**
- * Describes the component in charge of defining a Job reference.
- */
-interface ReferenceInterface extends Stringable
+interface ResponseReferenceInterface extends Stringable
 {
     public function job(): string;
 
-    public function parameter(): string;
+    public function key(): ?string;
 }

@@ -14,25 +14,27 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\String\StringAssert;
-use Chevere\Workflow\Interfaces\ReferenceInterface;
+use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 
-final class Reference implements ReferenceInterface
+final class ResponseReference implements ResponseReferenceInterface
 {
-    /**
-     * @param string $job Job name
-     * @param string $parameter Response parameter name
-     */
     public function __construct(
         private string $job,
-        private string $parameter
+        private ?string $key,
     ) {
         (new StringAssert($job))->notCtypeSpace()->notEmpty();
-        (new StringAssert($parameter))->notCtypeSpace()->notEmpty();
+        if ($key === null) {
+            return;
+        }
+        (new StringAssert($key))->notCtypeSpace();
     }
 
     public function __toString(): string
     {
-        return $this->job . ':' . $this->parameter;
+        return match ($this->key) {
+            null => $this->job,
+            default => "{$this->job}:{$this->key}",
+        };
     }
 
     public function job(): string
@@ -40,8 +42,8 @@ final class Reference implements ReferenceInterface
         return $this->job;
     }
 
-    public function parameter(): string
+    public function key(): ?string
     {
-        return $this->parameter;
+        return $this->key;
     }
 }
