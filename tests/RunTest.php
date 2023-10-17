@@ -15,7 +15,6 @@ namespace Chevere\Tests;
 
 use ArgumentCountError;
 use Chevere\Parameter\CastArgument;
-use Chevere\Response\Response;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParams;
@@ -36,7 +35,7 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 job: async(
-                    TestActionParam::class,
+                    new TestActionParam(),
                     foo: variable('foo'),
                 )
             );
@@ -59,11 +58,11 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 job0: async(
-                    TestActionParam::class,
+                    new TestActionParam(),
                     foo: variable('foo')
                 ),
                 job1: async(
-                    TestActionParams::class,
+                    new TestActionParams(),
                     foo: variable('baz'),
                     bar: variable('bar')
                 )
@@ -84,7 +83,7 @@ final class RunTest extends TestCase
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
                 job0: async(
-                    TestActionParam::class,
+                    new TestActionParam(),
                     foo: variable('foo')
                 )
             );
@@ -103,9 +102,11 @@ final class RunTest extends TestCase
     {
         $workflow = (new Workflow(new Jobs()))
             ->withAddedJob(
-                job0: async(TestActionNoParams::class),
+                job0: async(
+                    new TestActionNoParams()
+                ),
                 job1: async(
-                    TestActionParam::class,
+                    new TestActionParam(),
                     foo: variable('foo')
                 )
             );
@@ -113,15 +114,15 @@ final class RunTest extends TestCase
         (new Run($workflow))
             ->withResponse(
                 'job0',
-                new Response()
+                new CastArgument('')
             );
     }
 
     public function testWithSkip(): void
     {
         $workflow = workflow(
-            job1: async(TestActionNoParams::class),
-            job2: async(TestActionNoParams::class)
+            job1: async(new TestActionNoParams()),
+            job2: async(new TestActionNoParams())
         );
         $run = new Run($workflow);
         $this->assertCount(0, $run->skip());

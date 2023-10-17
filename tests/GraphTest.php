@@ -205,6 +205,8 @@ final class GraphTest extends TestCase
 
     private function getJob(): JobInterface
     {
-        return async(TestActionNoParams::class);
+        return async(
+            new TestActionNoParams()
+        );
     }
 }

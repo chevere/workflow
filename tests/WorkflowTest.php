@@ -29,7 +29,7 @@ final class WorkflowTest extends TestCase
 {
     public function testConstruct(): void
     {
-        $job = async(TestActionNoParams::class);
+        $job = async(new TestActionNoParams());
         $jobs = new Jobs(job: $job);
         $workflow = new Workflow($jobs);
         $this->assertCount(1, $workflow);
@@ -39,7 +39,7 @@ final class WorkflowTest extends TestCase
 
     public function testWithAdded(): void
     {
-        $job = async(TestActionNoParams::class);
+        $job = async(new TestActionNoParams());
         $jobs = new Jobs(job1: $job);
         $workflow = new Workflow($jobs);
         $workflowWithAddedStep = $workflow->withAddedJob(job2: $job);
@@ -55,7 +55,7 @@ final class WorkflowTest extends TestCase
     public function testWithAddedJobWithArguments(): void
     {
         $job = async(
-            TestActionParamFooResponseBar::class,
+            new TestActionParamFooResponseBar(),
             foo: 'bar'
         );
         $workflow = (new Workflow(new Jobs(job: $job)))
@@ -68,7 +68,7 @@ final class WorkflowTest extends TestCase
         $workflow = new Workflow(
             new Jobs(
                 job1: async(
-                    TestActionParamFooResponseBar::class,
+                    new TestActionParamFooResponseBar(),
                     foo: variable('foo')
                 ),
             )
@@ -79,7 +79,7 @@ final class WorkflowTest extends TestCase
         $workflow = $workflow
             ->withAddedJob(
                 job2: async(
-                    TestActionParamFooResponseBar::class,
+                    new TestActionParamFooResponseBar(),
                     foo: variable('foo'),
                 )->withRunIf(variable('boolean'))
             );
@@ -90,11 +90,11 @@ final class WorkflowTest extends TestCase
     {
         $jobs = new Jobs(
             job1: async(
-                TestActionAppendString::class,
+                new TestActionAppendString(),
                 string: 'test',
             ),
             job2: async(
-                TestActionAppendString::class,
+                new TestActionAppendString(),
                 string: response('job1'),
             )
         );

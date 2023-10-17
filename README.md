@@ -4,11 +4,11 @@
 
 ![Chevere](chevere.svg)
 
-[![Build](https://img.shields.io/github/actions/workflow/status/chevere/workflow/test.yml?branch=0.8&style=flat-square)](https://github.com/chevere/workflow/actions)
+[![Build](https://img.shields.io/github/actions/workflow/status/chevere/workflow/test.yml?branch=0.9&style=flat-square)](https://github.com/chevere/workflow/actions)
 ![Code size](https://img.shields.io/github/languages/code-size/chevere/workflow?style=flat-square)
 [![Apache-2.0](https://img.shields.io/github/license/chevere/workflow?style=flat-square)](LICENSE)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%209-blueviolet?style=flat-square)](https://phpstan.org/)
-[![Mutation testing badge](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fchevere%2Fworkflow%2F0.8)](https://dashboard.stryker-mutator.io/reports/github.com/chevere/workflow/0.8)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fchevere%2Fworkflow%2F0.9)](https://dashboard.stryker-mutator.io/reports/github.com/chevere/workflow/0.9)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=alert_status)](https://sonarcloud.io/dashboard?id=chevere_workflow)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=chevere_workflow)
@@ -40,26 +40,27 @@ Create a Workflow by passing named jobs.
 use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\sync;
 use function Chevere\Workflow\async;
+use function Chevere\Workflow\reference;
 use function Chevere\Workflow\variable;
 
 $workflow = workflow(
     thumb: async(
-        ImageResize::class,
+        new ImageResize(),
         file: variable('image'),
         fit: 'thumbnail',
     ),
     poster: async(
-        ImageResize::class,
+        new ImageResize(),
         file: variable('file'),
         fit: 'poster',
     ),
     storeThumb: async(
-        StoreFile::class,
+        new StoreFile(),
         file: reference('thumb', 'out'),
         path: variable('savePath'),
     ),
     storePoster: async(
-        StoreFile::class,
+        new StoreFile(),
         file: reference('poster', 'out'),
         path: variable('savePath'),
     )

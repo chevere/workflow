@@ -139,9 +139,10 @@ final class Jobs implements JobsInterface
 
     private function storeReferences(string $job, JobInterface $item): void
     {
-        $action = $item->actionName()->__toString();
-        if ($action::acceptResponse() instanceof ParametersAccessInterface) {
-            foreach ($action::acceptResponse()->parameters() as $key => $parameter) {
+        $action = $item->action();
+        $acceptResponse = $action::acceptResponse();
+        if ($acceptResponse instanceof ParametersAccessInterface) {
+            foreach ($acceptResponse->parameters() as $key => $parameter) {
                 $this->references = $this->references
                     ->withPut(
                         strval(response($job, $key)),
@@ -152,7 +153,7 @@ final class Jobs implements JobsInterface
             $this->references = $this->references
                 ->withPut(
                     strval(response($job)),
-                    $action::acceptResponse(),
+                    $acceptResponse,
                 );
         }
     }
@@ -160,8 +161,8 @@ final class Jobs implements JobsInterface
     private function handleArguments(string $job, JobInterface $item): void
     {
         foreach ($item->arguments() as $argument => $value) {
-            $action = $item->actionName()->__toString();
-            $parameter = getParameters($action)->get($argument);
+            $action = $item->action();
+            $parameter = getParameters($action::class)->get($argument);
             $collection = match (true) {
                 $value instanceof VariableInterface => 'variables',
                 $value instanceof ResponseReferenceInterface => 'references',
@@ -202,7 +203,7 @@ final class Jobs implements JobsInterface
                 /** @var JobInterface $referenceJob */
                 $referenceJob = $this->map->get($value->job());
                 /** @var ParameterInterface $acceptResponse */
-                $acceptResponse = $referenceJob->actionName()->__toString()::acceptResponse();
+                $acceptResponse = $referenceJob->action()::acceptResponse();
                 if ($value->key() !== null) {
                     /** @var ParametersAccessInterface $acceptResponse */
                     $acceptResponse->parameters()->get($value->key());
@@ -253,14 +254,21 @@ final class Jobs implements JobsInterface
         if (! $runIf instanceof ResponseReferenceInterface) {
             return;
         }
-        $action = $this->get($runIf->job())->actionName()->__toString();
-        $parameter = $action::acceptResponse()->parameters()->get($runIf->key());
-        if ($parameter->type()->primitive() !== 'boolean') {
-            throw new TypeError(
-                message('Reference %reference% must be of type boolean')
-                    ->withCode('%reference%', $runIf->__toString())
-            );
+        $action = $this->get($runIf->job())->action();
+        $parameter = $action::acceptResponse();
+        if ($runIf->key() !== null
+            && $parameter instanceof ParametersAccessInterface
+        ) {
+            $parameter = $parameter->parameters()->get($runIf->key());
         }
+        if ($parameter->type()->primitive() === 'boolean') {
+            return;
+        }
+
+        throw new TypeError(
+            message('Reference %reference% must be of type boolean')
+                ->withCode('%reference%', strval($runIf))
+        );
     }
 
     private function handleRunIfVariable(string $name, mixed $runIf): void

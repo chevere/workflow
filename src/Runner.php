@@ -81,9 +81,7 @@ final class Runner implements RunnerInterface
             }
         }
         $arguments = $new->getJobArguments($job);
-        $action = $job->actionName()->__toString();
-        /** @var ActionInterface $action */
-        $action = new $action();
+        $action = $job->action();
         $response = $new->getActionResponse($action, $arguments);
         $new->addJobResponse($name, $response);
 

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Action\ActionName;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Container\Container;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -40,29 +39,21 @@ function workflow(JobInterface ...$job): WorkflowInterface
 /**
  * Creates a synchronous job for the given action and arguments.
  *
- * @param class-string<ActionInterface> $action
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function sync(string $action, mixed ...$argument): JobInterface
+function sync(ActionInterface $action, mixed ...$argument): JobInterface
 {
-    $action = new ActionName($action);
-
     return new Job($action, true, ...$argument);
 }
 
 /**
  * Creates an asynchronous job for the given action and arguments.
  *
- * @param class-string<ActionInterface> $action
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function async(string $action, mixed ...$argument): JobInterface
+function async(ActionInterface $action, mixed ...$argument): JobInterface
 {
-    return new Job(
-        new ActionName($action),
-        false,
-        ...$argument
-    );
+    return new Job($action, false, ...$argument);
 }
 
 /**

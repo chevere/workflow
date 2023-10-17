@@ -50,15 +50,15 @@ final class RunnerTest extends TestCase
             ],
         ];
         $job1 = async(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsRunArguments['job1']
         );
         $job2 = async(
-            TestActionParamsFooBarResponse2::class,
+            new TestActionParamsFooBarResponse2(),
             ...$jobsRunArguments['job2']
         );
         $job3 = sync(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsRunArguments['job3']
         );
         $jobs = [
@@ -110,15 +110,15 @@ final class RunnerTest extends TestCase
             ],
         ];
         $job1 = async(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsVariables['job1']
         );
         $job2 = async(
-            TestActionParamsFooBarResponse2::class,
+            new TestActionParamsFooBarResponse2(),
             ...$jobsVariables['job2']
         );
         $job3 = sync(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             ...$jobsVariables['job3']
         );
         $jobs = [
@@ -158,16 +158,16 @@ final class RunnerTest extends TestCase
             ],
         ];
         $job1 = async(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             foo: $references['uno'],
         );
         $job2 = async(
-            TestActionParamsFooBarResponse2::class,
+            new TestActionParamsFooBarResponse2(),
             foo: response('job1', 'response1'),
             bar: response('job1', 'response1'),
         );
         $job3 = sync(
-            TestActionParamFooResponse1::class,
+            new TestActionParamFooResponse1(),
             foo: response('job2', 'response2'),
         );
         $jobs = [
@@ -190,7 +190,8 @@ final class RunnerTest extends TestCase
     {
         $container = new Container();
         $name = 'variable';
-        $job = async(TestActionNoParams::class)->withRunIf(variable($name));
+        $job = async(new TestActionNoParams())
+            ->withRunIf(variable($name));
         $workflow = workflow(job1: $job);
         $arguments = [
             $name => true,
@@ -198,8 +199,7 @@ final class RunnerTest extends TestCase
         $run = new Run($workflow, ...$arguments);
         $runner = new Runner($run, $container);
         $runner = $runner->withRunJob('job1');
-        $action = $job->actionName()->__toString();
-        $action = new $action();
+        $action = $job->action();
         $this->assertSame(
             $action->run(),
             $runner->run()->getResponse('job1')->array()
@@ -214,16 +214,16 @@ final class RunnerTest extends TestCase
         $run = run($workflow, $arguments);
         $this->assertSame($workflow->jobs()->keys(), $runner->run()->skip()->toArray());
         $this->expectException(OutOfBoundsException::class);
-        $runner->run()->getResponse('job1')->data();
+        $runner->run()->getResponse('job1');
     }
 
     public function testRunIfReference(): void
     {
         $container = new Container();
-        $job1 = async(TestActionNoParamsBooleanResponses::class);
-        $job2 = async(TestActionNoParamsBooleanResponses::class);
-        $job3 = async(TestActionNoParamsIntegerResponse::class);
-        $job4 = async(TestActionNoParamsIntegerResponse::class);
+        $job1 = async(new TestActionNoParamsBooleanResponses());
+        $job2 = async(new TestActionNoParamsBooleanResponses());
+        $job3 = async(new TestActionNoParamsIntegerResponse());
+        $job4 = async(new TestActionNoParamsIntegerResponse());
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIf(response('job1', 'true')),
@@ -259,8 +259,7 @@ final class RunnerTest extends TestCase
     private function assertExpectedRun(array $jobs, array $runArguments, RunInterface $run): void
     {
         foreach ($jobs as $name => $job) {
-            $actionName = $job->actionName()->__toString();
-            $action = new $actionName();
+            $action = $job->action();
             $this->assertSame(
                 $action->run(...$runArguments[$name]),
                 $run->getResponse($name)->array()

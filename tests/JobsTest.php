@@ -44,7 +44,7 @@ final class JobsTest extends TestCase
 
     public function testConstructWithJob(): void
     {
-        $j1 = async(TestActionNoParams::class);
+        $j1 = async(new TestActionNoParams());
         $jobs = new Jobs(
             j1: $j1
         );
@@ -56,7 +56,7 @@ final class JobsTest extends TestCase
 
     public function testWithAdded(): void
     {
-        $j1 = async(TestActionNoParams::class);
+        $j1 = async(new TestActionNoParams());
         $jobs = new Jobs();
         $this->assertFalse($jobs->has('j1'));
         $withAdded = $jobs->withAdded(
@@ -75,8 +75,8 @@ final class JobsTest extends TestCase
     public function testAsync(): void
     {
         $jobs = new Jobs(
-            j1: async(TestActionNoParams::class),
-            j2: async(TestActionNoParams::class),
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams()),
         );
         $this->assertSame(
             [
@@ -89,8 +89,8 @@ final class JobsTest extends TestCase
     public function testSync(): void
     {
         $jobs = new Jobs(
-            j1: sync(TestActionNoParams::class),
-            j2: sync(TestActionNoParams::class),
+            j1: sync(new TestActionNoParams()),
+            j2: sync(new TestActionNoParams()),
         );
         $this->assertSame(
             [
@@ -104,8 +104,8 @@ final class JobsTest extends TestCase
     public function testWithDependsOnJob(): void
     {
         $jobs = new Jobs(
-            j1: async(TestActionNoParams::class),
-            j2: async(TestActionNoParams::class)->withDepends('j1'),
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams())->withDepends('j1'),
         );
         $this->assertSame(
             [
@@ -121,8 +121,8 @@ final class JobsTest extends TestCase
         $this->expectException(OutOfBoundsException::class);
         $this->expectExceptionMessageMatches('/undeclared dependencies\: j0$/');
         new Jobs(
-            j1: async(TestActionNoParams::class),
-            j2: async(TestActionNoParams::class)
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams())
                 ->withDepends('j0', 'j1'),
         );
     }
@@ -130,9 +130,9 @@ final class JobsTest extends TestCase
     public function testWithDependsOnPreviousMultiple(): void
     {
         $jobs = new Jobs(
-            j1: async(TestActionNoParams::class),
-            j2: async(TestActionNoParams::class),
-            j3: async(TestActionNoParams::class)
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams()),
+            j3: async(new TestActionNoParams())
                 ->withDepends('j2', 'j1'),
         );
         $this->assertSame(
@@ -147,10 +147,10 @@ final class JobsTest extends TestCase
     public function testWithDependsOnPreviousSingle(): void
     {
         $jobs = new Jobs(
-            j1: async(TestActionNoParams::class),
-            j2: async(TestActionNoParams::class)
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams())
                 ->withDepends('j1'),
-            j3: async(TestActionNoParams::class)
+            j3: async(new TestActionNoParams())
                 ->withDepends('j2'),
         );
         $this->assertSame(
@@ -166,14 +166,14 @@ final class JobsTest extends TestCase
     public function testWithDependsMix(): void
     {
         $jobs = new Jobs(
-            j1: async(TestActionNoParams::class),
-            j2: async(TestActionNoParams::class),
-            j3: async(TestActionNoParams::class)
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams()),
+            j3: async(new TestActionNoParams())
                 ->withDepends('j1', 'j2'),
-            j4: async(TestActionNoParams::class),
-            j5: async(TestActionNoParams::class)
+            j4: async(new TestActionNoParams()),
+            j5: async(new TestActionNoParams())
                 ->withDepends('j4'),
-            j6: async(TestActionNoParams::class)
+            j6: async(new TestActionNoParams())
                 ->withDepends('j5'),
         );
         $this->assertSame(
@@ -196,11 +196,11 @@ final class JobsTest extends TestCase
         );
         new Jobs(
             one: async(
-                TestActionParamFooResponseBar::class,
+                new TestActionParamFooResponseBar(),
                 foo: 'bar'
             ),
             two: async(
-                TestActionParamFooResponse1::class,
+                new TestActionParamFooResponse1(),
                 foo: response('one', 'bar')
             )
         );
@@ -212,10 +212,10 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('Reference zero:key not found at job two');
         new Jobs(
             one: async(
-                TestActionNoParams::class
+                new TestActionNoParams()
             ),
             two: async(
-                TestActionParamFooResponseBar::class,
+                new TestActionParamFooResponseBar(),
                 foo: response('zero', 'key')
             )
         );
@@ -227,10 +227,10 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('Reference one:id is of type integer, parameter foo expects string at job two');
         new Jobs(
             one: async(
-                TestActionNoParamsIntegerResponse::class,
+                new TestActionNoParamsIntegerResponse(),
             ),
             two: async(
-                TestActionParams::class,
+                new TestActionParams(),
                 foo: response('one', 'id'),
                 bar: response('one', 'id')
             )
@@ -241,7 +241,7 @@ final class JobsTest extends TestCase
     {
         $this->expectException(OutOfBoundsException::class);
         new Jobs(
-            j1: async(TestActionNoParams::class)
+            j1: async(new TestActionNoParams())
                 ->withRunIf(
                     response('job', 'parameter')
                 ),
@@ -252,8 +252,8 @@ final class JobsTest extends TestCase
     {
         $this->expectException(OutOfBoundsException::class);
         new Jobs(
-            j1: async(TestActionNoParams::class),
-            j2: async(TestActionNoParams::class)
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams())
                 ->withRunIf(
                     response('j1', 'parameter')
                 ),
@@ -265,8 +265,8 @@ final class JobsTest extends TestCase
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage('Reference j1:id must be of type boolean');
         new Jobs(
-            j1: async(TestActionNoParamsIntegerResponse::class),
-            j2: async(TestActionNoParams::class)
+            j1: async(new TestActionNoParamsIntegerResponse()),
+            j2: async(new TestActionNoParams())
                 ->withRunIf(
                     response('j1', 'id')
                 ),
@@ -279,7 +279,7 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('Variable theFoo (previously declared as string) is not of type boolean at Job j2');
         new Jobs(
             j1: async(
-                TestActionParams::class,
+                new TestActionParams(),
                 foo: variable('theFoo'),
                 bar: 'bar'
             )
@@ -287,7 +287,7 @@ final class JobsTest extends TestCase
                     variable('true')
                 ),
             j2: async(
-                TestActionNoParams::class
+                new TestActionNoParams()
             )
                 ->withRunIf(
                     variable('true'),
@@ -301,7 +301,7 @@ final class JobsTest extends TestCase
         $name = 'the_variable';
         $jobs = new Jobs(
             j1: async(
-                TestActionNoParams::class,
+                new TestActionNoParams(),
             )
                 ->withRunIf(
                     variable($name)
@@ -317,13 +317,13 @@ final class JobsTest extends TestCase
         $false = response('j1', 'false');
         $jobs = new Jobs(
             j1: async(
-                TestActionNoParamsBooleanResponses::class,
+                new TestActionNoParamsBooleanResponses(),
             ),
             j2: async(
-                TestActionNoParamsBooleanResponses::class,
+                new TestActionNoParamsBooleanResponses(),
             )->withRunIf($true, $false),
             j3: async(
-                TestActionNoParams::class,
+                new TestActionNoParams(),
             )->withRunIf($false, $true),
         );
         $this->assertSame(
@@ -336,7 +336,7 @@ final class JobsTest extends TestCase
         $this->assertTrue(
             $jobs->references()->has($true->__toString(), $false->__toString())
         );
-        $j4 = async(TestActionNoParams::class)
+        $j4 = async(new TestActionNoParams())
             ->withRunIf(response('j5', 'missing'));
         $this->expectException(OutOfBoundsException::class);
         $jobs->withAdded(j4: $j4);
@@ -348,11 +348,11 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('Reference job1:missing not found at job job2');
         new Jobs(
             job1: async(
-                TestActionParamFooResponseBar::class,
+                new TestActionParamFooResponseBar(),
                 foo: 'bar'
             ),
             job2: async(
-                TestActionParamFooResponseBar::class,
+                new TestActionParamFooResponseBar(),
                 foo: response('job1', 'missing'),
             )
         );
@@ -364,11 +364,11 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('Reference job1:baz is of type float, parameter foo expects string at job job2');
         new Jobs(
             job1: async(
-                TestActionParamFooResponseBar::class,
+                new TestActionParamFooResponseBar(),
                 foo: 'bar'
             ),
             job2: async(
-                TestActionParamFooResponseBar::class,
+                new TestActionParamFooResponseBar(),
                 foo: response('job1', 'baz'),
             )
         );

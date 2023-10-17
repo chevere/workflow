@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Action\Interfaces\ActionNameInterface;
+use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
@@ -49,13 +49,13 @@ final class Job implements JobInterface
     private VectorInterface $runIf;
 
     public function __construct(
-        private ActionNameInterface $actionName,
+        private ActionInterface $action,
         private bool $isSync = false,
         mixed ...$argument
     ) {
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
-        $this->parameters = getParameters($actionName->__toString());
+        $this->parameters = getParameters($action::class);
         $this->arguments = [];
         $this->setArguments(...$argument);
     }
@@ -104,9 +104,9 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function actionName(): ActionNameInterface
+    public function action(): ActionInterface
     {
-        return $this->actionName;
+        return $this->action;
     }
 
     public function arguments(): array
@@ -149,7 +149,7 @@ final class Job implements JobInterface
             throw new BadMethodCallException(
                 message('Missing argument(s) [%arguments%] for %action%')
                     ->withCode('%arguments%', implode(', ', $missing))
-                    ->withCode('%action%', $this->actionName->__toString())
+                    ->withCode('%action%', $this->action::class)
             );
         }
         $this->arguments = $values;
@@ -170,7 +170,7 @@ final class Job implements JobInterface
 
             throw new ArgumentCountError(
                 message('%symbol% requires %countRequired% argument(s) %parameters%')
-                    ->withCode('%symbol%', $this->actionName->__toString() . '::run')
+                    ->withCode('%symbol%', $this->action::class . '::run')
                     ->withCode('%countRequired%', strval($countRequired))
                     ->withCode('%parameters%', $parameters)
             );
