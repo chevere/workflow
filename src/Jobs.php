@@ -202,11 +202,16 @@ final class Jobs implements JobsInterface
             try {
                 /** @var JobInterface $referenceJob */
                 $referenceJob = $this->map->get($value->job());
-                /** @var ParameterInterface $acceptResponse */
-                $acceptResponse = $referenceJob->action()::acceptResponse();
+                /** @var ParameterInterface $accept */
+                $accept = $referenceJob->action()::acceptResponse();
                 if ($value->key() !== null) {
-                    /** @var ParametersAccessInterface $acceptResponse */
-                    $acceptResponse->parameters()->get($value->key());
+                    if (! $accept instanceof ParametersAccessInterface) {
+                        throw new TypeError(
+                            message('Reference %reference% doesn\'t accept parameters')
+                                ->withCode('%reference%', strval($value))
+                        );
+                    }
+                    $accept->parameters()->get($value->key());
                 }
             } catch (OutOfBoundsException) {
                 throw new OutOfBoundsException(
@@ -255,13 +260,17 @@ final class Jobs implements JobsInterface
             return;
         }
         $action = $this->get($runIf->job())->action();
-        $parameter = $action::acceptResponse();
-        if ($runIf->key() !== null
-            && $parameter instanceof ParametersAccessInterface
-        ) {
-            $parameter = $parameter->parameters()->get($runIf->key());
+        $accept = $action::acceptResponse();
+        if ($runIf->key() !== null) {
+            if (! $accept instanceof ParametersAccessInterface) {
+                throw new TypeError(
+                    message('Reference %reference% doesn\'t accept parameters')
+                        ->withCode('%reference%', strval($runIf))
+                );
+            }
+            $accept = $accept->parameters()->get($runIf->key());
         }
-        if ($parameter->type()->primitive() === 'boolean') {
+        if ($accept->type()->primitive() === 'boolean') {
             return;
         }
 
