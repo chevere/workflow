@@ -23,8 +23,6 @@ use Countable;
  */
 interface WorkflowInterface extends Countable
 {
-    public function __construct(JobsInterface $jobs);
-
     public function jobs(): JobsInterface;
 
     /**
