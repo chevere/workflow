@@ -82,7 +82,7 @@ final class JobsTest extends TestCase
             [
                 ['j1', 'j2'],
             ],
-            $jobs->graph()
+            $jobs->graph()->toArray()
         );
     }
 
@@ -97,7 +97,7 @@ final class JobsTest extends TestCase
                 ['j1'],
                 ['j2'],
             ],
-            $jobs->graph()
+            $jobs->graph()->toArray()
         );
     }
 
@@ -112,7 +112,7 @@ final class JobsTest extends TestCase
                 ['j1'],
                 ['j2'],
             ],
-            $jobs->graph()
+            $jobs->graph()->toArray()
         );
     }
 
@@ -140,7 +140,7 @@ final class JobsTest extends TestCase
                 ['j1', 'j2'],
                 ['j3'],
             ],
-            $jobs->graph()
+            $jobs->graph()->toArray()
         );
     }
 
@@ -159,7 +159,7 @@ final class JobsTest extends TestCase
                 ['j2'],
                 ['j3'],
             ],
-            $jobs->graph()
+            $jobs->graph()->toArray()
         );
     }
 
@@ -182,7 +182,7 @@ final class JobsTest extends TestCase
                 ['j3', 'j5'],
                 ['j6'],
             ],
-            $jobs->graph()
+            $jobs->graph()->toArray()
         );
     }
 
@@ -331,7 +331,7 @@ final class JobsTest extends TestCase
                 ['j1'],
                 ['j2', 'j3'],
             ],
-            $jobs->graph()
+            $jobs->graph()->toArray()
         );
         $this->assertTrue(
             $jobs->references()->has($true->__toString(), $false->__toString())

@@ -48,7 +48,7 @@ final class Runner implements RunnerInterface
     {
         $new = clone $this;
         $jobs = $new->run->workflow()->jobs();
-        foreach ($jobs->graph() as $node) {
+        foreach ($jobs->graph()->toArray() as $node) {
             $promises = $new->getPromises($node);
             /** @var RunnerInterface[] $responses */
             $responses = wait(all($promises));

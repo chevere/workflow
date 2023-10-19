@@ -25,8 +25,6 @@ use Iterator;
  */
 interface JobsInterface extends MappedInterface
 {
-    public function __construct(JobInterface ...$jobs);
-
     public function has(string $job): bool;
 
     public function get(string $job): JobInterface;
@@ -46,10 +44,7 @@ interface JobsInterface extends MappedInterface
      */
     public function keys(): array;
 
-    /**
-     * @return array<int, string[]>
-     */
-    public function graph(): array;
+    public function graph(): GraphInterface;
 
     public function withAdded(JobInterface ...$jobs): self;
 

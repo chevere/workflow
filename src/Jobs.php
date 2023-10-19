@@ -74,9 +74,9 @@ final class Jobs implements JobsInterface
         $this->putAdded(...$jobs);
     }
 
-    public function graph(): array
+    public function graph(): GraphInterface
     {
-        return $this->graph->toArray();
+        return $this->graph;
     }
 
     public function variables(): MapInterface
