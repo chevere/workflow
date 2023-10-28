@@ -31,7 +31,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Chevere\\Tests\\": "tests/"
+            "Chevere\\Tests\\": "tests/",
+            "Chevere\\Demo\\": "demo/"
         }
     },
     "config": {

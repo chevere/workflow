@@ -23,24 +23,56 @@
 
 ## Quick start
 
-Install with [Composer](https://getcomposer.org).
+Install with [Composer](https://packagist.org/packages/chevere/workflow).
 
 ```sh
 composer require chevere/workflow
 ```
 
-Create a Workflow by passing named jobs.
+Workflow provides the following functions at the `Chevere\Workflow` namespace:
 
-* `async` for asynchronous non-blocking jobs
-* `sync` for synchronous blocking jobs
-* `variable` for defining a workflow-level variable
-* `reference` to define a reference to a previous job result
+| Function   | Purpose                              |
+| ---------- | ------------------------------------ |
+| `workflow` | Create workflow made of named jobs   |
+| `sync`     | Create synchronous blocking job      |
+| `async`    | Create asynchronous non-blocking job |
+| `variable` | Define workflow-level variable       |
+| `response` | Define a job response reference      |
+
+* Jobs are independent from each other, define shared variables using function `variable`
+* Reference [job A response] -> [job B input] by using function `response`
+
+## Hello, world
+
+See the live example at [demo/hello-world.php](demo/hello-world.php)
 
 ```php
 use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\sync;
+
+$workflow = workflow(
+    greet: sync(
+        new GreetAction(),
+        username: variable('username'),
+    ),
+);
+$run = run($workflow, [
+    'username' => $argv[1] ?? 'Walala',
+]);
+echo $run->getResponse('greet')->string();
+// Hello, Walala!
+```
+
+## Full example
+
+See the live example at [demo/image-upload.php](demo/image-upload.php)
+
+In this example all works are defined as async but as there are dependencies between jobs the system resolves a suitable run strategy.
+
+```php
+use function Chevere\Workflow\workflow;
 use function Chevere\Workflow\async;
-use function Chevere\Workflow\reference;
+use function Chevere\Workflow\response;
 use function Chevere\Workflow\variable;
 
 $workflow = workflow(
@@ -56,69 +88,26 @@ $workflow = workflow(
     ),
     storeThumb: async(
         new StoreFile(),
-        file: reference('thumb', 'out'),
+        file: response('thumb'),
         path: variable('savePath'),
     ),
     storePoster: async(
         new StoreFile(),
-        file: reference('poster', 'out'),
+        file: response('poster'),
         path: variable('savePath'),
     )
 );
 ```
 
-Workflow detects when an `async` job depends on other jobs and it will auto-depend when using references. The graph for the workflow above looks like this:
+The graph for the Workflow above shows that `thumb` and `poster` run async, just like `storeThumb` and `storePoster` but the storage jobs run after the first dependency level gets resolved.
 
-```plain
-//$workflow->jobs()->graph();
-[
-    ['thumb', 'poster'],
-    ['storeThumb', 'storePoster'],
-];
+```mermaid
+  graph TD;
+      thumb-->storeThumb;
+      poster-->storePoster;
 ```
 
-Actions `ImageResize` and `StoreFile` refers to individual re-usable actions:
-
-```php
-use Chevere\Action\Action;
-
-class ImageResize extends Action
-{
-    public static function acceptResponse(): ParameterInterface
-    {
-        return arrayp(
-            out: string()
-        );
-    }
-
-    protected function run(string $file, string $fit): array
-    {
-        // ...
-        return [
-            'out' => 'path/to/resized-image'
-        ];
-    }
-}
-```
-
-```php
-use Chevere\Action\Action;
-
-class StoreFile extends Action
-{
-    public static function acceptResponse(): ParameterInterface
-    {
-        return null();
-    }
-
-    protected function run(string $file, string $path): void
-    {
-        // ...
-    }
-}
-```
-
-Run your Workflow:
+Use function `run` to run the Workflow:
 
 ```php
 use function Chevere\Workflow\run;
@@ -130,7 +119,15 @@ $variables = [
 $run = run($workflow, $variables);
 ```
 
-Variable `$run` will be assigned to an object implementing `RunInterface`, which you can query for obtaining data from the Workflow runtime.
+Use `$run->getResponse($job)` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
+
+```php
+$thumbFile = $run->getResponse('thumb')->string();
+```
+
+## Notes on async
+
+Actions including any nested dependency must support serialization for being used on Workflows containing `async` jobs. If one of your Actions is not serializable, consider using `sync` for all your jobs.
 
 ## Documentation
 

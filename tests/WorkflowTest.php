@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\src\TestActionAppendString;
+use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Throwable\Exceptions\OverflowException;
@@ -23,7 +24,9 @@ use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\run;
+use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
 
 final class WorkflowTest extends TestCase
 {
@@ -103,5 +106,17 @@ final class WorkflowTest extends TestCase
         $this->assertContains('job1', $workflow->jobs()->get('job2')->dependencies());
         $run = run($workflow);
         $this->assertSame('test!!', $run->getResponse('job2')->string());
+    }
+
+    public function testIntToString(): void
+    {
+        $workflow = workflow(
+            toString: sync(
+                new TestActionIntToString(),
+                int: 1234
+            )
+        );
+        $run = run($workflow);
+        $this->assertSame('1234', $run->getResponse('toString')->string());
     }
 }
