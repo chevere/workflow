@@ -1,6 +1,6 @@
 {
     "name": "chevere/workflow",
-    "description": "Async workflow procedures for PHP",
+    "description": "Workflow procedures for PHP",
     "homepage": "https://chevere.org",
     "type": "library",
     "license": "Apache-2.0",

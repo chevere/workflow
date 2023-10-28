@@ -67,7 +67,7 @@ echo $run->getResponse('greet')->string();
 
 See the live example at [demo/image-upload.php](demo/image-upload.php)
 
-In this example all works are defined as async but as there are dependencies between jobs the system resolves a suitable run strategy.
+In this example all jobs are defined as async but as there are dependencies between jobs the system resolves a suitable run strategy.
 
 ```php
 use function Chevere\Workflow\workflow;
