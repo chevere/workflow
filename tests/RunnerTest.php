@@ -133,7 +133,7 @@ final class RunnerTest extends TestCase
             $runner = $runner->withRunJob($name);
         }
         $this->assertExpectedRun($jobs, $jobsRunArguments, $runner->run());
-        $run = run($workflow, $variables);
+        $run = run($workflow, ...$variables);
         $this->assertExpectedRun($jobs, $jobsRunArguments, $run);
     }
 
@@ -211,7 +211,7 @@ final class RunnerTest extends TestCase
         $runner = new Runner($run, $container);
         $runner = $runner->withRunJob('job1');
         $this->assertSame($workflow->jobs()->keys(), $runner->run()->skip()->toArray());
-        $run = run($workflow, $arguments);
+        $run = run($workflow, ...$arguments);
         $this->assertSame($workflow->jobs()->keys(), $runner->run()->skip()->toArray());
         $this->expectException(OutOfBoundsException::class);
         $runner->run()->getResponse('job1');

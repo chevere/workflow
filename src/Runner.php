@@ -23,7 +23,6 @@ use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
-use Psr\Container\ContainerInterface;
 use Throwable;
 use function Amp\Parallel\Worker\enqueueCallable;
 use function Amp\Promise\all;
@@ -34,8 +33,6 @@ final class Runner implements RunnerInterface
 {
     public function __construct(
         private RunInterface $run,
-        // @phpstan-ignore-next-line
-        private ContainerInterface $container
     ) {
     }
 

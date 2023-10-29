@@ -14,14 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\Container\Container;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
-use Psr\Container\ContainerInterface;
 use Throwable;
 
 // @codeCoverageIgnoreStart
@@ -95,18 +93,14 @@ function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 
 /**
  * Creates a RunInterface instance for the given workflow, variables and container.
- *
- * @param array<string, mixed> $variables
  */
 function run(
     WorkflowInterface $workflow,
-    array $variables = [],
-    ?ContainerInterface $container = null
+    mixed ...$variable,
 ): RunInterface {
-    $run = new Run($workflow, ...$variables);
+    $run = new Run($workflow, ...$variable);
+    $runner = new Runner($run);
 
-    return (new Runner($run, $container ?? new Container()))
-        ->withRun()
-        ->run();
+    return $runner->withRun()->run();
 }
 // @codeCoverageIgnoreEnd
