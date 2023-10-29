@@ -21,6 +21,10 @@
 
 ![Workflow](.github/banner/workflow-logo.svg)
 
+## Resume
+
+A Workflow is a configurable stored procedure that will run one or more jobs. Jobs are independent from each other, but interconnected as you can pass response references between jobs. Jobs supports conditional running based on variables and previous job responses.
+
 ## Quick start
 
 Install with [Composer](https://packagist.org/packages/chevere/workflow).
@@ -39,12 +43,15 @@ Workflow provides the following functions at the `Chevere\Workflow` namespace:
 | `variable` | Define workflow-level variable       |
 | `response` | Define a job response reference      |
 
+* A Job is defined by its [Action](https://chevere.org/library/action)
 * Jobs are independent from each other, define shared variables using function `variable`
 * Reference [job A response] -> [job B input] by using function `response`
 
 ## Hello, world
 
-See the live example at [demo/hello-world.php](demo/hello-world.php)
+Run live example: `php demo/hello-world.php`
+
+The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its run [arguments](https://chevere.org/library/action.html#run).
 
 ```php
 use function Chevere\Workflow\workflow;
@@ -56,18 +63,19 @@ $workflow = workflow(
         username: variable('username'),
     ),
 );
-$run = run($workflow, [
+$variables = [
     'username' => $argv[1] ?? 'Walala',
-]);
+];
+$run = run($workflow, $variables);
 echo $run->getResponse('greet')->string();
 // Hello, Walala!
 ```
 
 ## Full example
 
-See the live example at [demo/image-upload.php](demo/image-upload.php)
+Run live example: `php demo/image-resize.php`
 
-In this example all jobs are defined as async but as there are dependencies between jobs the system resolves a suitable run strategy.
+For this example Workflow defines an image resize procedure in two sizes. All jobs are defined as async, but as there are dependencies between jobs (see `variable` and `response`) the system resolves a suitable run strategy.
 
 ```php
 use function Chevere\Workflow\workflow;
@@ -107,27 +115,34 @@ The graph for the Workflow above shows that `thumb` and `poster` run async, just
       poster-->storePoster;
 ```
 
-Use function `run` to run the Workflow:
+Use function `run` to run the Workflow, variables are passed as named arguments.
 
 ```php
 use function Chevere\Workflow\run;
 
+$run = run(
+    $workflow,
+    image: '/path/to/image-to-upload.png',
+    savePath: '/path/to/storage/'
+);
+
+// Alternative syntax
 $variables = [
-    'image' => '/path/to/image-to-upload',
+    'image' => '/path/to/image-to-upload.png',
     'savePath' => '/path/to/storage/'
 ];
-$run = run($workflow, $variables);
+$run = run($workflow, ...$variables);
 ```
 
-Use `$run->getResponse($job)` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
+Use `getResponse` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
 
 ```php
 $thumbFile = $run->getResponse('thumb')->string();
 ```
 
-## Notes on async
+### Notes on async
 
-Actions including any nested dependency must support serialization for being used on Workflows containing `async` jobs. If one of your Actions is not serializable, consider using `sync` for all your jobs.
+Actions must support [serialization](https://www.php.net/manual/en/function.serialize.php) for being used on `async` jobs. For not serializable Actions as these interacting with connections (namely streams, database clients, etc.) you should use `sync` job.
 
 ## Documentation
 
