@@ -49,19 +49,18 @@ final class Runner implements RunnerInterface
         $new = clone $this;
         $jobs = $new->run->workflow()->jobs();
         $graph = $jobs->graph()->toArray();
-        if (count($graph) === count($jobs)) {
-            foreach ($graph as $node) {
+        foreach ($graph as $node) {
+            if (count($node) === 1) {
                 $runner = runnerForJob($new, $node[0]);
                 $new->merge($new, $runner);
+
+                continue;
             }
-        } else {
-            foreach ($graph as $node) {
-                $promises = $new->getPromises($node);
-                /** @var RunnerInterface[] $responses */
-                $responses = wait(all($promises));
-                foreach ($responses as $runner) {
-                    $new->merge($new, $runner);
-                }
+            $promises = $new->getPromises($node);
+            /** @var RunnerInterface[] $responses */
+            $responses = wait(all($promises));
+            foreach ($responses as $runner) {
+                $new->merge($new, $runner);
             }
         }
 
