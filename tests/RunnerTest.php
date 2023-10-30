@@ -16,7 +16,7 @@ namespace Chevere\Tests;
 use Chevere\Container\Container;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
-use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamsFooBarResponse2;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
@@ -222,8 +222,8 @@ final class RunnerTest extends TestCase
         $container = new Container();
         $job1 = async(new TestActionNoParamsBoolResponses());
         $job2 = async(new TestActionNoParamsBoolResponses());
-        $job3 = async(new TestActionNoParamsIntegerResponse());
-        $job4 = async(new TestActionNoParamsIntegerResponse());
+        $job3 = async(new TestActionNoParamsIntResponse());
+        $job4 = async(new TestActionNoParamsIntResponse());
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIf(response('job1', 'true')),

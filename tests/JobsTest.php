@@ -16,7 +16,7 @@ namespace Chevere\Tests;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
-use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Tests\src\TestActionParams;
@@ -227,7 +227,7 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('Reference one:id is of type int, parameter foo expects string at job two');
         new Jobs(
             one: async(
-                new TestActionNoParamsIntegerResponse(),
+                new TestActionNoParamsIntResponse(),
             ),
             two: async(
                 new TestActionParams(),
@@ -265,7 +265,7 @@ final class JobsTest extends TestCase
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage('Reference j1:id must be of type bool');
         new Jobs(
-            j1: async(new TestActionNoParamsIntegerResponse()),
+            j1: async(new TestActionNoParamsIntResponse()),
             j2: async(new TestActionNoParams())
                 ->withRunIf(
                     response('j1', 'id')

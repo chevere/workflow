@@ -16,7 +16,7 @@ namespace Chevere\Tests;
 use Chevere\Filesystem\Interfaces\PathInterface;
 use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
+use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParamStringRegex;
@@ -126,7 +126,7 @@ final class JobTest extends TestCase
 
     public function testWithDependencies(): void
     {
-        $action = new TestActionNoParamsIntegerResponse();
+        $action = new TestActionNoParamsIntResponse();
         $job = new Job($action);
         $this->assertSame([], $job->dependencies()->toArray());
         $job = $job->withDepends('foo', 'bar');
@@ -137,7 +137,7 @@ final class JobTest extends TestCase
 
     public function testWithDependenciesOverflow(): void
     {
-        $action = new TestActionNoParamsIntegerResponse();
+        $action = new TestActionNoParamsIntResponse();
         $job = new Job($action);
         $this->assertSame([], $job->dependencies()->toArray());
         $this->expectException(OverflowException::class);
@@ -148,7 +148,7 @@ final class JobTest extends TestCase
 
     public function testWithWrongDependencies(): void
     {
-        $action = new TestActionNoParamsIntegerResponse();
+        $action = new TestActionNoParamsIntResponse();
         $job = new Job($action);
         $this->assertSame([], $job->dependencies()->toArray());
         $this->expectException(EmptyException::class);
