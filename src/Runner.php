@@ -15,7 +15,7 @@ namespace Chevere\Workflow;
 
 use Amp\Promise;
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\Parameter\Interfaces\CastArgumentInterface;
+use Chevere\Parameter\Interfaces\CastInterface;
 use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -96,7 +96,7 @@ final class Runner implements RunnerInterface
     {
         /** @var boolean */
         return $runIf instanceof VariableInterface
-                ? $this->run->arguments()->required($runIf->__toString())->boolean()
+                ? $this->run->arguments()->required($runIf->__toString())->bool()
                 : $this->run->getResponse($runIf->job())->array()[$runIf->key()];
     }
 
@@ -106,7 +106,7 @@ final class Runner implements RunnerInterface
     private function getActionResponse(
         ActionInterface $action,
         array $arguments
-    ): CastArgumentInterface {
+    ): CastInterface {
         try {
             return $action->getResponse(...$arguments);
         } catch (Throwable $e) { // @codeCoverageIgnoreStart
@@ -162,7 +162,7 @@ final class Runner implements RunnerInterface
         return $arguments;
     }
 
-    private function addJobResponse(string $name, CastArgumentInterface $response): void
+    private function addJobResponse(string $name, CastInterface $response): void
     {
         $this->run = $this->run->withResponse($name, $response);
     }

@@ -16,15 +16,15 @@ namespace Chevere\Tests\src;
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\arrayp;
-use function Chevere\Parameter\boolean;
+use function Chevere\Parameter\bool;
 
-final class TestActionNoParamsBooleanResponses extends Action
+final class TestActionNoParamsBoolResponses extends Action
 {
     public static function acceptResponse(): ParameterInterface
     {
         return arrayp(
-            true: boolean(),
-            false: boolean(),
+            true: bool(),
+            false: bool(),
         );
     }
 

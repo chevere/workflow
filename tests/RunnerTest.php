@@ -15,7 +15,7 @@ namespace Chevere\Tests;
 
 use Chevere\Container\Container;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Tests\src\TestActionNoParamsBooleanResponses;
+use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamsFooBarResponse2;
@@ -220,8 +220,8 @@ final class RunnerTest extends TestCase
     public function testRunIfReference(): void
     {
         $container = new Container();
-        $job1 = async(new TestActionNoParamsBooleanResponses());
-        $job2 = async(new TestActionNoParamsBooleanResponses());
+        $job1 = async(new TestActionNoParamsBoolResponses());
+        $job2 = async(new TestActionNoParamsBoolResponses());
         $job3 = async(new TestActionNoParamsIntegerResponse());
         $job4 = async(new TestActionNoParamsIntegerResponse());
         $workflow = workflow(

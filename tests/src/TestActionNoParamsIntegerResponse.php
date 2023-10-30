@@ -16,13 +16,15 @@ namespace Chevere\Tests\src;
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\arrayp;
-use function Chevere\Parameter\integer;
+use function Chevere\Parameter\int;
 
 final class TestActionNoParamsIntegerResponse extends Action
 {
     public static function acceptResponse(): ParameterInterface
     {
-        return arrayp(id: integer());
+        return arrayp(
+            id: int()
+        );
     }
 
     public function run(): array

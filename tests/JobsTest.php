@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Parameter\Interfaces\BooleanParameterInterface;
+use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Tests\src\TestActionNoParamsBooleanResponses;
+use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionNoParamsIntegerResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
@@ -224,7 +224,7 @@ final class JobsTest extends TestCase
     public function testWrongReferenceType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference one:id is of type integer, parameter foo expects string at job two');
+        $this->expectExceptionMessage('Reference one:id is of type int, parameter foo expects string at job two');
         new Jobs(
             one: async(
                 new TestActionNoParamsIntegerResponse(),
@@ -263,7 +263,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference j1:id must be of type boolean');
+        $this->expectExceptionMessage('Reference j1:id must be of type bool');
         new Jobs(
             j1: async(new TestActionNoParamsIntegerResponse()),
             j2: async(new TestActionNoParams())
@@ -308,7 +308,7 @@ final class JobsTest extends TestCase
                 ),
         );
         $this->assertTrue($jobs->variables()->has($name));
-        $this->assertInstanceOf(BooleanParameterInterface::class, $jobs->variables()->get($name));
+        $this->assertInstanceOf(BoolParameterInterface::class, $jobs->variables()->get($name));
     }
 
     public function testWithRunIfReference(): void
@@ -317,10 +317,10 @@ final class JobsTest extends TestCase
         $false = response('j1', 'false');
         $jobs = new Jobs(
             j1: async(
-                new TestActionNoParamsBooleanResponses(),
+                new TestActionNoParamsBoolResponses(),
             ),
             j2: async(
-                new TestActionNoParamsBooleanResponses(),
+                new TestActionNoParamsBoolResponses(),
             )->withRunIf($true, $false),
             j3: async(
                 new TestActionNoParams(),

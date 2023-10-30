@@ -18,7 +18,7 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use Chevere\Parameter\Interfaces\BooleanParameterInterface;
+use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersAccessInterface;
 use Chevere\Throwable\Errors\TypeError;
@@ -33,7 +33,7 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 use Throwable;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
-use function Chevere\Parameter\boolean;
+use function Chevere\Parameter\bool;
 
 final class Jobs implements JobsInterface
 {
@@ -270,12 +270,12 @@ final class Jobs implements JobsInterface
             }
             $accept = $accept->parameters()->get($runIf->key());
         }
-        if ($accept->type()->primitive() === 'boolean') {
+        if ($accept->type()->primitive() === 'bool') {
             return;
         }
 
         throw new TypeError(
-            message('Reference %reference% must be of type boolean')
+            message('Reference %reference% must be of type bool')
                 ->withCode('%reference%', strval($runIf))
         );
     }
@@ -289,14 +289,14 @@ final class Jobs implements JobsInterface
             $this->variables = $this->variables
                 ->withPut(
                     $runIf->__toString(),
-                    boolean(),
+                    bool(),
                 );
 
             return;
         }
         /** @var ParameterInterface $parameter */
         $parameter = $this->variables->get($runIf->__toString());
-        if (! ($parameter instanceof BooleanParameterInterface)) {
+        if (! ($parameter instanceof BoolParameterInterface)) {
             throw new TypeError(
                 message('Variable %variable% (previously declared as %type%) is not of type boolean at Job %job%')
                     ->withCode('%variable%', $runIf->__toString())

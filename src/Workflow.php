@@ -25,7 +25,7 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
-use function Chevere\Parameter\boolean;
+use function Chevere\Parameter\bool;
 
 final class Workflow implements WorkflowInterface
 {
@@ -133,7 +133,7 @@ final class Workflow implements WorkflowInterface
 
     private function putJobConditions(JobInterface $job): void
     {
-        $parameter = boolean();
+        $parameter = bool();
         foreach ($job->runIf() as $value) {
             $this->putVariableReference($value, $parameter);
         }
