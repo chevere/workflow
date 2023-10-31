@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Container\Container;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionNoParamsIntResponse;
@@ -36,7 +35,6 @@ final class RunnerTest extends TestCase
 {
     public function testRunnerForArguments(): void
     {
-        $container = new Container();
         $jobsRunArguments = [
             'job1' => [
                 'foo' => 'viva Chile!',
@@ -68,7 +66,7 @@ final class RunnerTest extends TestCase
         ];
         $workflow = workflow(...$jobs);
         $run = new Run($workflow);
-        $runner = new Runner($run, $container);
+        $runner = new Runner($run);
         foreach (array_keys($jobs) as $name) {
             $runner = $runner->withRunJob($name);
         }
@@ -79,7 +77,6 @@ final class RunnerTest extends TestCase
 
     public function testRunnerForVariables(): void
     {
-        $container = new Container();
         $variables = [
             'uno' => 'ha salido un nuevo estilo de baile',
             'dos' => 'y yo, no lo sabia',
@@ -128,7 +125,7 @@ final class RunnerTest extends TestCase
         ];
         $workflow = workflow(...$jobs);
         $run = new Run($workflow, ...$variables);
-        $runner = new Runner($run, $container);
+        $runner = new Runner($run);
         foreach (array_keys($jobs) as $name) {
             $runner = $runner->withRunJob($name);
         }
@@ -139,7 +136,6 @@ final class RunnerTest extends TestCase
 
     public function testRunnerForReferences(): void
     {
-        $container = new Container();
         $references = [
             'uno' => 'quisiera sacarte a caminar, en un largo tour',
             'dos' => 'por Pudahuel y La bandera',
@@ -177,7 +173,7 @@ final class RunnerTest extends TestCase
         ];
         $workflow = workflow(...$jobs);
         $run = new Run($workflow);
-        $runner = new Runner($run, $container);
+        $runner = new Runner($run);
         foreach (array_keys($jobs) as $name) {
             $runner = $runner->withRunJob($name);
         }
@@ -188,7 +184,6 @@ final class RunnerTest extends TestCase
 
     public function testWithRunIfVariable(): void
     {
-        $container = new Container();
         $name = 'variable';
         $job = async(new TestActionNoParams())
             ->withRunIf(variable($name));
@@ -197,7 +192,7 @@ final class RunnerTest extends TestCase
             $name => true,
         ];
         $run = new Run($workflow, ...$arguments);
-        $runner = new Runner($run, $container);
+        $runner = new Runner($run);
         $runner = $runner->withRunJob('job1');
         $action = $job->action();
         $this->assertSame(
@@ -208,7 +203,7 @@ final class RunnerTest extends TestCase
             $name => false,
         ];
         $run = new Run($workflow, ...$arguments);
-        $runner = new Runner($run, $container);
+        $runner = new Runner($run);
         $runner = $runner->withRunJob('job1');
         $this->assertSame($workflow->jobs()->keys(), $runner->run()->skip()->toArray());
         $run = run($workflow, ...$arguments);
@@ -219,7 +214,6 @@ final class RunnerTest extends TestCase
 
     public function testRunIfReference(): void
     {
-        $container = new Container();
         $job1 = async(new TestActionNoParamsBoolResponses());
         $job2 = async(new TestActionNoParamsBoolResponses());
         $job3 = async(new TestActionNoParamsIntResponse());
@@ -231,7 +225,7 @@ final class RunnerTest extends TestCase
             job4: $job4->withDepends('job3')
         );
         $run = new Run($workflow);
-        $runner = new Runner($run, $container);
+        $runner = new Runner($run);
         foreach ($workflow->jobs()->keys() as $name) {
             $runner = $runner->withRunJob($name);
             $runner->run()->getResponse($name)->array();
@@ -243,7 +237,7 @@ final class RunnerTest extends TestCase
             job4: $job1->withDepends('job3')
         );
         $run = new Run($workflow);
-        $runner = new Runner($run, $container);
+        $runner = new Runner($run);
         foreach ($workflow->jobs()->keys() as $name) {
             $runner = $runner->withRunJob($name);
         }
