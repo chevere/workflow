@@ -126,7 +126,7 @@ final class Graph implements GraphInterface
                 default => 0
             };
         });
-
+        /* @phpstan-ignore-next-line */
         return $array;
     }
 

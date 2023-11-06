@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
-use Chevere\DataStructure\Interfaces\MappedInterface;
+use Chevere\DataStructure\Interfaces\StringMappedInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\CastInterface;
@@ -21,9 +21,9 @@ use Chevere\Parameter\Interfaces\CastInterface;
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
  *
- * @extends MappedInterface<CastInterface>
+ * @extends StringMappedInterface<CastInterface>
  */
-interface RunInterface extends MappedInterface
+interface RunInterface extends StringMappedInterface
 {
     /**
      * @return array<string> Names for jobs with responses.

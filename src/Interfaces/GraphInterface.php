@@ -14,15 +14,15 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Common\Interfaces\ToArrayInterface;
-use Chevere\DataStructure\Interfaces\MappedInterface;
+use Chevere\DataStructure\Interfaces\StringMappedInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 
 /**
  * Describes the component in charge of defining job execution order, where each node contains async jobs.
  *
- * @extends MappedInterface<VectorInterface<string>>
+ * @extends StringMappedInterface<VectorInterface<string>>
  */
-interface GraphInterface extends MappedInterface, ToArrayInterface
+interface GraphInterface extends StringMappedInterface, ToArrayInterface
 {
     /**
      * Determines if the graph has the given `$job`.

@@ -140,7 +140,7 @@ final class Job implements JobInterface
                 $values[$name] = $value;
                 $this->inferDependencies($value);
                 $this->assertParameter($name, $parameter, $value);
-            } elseif ($this->parameters->isRequired($name)) {
+            } elseif ($this->parameters->requiredKeys()->contains($name)) {
                 $missing[] = $parameter->type()->typeHinting()
                     . " {$name}";
             }

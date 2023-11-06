@@ -14,16 +14,16 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\DataStructure\Interfaces\MapInterface;
-use Chevere\DataStructure\Interfaces\MappedInterface;
+use Chevere\DataStructure\Interfaces\StringMappedInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Iterator;
 
 /**
  * Describes the component in charge of defining a collection of Jobs.
  *
- * @extends MappedInterface<JobInterface>
+ * @extends StringMappedInterface<JobInterface>
  */
-interface JobsInterface extends MappedInterface
+interface JobsInterface extends StringMappedInterface
 {
     public function has(string $job): bool;
 
