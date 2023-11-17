@@ -16,13 +16,13 @@ namespace Chevere\Workflow;
 use Amp\Promise;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Parameter\Interfaces\CastInterface;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use InvalidArgumentException;
+use OutOfBoundsException;
 use Throwable;
 use function Amp\Parallel\Worker\enqueueCallable;
 use function Amp\Promise\all;
@@ -118,10 +118,12 @@ final class Runner implements RunnerInterface
 
             throw new InvalidArgumentException(
                 previous: $e,
-                message: message('%message% at %fileLine% for action %action%')
-                    ->withTranslate('%message%', $e->getMessage())
-                    ->withCode('%fileLine%', $fileLine)
-                    ->withCode('%action%', $action::class)
+                message: (string) message(
+                    '%message% at `%fileLine%` for action `%action%`',
+                    message: $e->getMessage(),
+                    fileLine: $fileLine,
+                    action: $action::class,
+                )
             );
         }
         // @codeCoverageIgnoreEnd

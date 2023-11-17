@@ -17,12 +17,12 @@ use Chevere\DataStructure\Map;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
+use OutOfBoundsException;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
@@ -99,10 +99,12 @@ final class Workflow implements WorkflowInterface
                 $this->putVariableReference($value, $parameter);
             } catch (OutOfBoundsException $e) {
                 throw new $e(
-                    message('Incompatible declaration on Job %name% (%arg%) [%message%]')
-                        ->withStrong('%name%', $name)
-                        ->withStrong('%arg%', "argument@{$argument}")
-                        ->withTranslate('%message%', $e->getMessage()),
+                    (string) message(
+                        'Incompatible declaration on Job **%name%** (**%arg%**) [%message%]',
+                        name: $name,
+                        arg: "argument@{$argument}",
+                        message: $e->getMessage(),
+                    )
                 );
             }
         }

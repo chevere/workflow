@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Variable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class VariableTest extends TestCase

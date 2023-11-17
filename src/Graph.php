@@ -17,9 +17,9 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
+use InvalidArgumentException;
 use function Chevere\Message\message;
 
 final class Graph implements GraphInterface
@@ -172,8 +172,10 @@ final class Graph implements GraphInterface
         }
 
         throw new InvalidArgumentException(
-            message('Cannot declare job %job% as a self-dependency')
-                ->withCode('%job%', $job)
+            (string) message(
+                'Cannot declare job **%job%** as a self-dependency',
+                job: $job
+            )
         );
     }
 

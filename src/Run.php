@@ -21,9 +21,9 @@ use Chevere\Message\Interfaces\MessageInterface;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\CastInterface;
-use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
+use OverflowException;
 use Ramsey\Uuid\Uuid;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertArgument;
@@ -121,7 +121,9 @@ final class Run implements RunInterface
     {
         if ($this->skip->contains($job)) {
             throw new OverflowException(
-                $message->withCode('%job%', $job)
+                strtr($message->__toString(), [
+                    '%job%' => $job,
+                ])
             );
         }
     }

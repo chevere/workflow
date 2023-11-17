@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use ArgumentCountError;
+use BadMethodCallException;
 use Chevere\Filesystem\Interfaces\PathInterface;
 use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\src\TestActionNoParams;
@@ -20,11 +22,9 @@ use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParamStringRegex;
-use Chevere\Throwable\Errors\ArgumentCountError;
-use Chevere\Throwable\Exceptions\BadMethodCallException;
-use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Job;
 use InvalidArgumentException;
+use OverflowException;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\variable;
@@ -35,8 +35,9 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
-            TestActionNoParams::class
-            . '::run requires 0 argument(s)'
+            '`'
+            . TestActionNoParams::class
+            . '::run` requires 0 argument(s)'
         );
         $action = new TestActionNoParams();
         new Job(
@@ -49,8 +50,9 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
-            TestActionParam::class
-            . '::run requires 1 argument(s) [foo]'
+            '`'
+            . TestActionParam::class
+            . '::run` requires 1 argument(s) `[foo]`'
         );
         $action = new TestActionParam();
         new Job($action);
@@ -142,7 +144,7 @@ final class JobTest extends TestCase
         $this->assertSame([], $job->dependencies()->toArray());
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Job dependencies must be unique');
-        $this->expectExceptionMessage('repeated foo');
+        $this->expectExceptionMessage('repeated **foo**');
         $job->withDepends('bar', 'foo', 'foo');
     }
 
@@ -188,10 +190,11 @@ final class JobTest extends TestCase
     {
         $this->expectException(BadMethodCallException::class);
         $this->expectExceptionMessage(
-            'Missing argument(s) ['
+            'Missing argument(s) [`'
             . PathInterface::class
-            . ' path] for '
+            . ' path`] for `'
             . TestActionObjectConflict::class
+            . '`'
         );
         new Job(
             new TestActionObjectConflict(),

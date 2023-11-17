@@ -13,18 +13,18 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use ArgumentCountError;
+use BadMethodCallException;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\String\StringAssert;
-use Chevere\Throwable\Errors\ArgumentCountError;
-use Chevere\Throwable\Exceptions\BadMethodCallException;
-use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use OverflowException;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
@@ -76,8 +76,10 @@ final class Job implements JobInterface
         foreach ($context as $item) {
             if ($known->contains($item->__toString())) {
                 throw new OverflowException(
-                    message('Condition %condition% is already defined')
-                        ->withCode('%condition%', $item->__toString())
+                    (string) message(
+                        'Condition `%condition%` is already defined',
+                        condition: $item->__toString()
+                    )
                 );
             }
             $new->inferDependencies($item);
@@ -147,9 +149,11 @@ final class Job implements JobInterface
         }
         if ($missing !== []) {
             throw new BadMethodCallException(
-                message('Missing argument(s) [%arguments%] for %action%')
-                    ->withCode('%arguments%', implode(', ', $missing))
-                    ->withCode('%action%', $this->action::class)
+                (string) message(
+                    'Missing argument(s) [`%arguments%`] for `%action%`',
+                    arguments: implode(', ', $missing),
+                    action: $this->action::class
+                )
             );
         }
         $this->arguments = $values;
@@ -169,10 +173,12 @@ final class Job implements JobInterface
             $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
             throw new ArgumentCountError(
-                message('%symbol% requires %countRequired% argument(s) %parameters%')
-                    ->withCode('%symbol%', $this->action::class . '::run')
-                    ->withCode('%countRequired%', strval($countRequired))
-                    ->withCode('%parameters%', $parameters)
+                (string) message(
+                    '`%symbol%` requires %countRequired% argument(s) `%parameters%`',
+                    symbol: $this->action::class . '::run',
+                    countRequired: strval($countRequired),
+                    parameters: $parameters
+                )
             );
         }
     }
@@ -214,11 +220,10 @@ final class Job implements JobInterface
         $uniques = array_unique($dependencies);
         if ($uniques !== $dependencies) {
             throw new OverflowException(
-                message('Job dependencies must be unique (repeated %dependencies%)')
-                    ->withCode(
-                        '%dependencies%',
-                        implode(', ', array_diff_assoc($dependencies, $uniques))
-                    )
+                (string) message(
+                    'Job dependencies must be unique (repeated **%dependencies%**)',
+                    dependencies: implode(', ', array_diff_assoc($dependencies, $uniques))
+                )
             );
         }
         foreach ($dependencies as $dependency) {

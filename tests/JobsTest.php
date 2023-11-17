@@ -20,12 +20,12 @@ use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Tests\src\TestActionParams;
-use Chevere\Throwable\Errors\TypeError;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
-use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Jobs;
+use InvalidArgumentException;
+use OutOfBoundsException;
+use OverflowException;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\sync;
@@ -119,7 +119,7 @@ final class JobsTest extends TestCase
     public function testWithDependsMissing(): void
     {
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessageMatches('/undeclared dependencies\: j0$/');
+        $this->expectExceptionMessageMatches('/undeclared dependencies\: `j0`$/');
         new Jobs(
             j1: async(new TestActionNoParams()),
             j2: async(new TestActionNoParams())
@@ -191,7 +191,7 @@ final class JobsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             <<<STRING
-            Reference one:bar conflict for parameter foo on Job two (Expected regex /^bar$/, provided /^.*$/)
+            Reference **one:bar** conflict for parameter **foo** on job **two** (Expected regex `/^bar$/`, provided `/^.*$/`)
             STRING
         );
         new Jobs(
@@ -209,7 +209,7 @@ final class JobsTest extends TestCase
     public function testMissingReference(): void
     {
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Reference zero:key not found at job two');
+        $this->expectExceptionMessage('Reference **zero:key** not found at job **two**');
         new Jobs(
             one: async(
                 new TestActionNoParams()
@@ -224,7 +224,7 @@ final class JobsTest extends TestCase
     public function testWrongReferenceType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference one:id is of type int, parameter foo expects string at job two');
+        $this->expectExceptionMessage('Reference **one:id** is of type `int`, parameter **foo** expects `string` at job **two**');
         new Jobs(
             one: async(
                 new TestActionNoParamsIntResponse(),
@@ -263,7 +263,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference j1:id must be of type bool');
+        $this->expectExceptionMessage('Reference **j1:id** must be of type `bool`');
         new Jobs(
             j1: async(new TestActionNoParamsIntResponse()),
             j2: async(new TestActionNoParams())
@@ -276,7 +276,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidVariableType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Variable theFoo (previously declared as string) is not of type boolean at Job j2');
+        $this->expectExceptionMessage('Variable **theFoo** (previously declared as `string`) is not of type `bool` at Job **j2**');
         new Jobs(
             j1: async(
                 new TestActionParams(),
@@ -345,7 +345,7 @@ final class JobsTest extends TestCase
     public function testWithMissingReference(): void
     {
         $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Reference job1:missing not found at job job2');
+        $this->expectExceptionMessage('Reference **job1:missing** not found at job **job2**');
         new Jobs(
             job1: async(
                 new TestActionParamFooResponseBar(),
@@ -361,7 +361,7 @@ final class JobsTest extends TestCase
     public function testWithInvalidTypeReference(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference job1:baz is of type float, parameter foo expects string at job job2');
+        $this->expectExceptionMessage('Reference **job1:baz** is of type `float`, parameter **foo** expects `string` at job **job2**');
         new Jobs(
             job1: async(
                 new TestActionParamFooResponseBar(),

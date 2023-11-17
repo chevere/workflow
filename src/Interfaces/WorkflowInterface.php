@@ -15,8 +15,8 @@ namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Throwable\Exceptions\OverflowException;
 use Countable;
+use OverflowException;
 
 /**
  * Describes the component in charge of defining a collection of chained tasks.

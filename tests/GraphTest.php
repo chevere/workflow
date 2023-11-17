@@ -17,11 +17,11 @@ use Chevere\String\Exceptions\CtypeDigitException;
 use Chevere\String\Exceptions\CtypeSpaceException;
 use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
-use Chevere\Throwable\Exceptions\OutOfBoundsException;
-use Chevere\Throwable\Exceptions\OverflowException;
 use Chevere\Workflow\Graph;
 use Chevere\Workflow\Interfaces\JobInterface;
+use InvalidArgumentException;
+use OutOfBoundsException;
+use OverflowException;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
 

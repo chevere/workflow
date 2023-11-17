@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Regex\Regex;
-use Chevere\Throwable\Exceptions\InvalidArgumentException;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use InvalidArgumentException;
 use function Chevere\Message\message;
 
 final class Variable implements VariableInterface
@@ -27,8 +27,10 @@ final class Variable implements VariableInterface
             ->match($name);
         if ($matches === []) {
             throw new InvalidArgumentException(
-                message('Invalid variable name %name%')
-                    ->withCode('%name%', $name)
+                (string) message(
+                    'Invalid variable name `%name%`',
+                    name: $name
+                )
             );
         }
     }
