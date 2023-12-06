@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Attributes\Regex;
+use Chevere\Parameter\Attributes\StringAttr;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\float;
@@ -31,7 +31,7 @@ class TestActionParamFooResponseBar extends Action
     }
 
     public function run(
-        #[Regex('/^bar$/')]
+        #[StringAttr('/^bar$/')]
         string $foo
     ): array {
         return [

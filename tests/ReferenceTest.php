@@ -13,22 +13,21 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\String\Exceptions\CtypeSpaceException;
-use Chevere\String\Exceptions\EmptyException;
 use Chevere\Workflow\ResponseReference;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class ReferenceTest extends TestCase
 {
     public function testInvalidArgumentEmpty(): void
     {
-        $this->expectException(EmptyException::class);
+        $this->expectException(InvalidArgumentException::class);
         new ResponseReference('', '');
     }
 
     public function testInvalidArgumentSpaces(): void
     {
-        $this->expectException(CtypeSpaceException::class);
+        $this->expectException(InvalidArgumentException::class);
         new ResponseReference(' ', ' ');
     }
 

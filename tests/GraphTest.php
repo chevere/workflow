@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\String\Exceptions\CtypeDigitException;
-use Chevere\String\Exceptions\CtypeSpaceException;
-use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Workflow\Graph;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -185,21 +182,21 @@ final class GraphTest extends TestCase
     public function testWithPutEmpty(): void
     {
         $graph = new Graph();
-        $this->expectException(EmptyException::class);
+        $this->expectException(InvalidArgumentException::class);
         $graph->withPut('job', $this->getJob()->withDepends(''));
     }
 
     public function testWithPutSpace(): void
     {
         $graph = new Graph();
-        $this->expectException(CtypeSpaceException::class);
+        $this->expectException(InvalidArgumentException::class);
         $graph->withPut('job', $this->getJob()->withDepends(' '));
     }
 
     public function testWithPutDigit(): void
     {
         $graph = new Graph();
-        $this->expectException(CtypeDigitException::class);
+        $this->expectException(InvalidArgumentException::class);
         $graph->withPut('job', $this->getJob()->withDepends('123'));
     }
 

@@ -20,10 +20,10 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\String\StringAssert;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use InvalidArgumentException;
 use OverflowException;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
@@ -227,10 +227,9 @@ final class Job implements JobInterface
             );
         }
         foreach ($dependencies as $dependency) {
-            (new StringAssert($dependency))
-                ->notEmpty()
-                ->notCtypeDigit()
-                ->notCtypeSpace();
+            if (empty($dependency) || ctype_digit($dependency) || ctype_space($dependency)) {
+                throw new InvalidArgumentException();
+            }
         }
     }
 }

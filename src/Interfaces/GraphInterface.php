@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
-use Chevere\Common\Interfaces\ToArrayInterface;
 use Chevere\DataStructure\Interfaces\StringMappedInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 
@@ -22,7 +21,7 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
  *
  * @extends StringMappedInterface<VectorInterface<string>>
  */
-interface GraphInterface extends StringMappedInterface, ToArrayInterface
+interface GraphInterface extends StringMappedInterface
 {
     /**
      * Determines if the graph has the given `$job`.

@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Attributes\Regex;
+use Chevere\Parameter\Attributes\StringAttr;
 
 class TestActionParamStringRegex extends Action
 {
     public function run(
-        #[Regex('/^foo|bar$/')]
+        #[StringAttr('/^foo|bar$/')]
         string $foo
     ): array {
         return [];

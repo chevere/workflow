@@ -16,7 +16,6 @@ namespace Chevere\Tests;
 use ArgumentCountError;
 use BadMethodCallException;
 use Chevere\Filesystem\Interfaces\PathInterface;
-use Chevere\String\Exceptions\EmptyException;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
@@ -153,7 +152,7 @@ final class JobTest extends TestCase
         $action = new TestActionNoParamsIntResponse();
         $job = new Job($action);
         $this->assertSame([], $job->dependencies()->toArray());
-        $this->expectException(EmptyException::class);
+        $this->expectException(InvalidArgumentException::class);
         $job->withDepends('');
     }
 

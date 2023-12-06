@@ -27,7 +27,7 @@ use OverflowException;
 use Ramsey\Uuid\Uuid;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertArgument;
-use function Chevere\VariableSupport\deepCopy;
+use function Chevere\VarSupport\deepCopy;
 
 final class Run implements RunInterface
 {

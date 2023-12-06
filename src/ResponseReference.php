@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\String\StringAssert;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
+use InvalidArgumentException;
 
 final class ResponseReference implements ResponseReferenceInterface
 {
@@ -22,11 +22,15 @@ final class ResponseReference implements ResponseReferenceInterface
         private string $job,
         private ?string $key,
     ) {
-        (new StringAssert($job))->notCtypeSpace()->notEmpty();
+        if (ctype_space($job) || empty($job)) {
+            throw new InvalidArgumentException();
+        }
         if ($key === null) {
             return;
         }
-        (new StringAssert($key))->notCtypeSpace();
+        if (ctype_space($key)) {
+            throw new InvalidArgumentException();
+        }
     }
 
     public function __toString(): string
