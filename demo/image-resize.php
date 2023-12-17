@@ -56,7 +56,7 @@ $variables = [
 ];
 $run = run($workflow, $variables);
 echo <<<PLAIN
-thumbFile: {$run->getResponse('thumb')->string()}
-posterFile: {$run->getResponse('poster')->string()}
+thumbFile: {$run->getReturn('thumb')->string()}
+posterFile: {$run->getReturn('poster')->string()}
 
 PLAIN;

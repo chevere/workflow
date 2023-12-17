@@ -30,7 +30,7 @@ foreach (['/../', '/../../../../'] as $path) {
 
 class GreetAction extends Action
 {
-    public static function acceptResponse(): ParameterInterface
+    public static function return(): ParameterInterface
     {
         return string();
     }
@@ -50,5 +50,5 @@ $workflow = workflow(
 $run = run($workflow, [
     'username' => $argv[1] ?? 'Walala',
 ]);
-echo $run->getResponse('greet')->string();
+echo $run->getReturn('greet')->string();
 echo PHP_EOL;

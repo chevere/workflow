@@ -22,7 +22,7 @@ use function Chevere\Parameter\string;
 
 class TestActionParamFooResponseBar extends Action
 {
-    public static function acceptResponse(): ParameterInterface
+    public static function return(): ParameterInterface
     {
         return arrayp(
             bar: string('/^bar$/'),

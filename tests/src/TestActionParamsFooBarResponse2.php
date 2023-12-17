@@ -20,7 +20,7 @@ use function Chevere\Parameter\string;
 
 class TestActionParamsFooBarResponse2 extends Action
 {
-    public static function acceptResponse(): ParameterInterface
+    public static function return(): ParameterInterface
     {
         return arrayp(response2: string());
     }

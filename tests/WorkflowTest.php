@@ -105,7 +105,7 @@ final class WorkflowTest extends TestCase
         $this->assertTrue($workflow->jobs()->has('job1'));
         $this->assertContains('job1', $workflow->jobs()->get('job2')->dependencies());
         $run = run($workflow);
-        $this->assertSame('test!!', $run->getResponse('job2')->string());
+        $this->assertSame('test!!', $run->getReturn('job2')->string());
     }
 
     public function testIntToString(): void
@@ -117,6 +117,6 @@ final class WorkflowTest extends TestCase
             )
         );
         $run = run($workflow);
-        $this->assertSame('1234', $run->getResponse('toString')->string());
+        $this->assertSame('1234', $run->getReturn('toString')->string());
     }
 }

@@ -92,7 +92,7 @@ final class Workflow implements WorkflowInterface
     {
         $action = $job->action();
         $parameters = getParameters($action::class);
-        $this->provided = $this->provided->withPut($name, $action::acceptResponse());
+        $this->provided = $this->provided->withPut($name, $action::return());
         foreach ($job->arguments() as $argument => $value) {
             try {
                 $parameter = $parameters->get($argument);

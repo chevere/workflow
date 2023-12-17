@@ -197,7 +197,7 @@ final class RunnerTest extends TestCase
         $action = $job->action();
         $this->assertSame(
             $action->run(),
-            $runner->run()->getResponse('job1')->array()
+            $runner->run()->getReturn('job1')->array()
         );
         $arguments = [
             $name => false,
@@ -209,7 +209,7 @@ final class RunnerTest extends TestCase
         $run = run($workflow, ...$arguments);
         $this->assertSame($workflow->jobs()->keys(), $runner->run()->skip()->toArray());
         $this->expectException(OutOfBoundsException::class);
-        $runner->run()->getResponse('job1');
+        $runner->run()->getReturn('job1');
     }
 
     public function testRunIfReference(): void
@@ -228,7 +228,7 @@ final class RunnerTest extends TestCase
         $runner = new Runner($run);
         foreach ($workflow->jobs()->keys() as $name) {
             $runner = $runner->withRunJob($name);
-            $runner->run()->getResponse($name)->array();
+            $runner->run()->getReturn($name)->array();
         }
         $workflow = workflow(
             job1: $job1,
@@ -256,7 +256,7 @@ final class RunnerTest extends TestCase
             $action = $job->action();
             $this->assertSame(
                 $action->run(...$runArguments[$name]),
-                $run->getResponse($name)->array()
+                $run->getReturn($name)->array()
             );
         }
     }

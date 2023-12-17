@@ -67,7 +67,7 @@ $variables = [
     'username' => $argv[1] ?? 'Walala',
 ];
 $run = run($workflow, $variables);
-echo $run->getResponse('greet')->string();
+echo $run->getReturn('greet')->string();
 // Hello, Walala!
 ```
 
@@ -134,10 +134,10 @@ $variables = [
 $run = run($workflow, ...$variables);
 ```
 
-Use `getResponse` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
+Use `getReturn` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
 
 ```php
-$thumbFile = $run->getResponse('thumb')->string();
+$thumbFile = $run->getReturn('thumb')->string();
 ```
 
 ### Notes on async

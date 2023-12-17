@@ -50,7 +50,7 @@ final class RunTest extends TestCase
         $this->assertSame($workflow, $run->workflow());
         $this->assertSame($arguments, $run->arguments()->toArray());
         $this->expectException(OutOfBoundsException::class);
-        $run->getResponse('not-found');
+        $run->getReturn('not-found');
     }
 
     public function testWithStepResponse(): void
@@ -75,7 +75,7 @@ final class RunTest extends TestCase
         $run = (new Run($workflow, ...$arguments));
         $workflowRunWithStepResponse = $run->withResponse('job0', new Cast([]));
         $this->assertNotSame($run, $workflowRunWithStepResponse);
-        $this->assertSame([], $workflowRunWithStepResponse->getResponse('job0')->array());
+        $this->assertSame([], $workflowRunWithStepResponse->getReturn('job0')->array());
     }
 
     public function testWithAddedNotFound(): void

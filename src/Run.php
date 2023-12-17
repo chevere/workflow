@@ -26,7 +26,6 @@ use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OverflowException;
 use Ramsey\Uuid\Uuid;
 use function Chevere\Message\message;
-use function Chevere\Parameter\assertArgument;
 use function Chevere\VarSupport\deepCopy;
 
 final class Run implements RunInterface
@@ -94,7 +93,7 @@ final class Run implements RunInterface
         $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
         $new = clone $this;
         $new->workflow->jobs()->get($job);
-        assertArgument($new->workflow->getJobResponseParameter($job), $response->mixed());
+        $new->workflow->getJobResponseParameter($job)($response->mixed());
         $new->map = $new->map->withPut($job, $response);
 
         return $new;
@@ -112,7 +111,7 @@ final class Run implements RunInterface
         return $new;
     }
 
-    public function getResponse(string $job): CastInterface
+    public function getReturn(string $job): CastInterface
     {
         return $this->map->get($job);
     }

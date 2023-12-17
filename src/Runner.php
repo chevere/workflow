@@ -77,7 +77,7 @@ final class Runner implements RunnerInterface
         }
         foreach ($job->dependencies() as $dependency) {
             try {
-                $new->run()->getResponse($dependency);
+                $new->run()->getReturn($dependency);
             } catch (OutOfBoundsException) {
                 $new->addJobSkip($name);
 
@@ -97,7 +97,7 @@ final class Runner implements RunnerInterface
         /** @var boolean */
         return $runIf instanceof VariableInterface
                 ? $this->run->arguments()->required($runIf->__toString())->bool()
-                : $this->run->getResponse($runIf->job())->array()[$runIf->key()];
+                : $this->run->getReturn($runIf->job())->array()[$runIf->key()];
     }
 
     /**
@@ -108,7 +108,7 @@ final class Runner implements RunnerInterface
         array $arguments
     ): CastInterface {
         try {
-            return $action->getResponse(...$arguments);
+            return $action->__invoke(...$arguments);
         } catch (Throwable $e) { // @codeCoverageIgnoreStart
             $actionTrace = $e->getTrace()[1] ?? [];
             $fileLine = strtr('%file%:%line%', [
@@ -152,13 +152,13 @@ final class Runner implements RunnerInterface
             }
             /** @var ResponseReferenceInterface $value */
             if ($value->key() === null) {
-                $arguments[$name] = $this->run->getResponse($value->job())->mixed();
+                $arguments[$name] = $this->run->getReturn($value->job())->mixed();
 
                 continue;
             }
 
             /** @var ResponseReferenceInterface $value */
-            $arguments[$name] = $this->run->getResponse($value->job())->array()[$value->key()];
+            $arguments[$name] = $this->run->getReturn($value->job())->array()[$value->key()];
         }
 
         return $arguments;

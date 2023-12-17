@@ -81,7 +81,7 @@ function variable(string $name): VariableInterface
 function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 {
     try {
-        $runner->run()->getResponse($job);
+        $runner->run()->getReturn($job);
 
         return $runner;
     } catch (Throwable) {

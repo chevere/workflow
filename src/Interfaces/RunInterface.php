@@ -58,5 +58,5 @@ interface RunInterface extends StringMappedInterface
     /**
      * Provides access to the ResponseInterface instance for the given `$job`.
      */
-    public function getResponse(string $job): CastInterface;
+    public function getReturn(string $job): CastInterface;
 }

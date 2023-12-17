@@ -142,9 +142,9 @@ final class Jobs implements JobsInterface
     private function storeReferences(string $job, JobInterface $item): void
     {
         $action = $item->action();
-        $acceptResponse = $action::acceptResponse();
-        if ($acceptResponse instanceof ParametersAccessInterface) {
-            foreach ($acceptResponse->parameters() as $key => $parameter) {
+        $return = $action::return();
+        if ($return instanceof ParametersAccessInterface) {
+            foreach ($return->parameters() as $key => $parameter) {
                 $this->references = $this->references
                     ->withPut(
                         strval(response($job, $key)),
@@ -155,7 +155,7 @@ final class Jobs implements JobsInterface
             $this->references = $this->references
                 ->withPut(
                     strval(response($job)),
-                    $acceptResponse,
+                    $return,
                 );
         }
     }
@@ -206,7 +206,7 @@ final class Jobs implements JobsInterface
                 /** @var JobInterface $referenceJob */
                 $referenceJob = $this->map->get($value->job());
                 /** @var ParameterInterface $accept */
-                $accept = $referenceJob->action()::acceptResponse();
+                $accept = $referenceJob->action()::return();
                 if ($value->key() !== null) {
                     if (! $accept instanceof ParametersAccessInterface) {
                         throw new TypeError(
@@ -270,7 +270,7 @@ final class Jobs implements JobsInterface
             return;
         }
         $action = $this->get($runIf->job())->action();
-        $accept = $action::acceptResponse();
+        $accept = $action::return();
         if ($runIf->key() !== null) {
             if (! $accept instanceof ParametersAccessInterface) {
                 throw new TypeError(

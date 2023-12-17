@@ -20,7 +20,7 @@ use function Chevere\Parameter\bool;
 
 final class TestActionNoParamsBoolResponses extends Action
 {
-    public static function acceptResponse(): ParameterInterface
+    public static function return(): ParameterInterface
     {
         return arrayp(
             true: bool(),

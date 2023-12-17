@@ -25,7 +25,7 @@ final class ClosureAction extends Action
     ) {
     }
 
-    public static function acceptResponse(): ParameterInterface
+    public static function return(): ParameterInterface
     {
         return null();
     }

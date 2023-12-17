@@ -19,7 +19,7 @@ use function Chevere\Parameter\string;
 
 class ImageResize extends Action
 {
-    public static function acceptResponse(): ParameterInterface
+    public static function return(): ParameterInterface
     {
         return string();
     }
