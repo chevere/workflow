@@ -93,7 +93,7 @@ final class Run implements RunInterface
         $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
         $new = clone $this;
         $new->workflow->jobs()->get($job);
-        $new->workflow->getJobResponseParameter($job)($response->mixed());
+        $new->workflow->getJobResponseParameter($job)->__invoke($response->mixed());
         $new->map = $new->map->withPut($job, $response);
 
         return $new;

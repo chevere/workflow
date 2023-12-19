@@ -248,14 +248,14 @@ final class JobsTest extends TestCase
         );
     }
 
-    public function testWithRunIfUndeclaredJobKey(): void
+    public function testWithRunIfUndeclaredJobResponseKey(): void
     {
         $this->expectException(OutOfBoundsException::class);
         new Jobs(
             j1: async(new TestActionNoParams()),
             j2: async(new TestActionNoParams())
                 ->withRunIf(
-                    response('j1', 'parameter')
+                    response('j1', '404')
                 ),
         );
     }

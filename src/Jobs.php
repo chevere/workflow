@@ -273,10 +273,12 @@ final class Jobs implements JobsInterface
         $accept = $action::return();
         if ($runIf->key() !== null) {
             if (! $accept instanceof ParametersAccessInterface) {
-                throw new TypeError(
+                throw new OutOfBoundsException(
                     (string) message(
-                        'Reference **%reference%** doesn\'t accept parameters',
-                        reference: strval($runIf)
+                        'Reference **%reference%** job `%job%` response doesn\'t bind to `%parameter%` parameter',
+                        reference: strval($runIf),
+                        job: $runIf->job(),
+                        parameter: $runIf->key()
                     )
                 );
             }
@@ -288,8 +290,9 @@ final class Jobs implements JobsInterface
 
         throw new TypeError(
             (string) message(
-                'Reference **%reference%** must be of type `bool`',
-                reference: strval($runIf)
+                'Reference **%reference%** must be of type `bool`, `%type%` provided',
+                reference: strval($runIf),
+                type: $accept->type()->primitive()
             )
         );
     }
