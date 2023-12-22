@@ -24,7 +24,7 @@ final class TestActionAppendString extends Action
         return string();
     }
 
-    public function run(string $string): string
+    public function main(string $string): string
     {
         return "{$string}!";
     }

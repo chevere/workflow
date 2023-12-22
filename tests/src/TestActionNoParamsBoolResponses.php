@@ -28,7 +28,7 @@ final class TestActionNoParamsBoolResponses extends Action
         );
     }
 
-    public function run(): array
+    public function main(): array
     {
         return [
             'true' => true,

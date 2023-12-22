@@ -24,7 +24,7 @@ class StoreFile extends Action
         return null();
     }
 
-    protected function run(string $file, string $path): void
+    protected function main(string $file, string $path): void
     {
     }
 }

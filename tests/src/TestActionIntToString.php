@@ -24,7 +24,7 @@ final class TestActionIntToString extends Action
         return string();
     }
 
-    protected function run(int $int): string
+    protected function main(int $int): string
     {
         return (string) $int;
     }

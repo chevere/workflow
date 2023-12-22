@@ -30,7 +30,7 @@ final class ClosureAction extends Action
         return null();
     }
 
-    protected function run(): void
+    protected function main(): void
     {
         ($this->closure)(...func_get_args());
     }

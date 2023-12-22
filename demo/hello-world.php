@@ -35,7 +35,7 @@ class GreetAction extends Action
         return string();
     }
 
-    protected function run(string $username): string
+    protected function main(string $username): string
     {
         return "Hello, {$username}!";
     }

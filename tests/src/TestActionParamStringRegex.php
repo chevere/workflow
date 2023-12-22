@@ -18,7 +18,7 @@ use Chevere\Parameter\Attributes\StringAttr;
 
 class TestActionParamStringRegex extends Action
 {
-    public function run(
+    public function main(
         #[StringAttr('/^foo|bar$/')]
         string $foo
     ): array {

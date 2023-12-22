@@ -24,7 +24,7 @@ class ImageResize extends Action
         return string();
     }
 
-    protected function run(string $file, string $fit): string
+    protected function main(string $file, string $fit): string
     {
         $pos = strrpos($file, '.');
 

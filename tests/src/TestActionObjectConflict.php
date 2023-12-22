@@ -18,7 +18,7 @@ use Chevere\Filesystem\Interfaces\PathInterface;
 
 class TestActionObjectConflict extends Action
 {
-    public function run(PathInterface $path, string $bar): array
+    public function main(PathInterface $path, string $bar): array
     {
         return [];
     }

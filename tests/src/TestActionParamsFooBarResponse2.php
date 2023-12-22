@@ -25,7 +25,7 @@ class TestActionParamsFooBarResponse2 extends Action
         return arrayp(response2: string());
     }
 
-    public function run(
+    public function main(
         string $foo,
         string $bar
     ): array {

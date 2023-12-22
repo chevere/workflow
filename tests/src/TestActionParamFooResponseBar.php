@@ -30,7 +30,7 @@ class TestActionParamFooResponseBar extends Action
         );
     }
 
-    public function run(
+    public function main(
         #[StringAttr('/^bar$/')]
         string $foo
     ): array {

@@ -25,7 +25,7 @@ final class TestActionFileWrite extends Action
         return null();
     }
 
-    public function run(FileInterface $file): void
+    public function main(FileInterface $file): void
     {
         $fp = fopen($file->path()->__toString(), 'a+');
         fwrite($fp, '^');

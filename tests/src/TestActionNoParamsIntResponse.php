@@ -27,7 +27,7 @@ final class TestActionNoParamsIntResponse extends Action
         );
     }
 
-    public function run(): array
+    public function main(): array
     {
         return [
             'id' => 123,

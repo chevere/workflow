@@ -17,7 +17,7 @@ use Chevere\Action\Action;
 
 class TestActionParam extends Action
 {
-    public function run(string $foo): array
+    public function main(string $foo): array
     {
         return [];
     }
