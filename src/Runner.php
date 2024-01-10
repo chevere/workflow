@@ -28,6 +28,7 @@ use function Amp\Parallel\Worker\enqueueCallable;
 use function Amp\Promise\all;
 use function Amp\Promise\wait;
 use function Chevere\Message\message;
+use function Chevere\Parameter\cast;
 
 final class Runner implements RunnerInterface
 {
@@ -108,7 +109,7 @@ final class Runner implements RunnerInterface
         array $arguments
     ): CastInterface {
         try {
-            return $action->__invoke(...$arguments);
+            return cast($action->__invoke(...$arguments));
         } catch (Throwable $e) { // @codeCoverageIgnoreStart
             $actionTrace = $e->getTrace()[1] ?? [];
             $fileLine = strtr('%file%:%line%', [
