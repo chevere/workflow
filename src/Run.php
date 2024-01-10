@@ -26,7 +26,6 @@ use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OverflowException;
 use Ramsey\Uuid\Uuid;
 use function Chevere\Message\message;
-use function Chevere\VarSupport\deepCopy;
 
 final class Run implements RunInterface
 {
@@ -60,12 +59,6 @@ final class Run implements RunInterface
         );
         $this->map = new Map();
         $this->skip = new Vector();
-    }
-
-    public function __clone()
-    {
-        // @phpstan-ignore-next-line
-        $this->map = deepCopy($this->map);
     }
 
     public function uuid(): string
