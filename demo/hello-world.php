@@ -19,20 +19,13 @@ use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
 
-foreach (['/../', '/../../../../'] as $path) {
-    $autoload = __DIR__ . $path . 'vendor/autoload.php';
-    if (stream_resolve_include_path($autoload)) {
-        require $autoload;
-
-        break;
-    }
-}
+require 'loader.php';
 
 class GreetAction extends Action
 {
     public static function return(): ParameterInterface
     {
-        return string();
+        return string('/^Hello, /');
     }
 
     protected function main(string $username): string
@@ -47,8 +40,9 @@ $workflow = workflow(
         username: variable('username'),
     ),
 );
-$run = run($workflow, [
-    'username' => $argv[1] ?? 'Walala',
-]);
-echo $run->getReturn('greet')->string();
+$run = run(
+    $workflow,
+    username: $argv[1] ?? 'Walala'
+);
+echo $run->getReturn('greet')->string(); // Hello, Walala!
 echo PHP_EOL;

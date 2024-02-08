@@ -92,7 +92,7 @@ function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 }
 
 /**
- * Creates a RunInterface instance for the given workflow, variables and container.
+ * Creates a RunInterface instance for the given workflow and variables .
  */
 function run(
     WorkflowInterface $workflow,

@@ -17,7 +17,6 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=coverage)](https://sonarcloud.io/dashboard?id=chevere_workflow)
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=chevere_workflow&metric=sqale_index)](https://sonarcloud.io/dashboard?id=chevere_workflow)
 [![CodeFactor](https://www.codefactor.io/repository/github/chevere/workflow/badge)](https://www.codefactor.io/repository/github/chevere/workflow)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/9e33004e8791436f9e7e39093f3fd5e4)](https://app.codacy.com/gh/chevere/workflow/dashboard)
 
 ![Workflow](.github/banner/workflow-logo.svg)
 
@@ -110,9 +109,9 @@ $workflow = workflow(
 The graph for the Workflow above shows that `thumb` and `poster` run async, just like `storeThumb` and `storePoster` but the storage jobs run after the first dependency level gets resolved.
 
 ```mermaid
-  graph TD;
-      thumb-->storeThumb;
-      poster-->storePoster;
+graph TD;
+    thumb-->storeThumb;
+    poster-->storePoster;
 ```
 
 Use function `run` to run the Workflow, variables are passed as named arguments.
@@ -140,7 +139,15 @@ Use `getReturn` to retrieve a job response as a `CastArgument` object which can 
 $thumbFile = $run->getReturn('thumb')->string();
 ```
 
-### Notes on async
+## Debugging Workflow
+
+To debug a Workflow inspect the Jobs graph. It will show the job names and their dependencies for each execution level.
+
+```php
+$workflow->jobs()->graph()->toArray();
+```
+
+## Notes on async
 
 Actions must support [serialization](https://www.php.net/manual/en/function.serialize.php) for being used on `async` jobs. For not serializable Actions as these interacting with connections (namely streams, database clients, etc.) you should use `sync` job.
 
@@ -150,7 +157,7 @@ Documentation is available at [chevere.org](https://chevere.org/packages/workflo
 
 ## License
 
-Copyright 2023 [Rodolfo Berrios A.](https://rodolfoberrios.com/)
+Copyright [Rodolfo Berrios A.](https://rodolfoberrios.com/)
 
 This software is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full license text.
 

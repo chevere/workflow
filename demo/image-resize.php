@@ -19,14 +19,7 @@ use function Chevere\Workflow\run;
 use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
 
-foreach (['/../', '/../../../../'] as $path) {
-    $autoload = __DIR__ . $path . 'vendor/autoload.php';
-    if (stream_resolve_include_path($autoload)) {
-        require $autoload;
-
-        break;
-    }
-}
+require 'loader.php';
 
 $workflow = workflow(
     thumb: async(
@@ -50,11 +43,16 @@ $workflow = workflow(
         path: variable('savePath'),
     )
 );
-$variables = [
-    'image' => '/path/to/image-to-upload.png',
-    'savePath' => '/path/to/storage/',
-];
-$run = run($workflow, $variables);
+$run = run(
+    $workflow,
+    image: '/path/to/image-to-upload.png',
+    savePath: '/path/to/storage/',
+);
+$graph = $run->workflow()->jobs()->graph()->toArray();
+echo "Workflow graph:\n";
+foreach ($graph as $level => $jobs) {
+    echo " - {$level}: [" . implode('||', $jobs) . "]\n";
+}
 echo <<<PLAIN
 thumbFile: {$run->getReturn('thumb')->string()}
 posterFile: {$run->getReturn('poster')->string()}
