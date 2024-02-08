@@ -196,7 +196,7 @@ final class RunnerTest extends TestCase
         $runner = $runner->withRunJob('job1');
         $action = $job->action();
         $this->assertSame(
-            $action->__invoke()->array(),
+            $action->__invoke(),
             $runner->run()->getReturn('job1')->array()
         );
         $arguments = [
@@ -255,7 +255,7 @@ final class RunnerTest extends TestCase
         foreach ($jobs as $name => $job) {
             $action = $job->action();
             $this->assertSame(
-                $action->__invoke(...$runArguments[$name])->array(),
+                $action->__invoke(...$runArguments[$name]),
                 $run->getReturn($name)->array()
             );
         }

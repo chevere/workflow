@@ -16,7 +16,7 @@
         "amphp/parallel": "^1.4",
         "chevere/action": "^1.0.0",
         "chevere/data-structure": "^1.0.1",
-        "chevere/parameter": "^1.0.0",
+        "chevere/parameter": "^1.0.x-dev",
         "chevere/regex": "^1.0.1",
         "ramsey/uuid": "^4.7"
     },
