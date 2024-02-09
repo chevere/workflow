@@ -11,25 +11,21 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Demo;
+namespace Chevere\Demo\Actions;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\string;
 
-class ImageResize extends Action
+class Greet extends Action
 {
     public static function return(): ParameterInterface
     {
-        return string();
+        return string('/^Hello, /');
     }
 
-    protected function main(string $file, string $fit): string
+    protected function main(string $username): string
     {
-        $pos = strrpos($file, '.');
-
-        return substr($file, 0, $pos)
-            . ".{$fit}"
-            . substr($file, $pos);
+        return "Hello, {$username}!";
     }
 }

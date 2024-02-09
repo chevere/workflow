@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Chevere\Demo;
+namespace Chevere\Demo\Actions;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParameterInterface;

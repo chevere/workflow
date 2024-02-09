@@ -21,22 +21,29 @@ require 'loader.php';
 
 /*
 Run the following command in your terminal:
-php demo/hello-world.php Rodolfo
+php demo/run-if-variable.php Rodolfo
 
 Then run:
-php demo/hello-world.php
+php demo/run-if-variable.php
 */
 
 $workflow = workflow(
     greet: sync(
         new Greet(),
         username: variable('username'),
+    )->withRunIf(
+        variable('sayHello')
     ),
 );
+$name = $argv[1] ?? '';
 $run = run(
     $workflow,
-    username: $argv[1] ?? 'World'
+    username: $name,
+    sayHello: $name !== ''
 );
+if ($run->skip()->contains('greet')) {
+    exit;
+}
 $greet = $run->getReturn('greet')->string();
 echo <<<PLAIN
 {$greet}

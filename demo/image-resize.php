@@ -11,8 +11,8 @@
 
 declare(strict_types=1);
 
-use Chevere\Demo\ImageResize;
-use Chevere\Demo\StoreFile;
+use Chevere\Demo\Actions\ImageResize;
+use Chevere\Demo\Actions\StoreFile;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\run;
@@ -20,6 +20,11 @@ use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
 
 require 'loader.php';
+
+/*
+Run the following command in your terminal:
+php demo/image-resize.php
+*/
 
 $workflow = workflow(
     thumb: async(
