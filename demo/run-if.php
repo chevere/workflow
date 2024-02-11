@@ -20,11 +20,8 @@ use function Chevere\Workflow\workflow;
 require 'loader.php';
 
 /*
-Run the following command in your terminal:
-php demo/run-if-variable.php Rodolfo
-
-Then run:
-php demo/run-if-variable.php
+php demo/run-if.php Rodolfo
+php demo/run-if.php
 */
 
 $workflow = workflow(

@@ -20,10 +20,7 @@ use function Chevere\Workflow\workflow;
 require 'loader.php';
 
 /*
-Run the following command in your terminal:
 php demo/hello-world.php Rodolfo
-
-Then run:
 php demo/hello-world.php
 */
 
