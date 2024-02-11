@@ -46,41 +46,56 @@ Workflow provides the following functions at the `Chevere\Workflow` namespace:
 * Jobs are independent from each other, define shared variables using function `variable`
 * Reference [job A response] -> [job B input] by using function `response`
 
+To produce logic with this package you have to follow these steps:
+
+1. Create a Workflow using function `workflow`
+2. Define jobs using function `sync` or `async`
+3. Run the Workflow using function `run`
+
 ## Hello, world
 
-Run live example: `php demo/hello-world.php`
+Run live example: `php demo/hello-world.php Rodolfo` - [view source](./demo/hello-world.php)
 
 The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its run [arguments](https://chevere.org/library/action.html#run).
 
 ```php
-use function Chevere\Workflow\workflow;
+use Chevere\Demo\Actions\Greet;
+use function Chevere\Workflow\run;
 use function Chevere\Workflow\sync;
+use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
 
 $workflow = workflow(
     greet: sync(
-        new GreetAction(),
+        new Greet(),
         username: variable('username'),
     ),
 );
-$variables = [
-    'username' => $argv[1] ?? 'Walala',
-];
-$run = run($workflow, $variables);
-echo $run->getReturn('greet')->string();
-// Hello, Walala!
 ```
 
-## Full example
+Use function `run` to run the Workflow, variables are passed as named arguments.
 
-Run live example: `php demo/image-resize.php`
+```php
+$run = run(
+    $workflow,
+    username: 'MyUsername'
+);
+```
+
+## Async example
+
+Run live example: `php demo/image-resize.php` - [view source](./demo/image-resize.php)
 
 For this example Workflow defines an image resize procedure in two sizes. All jobs are defined as async, but as there are dependencies between jobs (see `variable` and `response`) the system resolves a suitable run strategy.
 
 ```php
-use function Chevere\Workflow\workflow;
+use Chevere\Demo\Actions\ImageResize;
+use Chevere\Demo\Actions\StoreFile;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
+use function Chevere\Workflow\run;
 use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
 
 $workflow = workflow(
     thumb: async(
@@ -90,7 +105,7 @@ $workflow = workflow(
     ),
     poster: async(
         new ImageResize(),
-        file: variable('file'),
+        file: variable('image'),
         fit: 'poster',
     ),
     storeThumb: async(
@@ -138,6 +153,36 @@ Use `getReturn` to retrieve a job response as a `CastArgument` object which can 
 ```php
 $thumbFile = $run->getReturn('thumb')->string();
 ```
+
+## Conditional jobs
+
+Run live example: `php demo/run-if.php` - [view source](./demo/run-if.php)
+
+For this example Workflow defines a greet for a given username, but only if a `sayHello` variable is set to `true`.
+
+```php
+use Chevere\Demo\Actions\Greet;
+use function Chevere\Workflow\run;
+use function Chevere\Workflow\sync;
+use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
+
+/*
+php demo/run-if.php Rodolfo
+php demo/run-if.php
+*/
+
+$workflow = workflow(
+    greet: sync(
+        new Greet(),
+        username: variable('username'),
+    )->withRunIf(
+        variable('sayHello')
+    ),
+);
+```
+
+Method `withRunIf` accepts one or more `variable` and `response` references. All conditions must be true at the same time for the job to run.
 
 ## Debugging Workflow
 
