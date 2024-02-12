@@ -44,19 +44,19 @@ Instead of building a monolithic procedure, you define a Workflow made of jobs, 
 
 ## How to use
 
-Workflow provides the following functions at the `Chevere\Workflow` namespace. Use these functions to define a Workflow, its variables and references for named jobs.
+Workflow provides the following functions at the `Chevere\Workflow` namespace. Use these functions to define a Workflow, its variables and response references for named jobs.
 
-| Function   | Purpose                              |
-| ---------- | ------------------------------------ |
-| `workflow` | Create workflow made of named jobs   |
-| `sync`     | Create synchronous blocking job      |
-| `async`    | Create asynchronous non-blocking job |
-| `variable` | Define workflow-level variable       |
-| `response` | Define a job response reference      |
+| Function | Purpose                              |
+| -------- | ------------------------------------ |
+| workflow | Create workflow made of named jobs   |
+| sync     | Create synchronous blocking job      |
+| async    | Create asynchronous non-blocking job |
+| variable | Define workflow-level variable       |
+| response | Define a job response reference      |
 
-* A Job is defined by its [Action](https://chevere.org/library/action)
-* Jobs are independent from each other, define shared variables using function `variable`
-* Reference [job A response] -> [job B input] by using function `response`
+* A Job is defined by its [Action](https://chevere.org/packages/action)
+* Jobs are independent from each other, define shared variables using function `variable()`
+* Reference {job#A response} -> {job#B input} by using function `response()`
 
 To produce logic with this package:
 
@@ -243,7 +243,7 @@ variable('myVar');
 
 Use function `response` to declare a Job response reference to a response returned by a previous Job.
 
-🪄 When using a reponse it will **auto declare** the referenced Job as [dependency](#dependencies).
+🪄 When using a response it will **auto declare** the referenced Job as [dependency](#dependencies).
 
 ```php
 use function Chevere\Workflow\response;
@@ -348,7 +348,7 @@ $string = $run->getResponse('myJob')->string();
 
 Run live example: `php demo/hello-world.php Rodolfo` - [view source](./demo/hello-world.php)
 
-The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its run [arguments](https://chevere.org/library/action.html#run).
+The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its run [arguments](https://chevere.org/packages/action#run).
 
 ```php
 use Chevere\Demo\Actions\Greet;
