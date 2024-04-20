@@ -24,7 +24,6 @@ use Chevere\Parameter\Interfaces\CastInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OverflowException;
-use Ramsey\Uuid\Uuid;
 use function Chevere\Message\message;
 
 final class Run implements RunInterface
@@ -52,7 +51,7 @@ final class Run implements RunInterface
         private WorkflowInterface $workflow,
         mixed ...$variable
     ) {
-        $this->uuid = Uuid::uuid4()->toString();
+        $this->uuid = uuidv4();
         $this->arguments = new Arguments(
             $workflow->parameters(),
             $variable
