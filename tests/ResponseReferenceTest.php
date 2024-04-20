@@ -17,18 +17,34 @@ use Chevere\Workflow\ResponseReference;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
-final class ReferenceTest extends TestCase
+final class ResponseReferenceTest extends TestCase
 {
     public function testInvalidArgumentEmpty(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionCode(100);
         new ResponseReference('', '');
     }
 
     public function testInvalidArgumentSpaces(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionCode(100);
         new ResponseReference(' ', ' ');
+    }
+
+    public function testInvalidArgumentKeyEmpty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionCode(101);
+        new ResponseReference('job', '');
+    }
+
+    public function testInvalidArgumentKeySpaces(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionCode(101);
+        new ResponseReference('job', ' ');
     }
 
     public function testConstruct(): void
@@ -36,6 +52,17 @@ final class ReferenceTest extends TestCase
         $job = 'job';
         $key = 'key';
         $string = $job . ':' . $key;
+        $reference = new ResponseReference($job, $key);
+        $this->assertSame($string, $reference->__toString());
+        $this->assertSame($job, $reference->job());
+        $this->assertSame($key, $reference->key());
+    }
+
+    public function testConstructNoKey(): void
+    {
+        $job = 'job';
+        $key = null;
+        $string = $job;
         $reference = new ResponseReference($job, $key);
         $this->assertSame($string, $reference->__toString());
         $this->assertSame($job, $reference->job());

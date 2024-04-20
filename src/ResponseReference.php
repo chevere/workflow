@@ -20,17 +20,13 @@ final class ResponseReference implements ResponseReferenceInterface
 {
     public function __construct(
         private string $job,
-        private ?string $key,
+        private ?string $key = null,
     ) {
-        if (ctype_space($job) || empty($job)) {
-            throw new InvalidArgumentException();
-        }
+        $this->assertArgument($job, 100);
         if ($key === null) {
             return;
         }
-        if (ctype_space($key)) {
-            throw new InvalidArgumentException();
-        }
+        $this->assertArgument($key, 101);
     }
 
     public function __toString(): string
@@ -49,5 +45,12 @@ final class ResponseReference implements ResponseReferenceInterface
     public function key(): ?string
     {
         return $this->key;
+    }
+
+    private function assertArgument(string $argument, int $code): void
+    {
+        if (ctype_space($argument) || empty($argument)) {
+            throw new InvalidArgumentException(code: $code);
+        }
     }
 }
