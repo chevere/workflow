@@ -18,9 +18,7 @@ use Chevere\Parameter\Cast;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParams;
-use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Run;
-use Chevere\Workflow\Workflow;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
@@ -32,7 +30,7 @@ final class RunTest extends TestCase
 {
     public function testConstruct(): void
     {
-        $workflow = (new Workflow(new Jobs()))
+        $workflow = workflow()
             ->withAddedJob(
                 job: async(
                     new TestActionParam(),
@@ -55,7 +53,7 @@ final class RunTest extends TestCase
 
     public function testWithStepResponse(): void
     {
-        $workflow = (new Workflow(new Jobs()))
+        $workflow = workflow()
             ->withAddedJob(
                 job0: async(
                     new TestActionParam(),
@@ -80,7 +78,7 @@ final class RunTest extends TestCase
 
     public function testWithAddedNotFound(): void
     {
-        $workflow = (new Workflow(new Jobs()))
+        $workflow = workflow()
             ->withAddedJob(
                 job0: async(
                     new TestActionParam(),
@@ -100,7 +98,7 @@ final class RunTest extends TestCase
 
     public function testWithAddedMissingArguments(): void
     {
-        $workflow = (new Workflow(new Jobs()))
+        $workflow = workflow()
             ->withAddedJob(
                 job0: async(
                     new TestActionNoParams()
