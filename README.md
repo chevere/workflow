@@ -68,7 +68,7 @@ To create a Workflow define its named Jobs.
 
 A [Job](#creating-job) is created by passing an [Action](https://chevere.org/packages/action) and its *expected* run arguments which can be raw values,  [Variables](#variable) and/or [Responses](#response) to another job's output.
 
-The syntax for writing Workflow jobs require `name` for job's name, `sync/async` depending on job run method, and named `parameter` bding for each Action run parameter.
+The syntax for writing Workflow jobs require `name` for job's name, `sync/async` depending on job run method, and named `parameter` binding for each `Action::main` parameter.
 
 ```plain
 <name>: <sync|async>(
@@ -91,7 +91,7 @@ class MyAction extends Action
 }
 ```
 
-You would be able to write Workflows like this:
+You will be able to write a Workflow like this:
 
 ```php
 use function Chevere\Workflow\sync;
@@ -296,7 +296,7 @@ sync(
 );
 ```
 
-For the code above, argument `context` will be passed "as-is" (`public`) to `SomeAction`, arguments `role` and `userId` will be dynamic provided. When running the Workflow these arguments will be matched against the Parameters defined at the [run](https://chevere.org/packages/action#run) method for `SomeAction`.
+For the code above, argument `context` will be passed "as-is" (`public`) to `SomeAction`, arguments `role` and `userId` will be dynamic provided. When running the Workflow these arguments will be matched against the Parameters defined at the [main method](https://chevere.org/packages/action#mai-method) for `SomeAction`.
 
 ### Conditional running
 
@@ -346,7 +346,7 @@ $string = $run->getResponse('myJob')->string();
 
 Run live example: `php demo/hello-world.php Rodolfo` - [view source](./demo/hello-world.php)
 
-The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its run [arguments](https://chevere.org/packages/action#run).
+The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its [main method](https://chevere.org/packages/action#main-method) arguments.
 
 ```php
 use Chevere\Demo\Actions\Greet;
@@ -484,7 +484,7 @@ $workflow->jobs()->graph()->toArray();
 
 ## Documentation
 
-Documentation is available at [chevere.org](https://chevere.org/packages/workflow).
+Documentation is available at [chevere.org/packages/workflow](https://chevere.org/packages/workflow).
 
 ## License
 
