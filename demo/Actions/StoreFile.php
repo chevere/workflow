@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Demo\Actions;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Interfaces\ParameterInterface;
+use Chevere\Parameter\Interfaces\NullParameterInterface;
 use function Chevere\Parameter\null;
 
 class StoreFile extends Action
 {
-    public static function return(): ParameterInterface
+    public static function return(): NullParameterInterface
     {
         return null();
     }

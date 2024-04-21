@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Demo\Actions;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Interfaces\ParameterInterface;
+use Chevere\Parameter\Interfaces\StringParameterInterface;
 use function Chevere\Parameter\string;
 
 class Greet extends Action
 {
-    public static function return(): ParameterInterface
+    public static function return(): StringParameterInterface
     {
         return string('/^Hello, /');
     }
