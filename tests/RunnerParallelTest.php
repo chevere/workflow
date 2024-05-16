@@ -13,41 +13,45 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Filesystem\File;
-use Chevere\Filesystem\Interfaces\DirectoryInterface;
-use Chevere\Filesystem\Interfaces\FileInterface;
 use Chevere\Tests\src\TestActionFileWrite;
 use PHPUnit\Framework\TestCase;
-use function Chevere\Filesystem\directoryForPath;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
 
 final class RunnerParallelTest extends TestCase
 {
-    private DirectoryInterface $directory;
+    private string $directory;
 
-    private FileInterface $file;
+    private string $file;
 
     protected function setUp(): void
     {
-        $this->directory = directoryForPath(__DIR__ . '/_resources');
-        $this->directory->createIfNotExists();
-        $this->file = new File(
-            $this->directory->path()->getChild('output-parallel')
-        );
+        $this->directory = __DIR__ . '/_resources/';
+        if (! is_dir($this->directory)) {
+            mkdir($this->directory);
+        }
+        $this->file = $this->directory . 'output-parallel';
+        if (file_exists($this->file)) {
+            unlink($this->file);
+        }
     }
 
     protected function tearDown(): void
     {
-        $this->directory->removeIfExists();
+        if (file_exists($this->file)) {
+            unlink($this->file);
+        }
+        if (is_dir($this->directory)) {
+            rmdir($this->directory);
+        }
     }
 
     public function testParallelRunner(): void
     {
-        $this->file->removeIfExists();
-        $this->file->create();
-        $this->file->put('');
+        if (file_put_contents($this->file, '') === false) {
+            $this->markTestIncomplete('Unable to write to file');
+        }
         $workflow = workflow(
             j1: async(
                 new TestActionFileWrite(),
@@ -60,9 +64,8 @@ final class RunnerParallelTest extends TestCase
         );
         run($workflow);
         $this->assertStringEqualsFile(
-            $this->file->path()->__toString(),
+            $this->file,
             '^^$$'
         );
-        $this->file->removeIfExists();
     }
 }

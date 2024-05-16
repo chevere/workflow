@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Filesystem\Interfaces\FileInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\null;
 
@@ -25,9 +24,9 @@ final class TestActionFileWrite extends Action
         return null();
     }
 
-    public function main(FileInterface $file): void
+    public function main(string $file): void
     {
-        $fp = fopen($file->path()->__toString(), 'a+');
+        $fp = fopen($file, 'a+');
         fwrite($fp, '^');
         usleep(200000);
         fwrite($fp, '$');

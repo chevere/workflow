@@ -15,7 +15,6 @@ namespace Chevere\Tests;
 
 use ArgumentCountError;
 use BadMethodCallException;
-use Chevere\Filesystem\Interfaces\PathInterface;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
@@ -25,6 +24,7 @@ use Chevere\Workflow\Job;
 use InvalidArgumentException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\variable;
 
@@ -190,7 +190,7 @@ final class JobTest extends TestCase
         $this->expectException(BadMethodCallException::class);
         $this->expectExceptionMessage(
             'Missing argument(s) [`'
-            . PathInterface::class
+            . stdClass::class
             . ' path`] for `'
             . TestActionObjectConflict::class
             . '`'
