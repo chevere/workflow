@@ -152,14 +152,12 @@ final class Runner implements RunnerInterface
                 continue;
             }
             /** @var ResponseReferenceInterface $value */
-            if ($value->key() === null) {
-                $arguments[$name] = $this->run->getReturn($value->job())->mixed();
+            if ($value->key() !== null) {
+                $arguments[$name] = $this->run->getReturn($value->job())->array()[$value->key()];
 
                 continue;
             }
-
-            /** @var ResponseReferenceInterface $value */
-            $arguments[$name] = $this->run->getReturn($value->job())->array()[$value->key()];
+            $arguments[$name] = $this->run->getReturn($value->job())->mixed();
         }
 
         return $arguments;

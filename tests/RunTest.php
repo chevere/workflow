@@ -129,6 +129,7 @@ final class RunTest extends TestCase
         $this->assertCount(2, $immutable->skip());
         $this->assertSame(['job1', 'job2'], $immutable->skip()->toArray());
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Job job1 already skipped');
         $immutable->withSkip('job1');
     }
 
