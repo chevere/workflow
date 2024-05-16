@@ -24,7 +24,6 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OutOfBoundsException;
 use function Chevere\Action\getParameters;
-use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
 
 final class Workflow implements WorkflowInterface
@@ -94,19 +93,8 @@ final class Workflow implements WorkflowInterface
         $parameters = getParameters($action::class);
         $this->provided = $this->provided->withPut($name, $action::return());
         foreach ($job->arguments() as $argument => $value) {
-            try {
-                $parameter = $parameters->get($argument);
-                $this->putVariableReference($value, $parameter);
-            } catch (OutOfBoundsException $e) {
-                throw new $e(
-                    (string) message(
-                        'Incompatible declaration on Job **%name%** (**%arg%**) [%message%]',
-                        name: $name,
-                        arg: "argument@{$argument}",
-                        message: $e->getMessage(),
-                    )
-                );
-            }
+            $parameter = $parameters->get($argument);
+            $this->putVariableReference($value, $parameter);
         }
     }
 
