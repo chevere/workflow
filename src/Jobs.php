@@ -27,6 +27,7 @@ use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use InvalidArgumentException;
+use LogicException;
 use OutOfBoundsException;
 use OverflowException;
 use Throwable;
@@ -209,10 +210,12 @@ final class Jobs implements JobsInterface
                 $accept = $referenceJob->action()::return();
                 if ($value->key() !== null) {
                     if (! $accept instanceof ParametersAccessInterface) {
-                        throw new TypeError(
+                        throw new LogicException(
                             (string) message(
-                                "Reference **%reference%** doesn't accept parameters",
-                                reference: strval($value)
+                                "Invalid reference **%reference%** as **%job%** doesn't return an object implementing %interface% interface",
+                                job: $value->job(),
+                                reference: strval($value),
+                                interface: ParametersAccessInterface::class
                             )
                         );
                     }

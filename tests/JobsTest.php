@@ -22,6 +22,7 @@ use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Tests\src\TestActionParams;
 use Chevere\Workflow\Jobs;
 use InvalidArgumentException;
+use LogicException;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
@@ -350,6 +351,25 @@ final class JobsTest extends TestCase
             job1: async(
                 new TestActionParamFooResponseBar(),
                 foo: 'bar'
+            ),
+            job2: async(
+                new TestActionParamFooResponseBar(),
+                foo: response('job1', 'missing'),
+            )
+        );
+    }
+
+    public function testWithInvalidReference(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Invalid reference **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
+            PLAIN
+        );
+        new Jobs(
+            job1: async(
+                new TestActionNoParams(),
             ),
             job2: async(
                 new TestActionParamFooResponseBar(),
