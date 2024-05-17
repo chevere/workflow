@@ -377,7 +377,17 @@ $workflow = workflow(
 );
 ```
 
-Use function `run` to run the Workflow, variables are passed as named arguments.
+The graph for this Workflow contains only the `greet` job.
+
+```php
+$workflow->jobs()->graph()->toArray();
+// contains
+[
+    ['greet'],
+];
+```
+
+Use function `run` to run the Workflow. Pass Workflow variables using named arguments.
 
 ```php
 $run = run(
@@ -425,13 +435,21 @@ $workflow = workflow(
 );
 ```
 
-The graph for the Workflow above shows that `thumb` and `poster` run async, just like `storeThumb` and `storePoster` but the storage jobs run after the first dependency level gets resolved.
+The graph for the Workflow above shows that `thumb` and `poster` run async, just like `storeThumb` and `storePoster` but the `store*` jobs run after the first dependency level gets resolved.
 
 ```mermaid
 graph TD;
     thumb-->storeThumb;
     poster-->storePoster;
 ```
+
+```php
+$workflow->jobs()->graph()->toArray();
+// contains
+[
+    ['thumb', 'poster'],
+    ['storeThumb', 'storePoster']
+];
 
 Use function `run` to run the Workflow, variables are passed as named arguments.
 
