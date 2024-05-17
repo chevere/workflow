@@ -141,7 +141,7 @@ workflow(
 ```
 
 * `variable('payload')` and `variable('file')` declares a [Variable](#variable).
-* `response('meta', 'name')` and `reference('user')` declares a [Response](#response) reference.
+* `response('meta', 'name')` and `response('user')` declares a [Response](#response) reference.
 
 The graph for this Workflow says that all jobs run one after each other as all jobs are defined using `sync`.
 
@@ -309,7 +309,7 @@ sync(
 )
     ->withRunIf(
         variable('compressImage'),
-        reference('SomeAction', 'doImageCompress')
+        response('SomeAction', 'doImageCompress')
     )
 ```
 
