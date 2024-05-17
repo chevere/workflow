@@ -145,8 +145,14 @@ workflow(
 
 The graph for this Workflow says that all jobs run one after each other as all jobs are defined using `sync`.
 
+```mermaid
+graph TD;
+    user-->validate-->meta-->store;
+```
+
 ```php
-//$workflow->jobs()->graph()->toArray();
+$workflow->jobs()->graph()->toArray();
+// contains
 [
     ['user'],
     ['validate'],
@@ -204,10 +210,18 @@ workflow(
 * `variable('image')` declares a [Variable](#variable).
 * `response('thumb', 'filename')` and `response('medium', 'filename')` declares a [Response](#response) reference.
 
-The graph for this Workflow says that `thumb` and `medium` run non-blocking. Job `store` runs blocking (another node).
+The graph for this Workflow says that `thumb`, `medium` and `poster` run non-blocking in parallel. Job `store` runs blocking (another node).
+
+```mermaid
+graph TD;
+    thumb-->store;
+    medium-->store;
+    poster-->store;
+```
 
 ```php
-//$workflow->jobs()->graph()->toArray();
+$workflow->jobs()->graph()->toArray();
+// contains
 [
     ['thumb', 'medium', 'poster'],
     ['store']
