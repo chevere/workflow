@@ -450,6 +450,7 @@ $workflow->jobs()->graph()->toArray();
     ['thumb', 'poster'],
     ['storeThumb', 'storePoster']
 ];
+```
 
 Use function `run` to run the Workflow, variables are passed as named arguments.
 
@@ -506,12 +507,53 @@ $workflow = workflow(
 
 Method `withRunIf` accepts one or more `variable` and `response` references. All conditions must be true at the same time for the job to run.
 
-## Debugging Workflow
+## Debugging
+
+When working with this package you may want to debug the Workflow to ensure that the jobs are declared as expected.
 
 To debug a Workflow inspect the Jobs graph. It will show the job names and their dependencies for each execution level.
 
 ```php
 $workflow->jobs()->graph()->toArray();
+[
+    ['job1', 'job2'], // 1st level
+    ['job3', 'job4'], // 2nd level
+    ['job5'],         // 3rd level
+];
+```
+
+For each level jobs will run in parallel, but the next level will run after the previous level gets resolved.
+
+> [!NOTE]
+> For runtime debugging is strongly recommended to use a non-blocking debugger like [xrDebug](https://xrdebug.com).
+
+## Testing
+
+Workflow checks on variables, references and any other configuration so you don't have to worry about that.
+
+Testing the Workflow itself is not necessary as it's just a configuration. What you need to test is the Workflow definition and their Jobs (Actions).
+
+### Testing Workflow
+
+For testing a Workflow what you need to assert is the expected Workflow graph (execution order).
+
+```php
+assertSame(
+    $expectedGraph,
+    $workflow->jobs()->graph()->toArray()
+);
+```
+
+### Testing Job
+
+For testing a Job what you need to test is the Action that defines that given Job against the response from the Action `main` method.
+
+```php
+$action = new MyAction();
+assertSame(
+    $expected,
+    $action->main(...$arguments)
+);
 ```
 
 ## Documentation
