@@ -16,10 +16,11 @@
         "amphp/parallel": "^1.4",
         "chevere/action": "^1.0.0",
         "chevere/data-structure": "^1.0.1",
-        "chevere/parameter": "^1.0.1",
+        "chevere/parameter": "^1.0.x-dev",
         "chevere/regex": "^1.0.1"
     },
     "require-dev": {
+        "chevere/var-dump": "^1.0",
         "phpstan/phpstan": "^1.9",
         "phpunit/phpunit": "^9.5",
         "symplify/easy-coding-standard": "^11.1"
