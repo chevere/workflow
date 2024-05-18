@@ -425,13 +425,18 @@ $workflow = workflow(
     storeThumb: async(
         new StoreFile(),
         file: response('thumb'),
-        path: variable('savePath'),
+        dir: variable('saveDir'),
     ),
     storePoster: async(
         new StoreFile(),
         file: response('poster'),
-        path: variable('savePath'),
+        dir: variable('saveDir'),
     )
+);
+$run = run(
+    $workflow,
+    image: __DIR__ . '/src/php.jpeg',
+    saveDir: __DIR__ . '/src/output/',
 );
 ```
 
