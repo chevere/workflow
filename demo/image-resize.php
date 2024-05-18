@@ -55,7 +55,7 @@ $run = run(
 $graph = $run->workflow()->jobs()->graph()->toArray();
 echo "Workflow graph:\n";
 foreach ($graph as $level => $jobs) {
-    echo " {$level}: [" . implode('|', $jobs) . "]\n";
+    echo " {$level}: " . implode('|', $jobs) . "\n";
 }
 echo <<<PLAIN
 thumbFile: {$run->getReturn('thumb')->string()}
