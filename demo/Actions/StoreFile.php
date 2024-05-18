@@ -15,6 +15,7 @@ namespace Chevere\Demo\Actions;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\NullParameterInterface;
+use RuntimeException;
 use function Chevere\Parameter\null;
 
 class StoreFile extends Action
@@ -24,7 +25,13 @@ class StoreFile extends Action
         return null();
     }
 
-    protected function main(string $file, string $path): void
+    protected function main(string $file, string $dir): void
     {
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        if (! rename($file, $dir . basename($file))) {
+            throw new RuntimeException('Unable to store file');
+        }
     }
 }

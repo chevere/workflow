@@ -360,7 +360,7 @@ $string = $run->getResponse('myJob')->string();
 
 Run live example: `php demo/hello-world.php Rodolfo` - [view source](./demo/hello-world.php)
 
-The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its [main method](https://chevere.org/packages/action#main-method) arguments.
+The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its [main method](https://chevere.org/packages/action#main-method) arguments. The `run` function is used to execute the Workflow.
 
 ```php
 use Chevere\Demo\Actions\Greet;
@@ -375,6 +375,15 @@ $workflow = workflow(
         username: variable('username'),
     ),
 );
+$run = run(
+    $workflow,
+    username: $argv[1] ?? 'World'
+);
+$greet = $run->getReturn('greet')->string();
+echo <<<PLAIN
+{$greet}
+
+PLAIN;
 ```
 
 The graph for this Workflow contains only the `greet` job.
@@ -387,16 +396,7 @@ $workflow->jobs()->graph()->toArray();
 ];
 ```
 
-Use function `run` to run the Workflow. Pass Workflow variables using named arguments.
-
-```php
-$run = run(
-    $workflow,
-    username: 'MyUsername'
-);
-```
-
-### Async example
+### Image resize example (async)
 
 Run live example: `php demo/image-resize.php` - [view source](./demo/image-resize.php)
 

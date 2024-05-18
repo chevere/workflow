@@ -39,23 +39,23 @@ $workflow = workflow(
     storeThumb: async(
         new StoreFile(),
         file: response('thumb'),
-        path: variable('savePath'),
+        dir: variable('saveDir'),
     ),
     storePoster: async(
         new StoreFile(),
         file: response('poster'),
-        path: variable('savePath'),
+        dir: variable('saveDir'),
     )
 );
 $run = run(
     $workflow,
-    image: '/path/to/image-to-upload.png',
-    savePath: '/path/to/storage/',
+    image: __DIR__ . '/src/php.jpeg',
+    saveDir: __DIR__ . '/src/output/',
 );
 $graph = $run->workflow()->jobs()->graph()->toArray();
 echo "Workflow graph:\n";
 foreach ($graph as $level => $jobs) {
-    echo " - {$level}: [" . implode('||', $jobs) . "]\n";
+    echo " {$level}: [" . implode('|', $jobs) . "]\n";
 }
 echo <<<PLAIN
 thumbFile: {$run->getReturn('thumb')->string()}
