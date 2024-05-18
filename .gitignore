@@ -6,3 +6,4 @@
 /composer.lock
 /build
 /tests/**/temp/
+/demo/src/output/*
