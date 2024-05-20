@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Amp\Promise;
+use Amp\Parallel\Worker\Execution;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Parameter\Interfaces\CastInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -24,9 +24,8 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 use InvalidArgumentException;
 use OutOfBoundsException;
 use Throwable;
-use function Amp\Parallel\Worker\enqueueCallable;
-use function Amp\Promise\all;
-use function Amp\Promise\wait;
+use function Amp\Future\await;
+use function Amp\Parallel\Worker\submit;
 use function Chevere\Message\message;
 use function Chevere\Parameter\cast;
 
@@ -54,9 +53,12 @@ final class Runner implements RunnerInterface
 
                 continue;
             }
-            $promises = $new->getPromises($node);
+            $executions = $new->getExecutions($node);
             /** @var RunnerInterface[] $responses */
-            $responses = wait(all($promises));
+            $responses = await(array_map(
+                fn (Execution $e) => $e->getFuture(),
+                $executions,
+            ));
             foreach ($responses as $runner) {
                 $new->merge($new, $runner);
             }
@@ -178,20 +180,22 @@ final class Runner implements RunnerInterface
 
     /**
      * @param array<string> $queue
-     * @return array<Promise<mixed>>
+     * @return array<Execution<mixed, never, never>>
      */
-    private function getPromises(array $queue): array
+    private function getExecutions(array $queue): array
     {
-        $promises = [];
+        $return = [];
         foreach ($queue as $job) {
-            $promises[] = enqueueCallable(
-                'Chevere\\Workflow\\runnerForJob',
-                $this,
-                $job,
+            $return[] = submit(
+                new CallableTask(
+                    'Chevere\\Workflow\\runnerForJob',
+                    $this,
+                    $job,
+                )
             );
         }
 
-        return $promises;
+        return $return;
     }
 
     private function merge(self $self, RunnerInterface $runner): void

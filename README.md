@@ -467,19 +467,76 @@ $run = run(
     image: '/path/to/image-to-upload.png',
     savePath: '/path/to/storage/'
 );
-
-// Alternative syntax
-$variables = [
-    'image' => '/path/to/image-to-upload.png',
-    'savePath' => '/path/to/storage/'
-];
-$run = run($workflow, ...$variables);
 ```
 
 Use `getReturn` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
 
 ```php
 $thumbFile = $run->getReturn('thumb')->string();
+```
+
+### Sync vs Async
+
+Run live example: `php demo/sync-vs-async.php` - [view source](./demo/sync-vs-async.php)
+
+For this example you can compare the execution time between synchronous and asynchronous jobs. The example fetches the content of three URLs using `FetchUrl` action.
+
+```php
+use Chevere\Demo\Actions\FetchUrl;
+use function Chevere\Workflow\async;
+use function Chevere\Workflow\run;
+use function Chevere\Workflow\sync;
+use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
+
+$sync = workflow(
+    php: sync(
+        new FetchUrl(),
+        url: variable('php'),
+    ),
+    github: sync(
+        new FetchUrl(),
+        url: variable('github'),
+    ),
+    chevere: sync(
+        new FetchUrl(),
+        url: variable('chevere'),
+    ),
+);
+$async = workflow(
+    php: async(
+        new FetchUrl(),
+        url: variable('php'),
+    ),
+    github: async(
+        new FetchUrl(),
+        url: variable('github'),
+    ),
+    chevere: async(
+        new FetchUrl(),
+        url: variable('chevere'),
+    ),
+);
+$variables = [
+    'php' => 'https://www.php.net',
+    'github' => 'https://github.com/chevere/workflow',
+    'chevere' => 'https://chevere.org',
+];
+$time = microtime(true);
+$run = run($sync, ...$variables);
+$time = microtime(true) - $time;
+echo "Time sync: {$time}\n";
+$time = microtime(true);
+$run = run($async, ...$variables);
+$time = microtime(true) - $time;
+echo "Time async: {$time}\n";
+```
+
+When running sync (blocking) jobs the execution time is higher than async (non-blocking) jobs. This is because async jobs run in parallel.
+
+```plain
+Time sync: 2.5507028102875
+Time async: 1.5810508728027
 ```
 
 ### Conditional jobs
