@@ -16,6 +16,7 @@ namespace Chevere\Workflow;
 use Amp\Cancellation;
 use Amp\Parallel\Worker\Task;
 use Amp\Sync\Channel;
+use InvalidArgumentException;
 
 /**
  * @template-implements Task<mixed, never, never>
@@ -30,9 +31,12 @@ final class CallableTask implements Task
     private array $arguments;
 
     public function __construct(
-        string $callable,
+        callable $callable,
         mixed ...$arguments
     ) {
+        if (! is_string($callable)) {
+            throw new InvalidArgumentException('Argument $callable must be a callable string');
+        }
         $this->callable = $callable;
         $this->arguments = $arguments;
     }
