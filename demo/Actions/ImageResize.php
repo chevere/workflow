@@ -38,7 +38,7 @@ class ImageResize extends Action
     ): string {
         [$width, $height] = getimagesize($file);
         $targetWidth = self::FIT_WIDTH[$fit];
-        $targetHeight = $height / $width * $targetWidth;
+        $targetHeight = intval($height / $width * $targetWidth);
         $image = imagecreatetruecolor($targetWidth, $targetHeight);
         $source = imagecreatefromjpeg($file);
         imagecopyresampled($image, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
