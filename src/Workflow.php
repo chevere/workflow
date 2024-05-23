@@ -144,6 +144,7 @@ final class Workflow implements WorkflowInterface
 
             return;
         }
+
         /** @var ResponseReferenceInterface $value */
         try {
             /** @var array<string> $expected */

@@ -23,7 +23,7 @@
         "chevere/var-dump": "^1.0",
         "phpstan/phpstan": "^1.9",
         "phpunit/phpunit": "^10.5",
-        "symplify/easy-coding-standard": "^11.1"
+        "symplify/easy-coding-standard": "^12.2"
     },
     "autoload": {
         "files": [
