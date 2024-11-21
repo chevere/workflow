@@ -70,8 +70,8 @@ final class Jobs implements JobsInterface
         $this->map = new Map();
         $this->jobs = new Vector();
         $this->graph = new Graph();
-        $this->variables = new Map();
-        $this->references = new Map();
+        $this->variables = new Map(); // @phpstan-ignore-line
+        $this->references = new Map(); // @phpstan-ignore-line
         $this->putAdded(...$jobs);
     }
 

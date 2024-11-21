@@ -78,7 +78,6 @@ final class Workflow implements WorkflowInterface
     }
 
     /**
-     * @throws \TypeError
      * @throws OutOfBoundsException
      */
     public function getJobResponseParameter(string $job): ParameterInterface
