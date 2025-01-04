@@ -51,12 +51,12 @@ final class Jobs implements JobsInterface
     private GraphInterface $graph;
 
     /**
-     * @var MapInterface<ParameterInterface>
+     * @var Map<ParameterInterface>
      */
     private MapInterface $variables;
 
     /**
-     * @var MapInterface<ParameterInterface>
+     * @var Map<ParameterInterface>
      */
     private MapInterface $references;
 
