@@ -192,7 +192,7 @@ final class JobsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
             <<<STRING
-            Reference **one:bar** conflict for parameter **foo** on job **two** (Expected regex `/^bar$/`, provided `/^.*$/`)
+            Reference **one:bar** conflict for parameter **foo** on job **two** (Expected regex `/^bar$/`, provided `/^.*$/s`)
             STRING
         );
         new Jobs(
