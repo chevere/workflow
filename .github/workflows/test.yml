@@ -5,15 +5,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         php: ["8.1", "8.2", "8.3", "8.4"]
+        include:
+          - php: "8.1"
+            infection: "0.29.9"
+          - php: "8.2"
+            infection: "latest"
+          - php: "8.3"
+            infection: "latest"
+          - php: "8.4"
+            infection: "latest"
     env:
-      tools: composer, phpstan, infection
+      tools: composer, phpstan, infection:${{ matrix.infection }}
       ini-values: default_charset='UTF-8'
     name: PHP ${{ matrix.php }} test on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -31,7 +40,7 @@ jobs:
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -39,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress
       - name: Run PHPStan
-        run: phpstan analyse src -l 9
+        run: composer phpstan
       - name: Tests (PHPUnit)
         run: vendor/bin/phpunit --coverage-xml=build/logs/xml-coverage --log-junit=build/logs/junit.xml
       - name: Mutation testing (Infection)
