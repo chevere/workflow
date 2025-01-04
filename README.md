@@ -173,7 +173,7 @@ run(
 
 ### With asynchronous jobs
 
-Use function `async` to create an asynchronous job, which runs in parallel non-blocking.
+Use function `async` to create an asynchronous job, which runs non-blocking.
 
 In the example below a Workflow describes an image creation procedure for multiple image sizes.
 
@@ -488,29 +488,29 @@ use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
 
 $sync = workflow(
-    php: sync(
+    j1: sync(
         new FetchUrl(),
         url: variable('php'),
     ),
-    github: sync(
+    j2: sync(
         new FetchUrl(),
         url: variable('github'),
     ),
-    chevere: sync(
+    j3: sync(
         new FetchUrl(),
         url: variable('chevere'),
     ),
 );
 $async = workflow(
-    php: async(
+    j1: async(
         new FetchUrl(),
         url: variable('php'),
     ),
-    github: async(
+    j2: async(
         new FetchUrl(),
         url: variable('github'),
     ),
-    chevere: async(
+    j3: async(
         new FetchUrl(),
         url: variable('chevere'),
     ),
@@ -522,19 +522,20 @@ $variables = [
 ];
 $time = microtime(true);
 $run = run($sync, ...$variables);
-$time = microtime(true) - $time;
-echo "Time sync: {$time}\n";
+$time = round((microtime(true) - $time) * 1000);
+echo "Time (ms)  sync: {$time}\n";
+
 $time = microtime(true);
 $run = run($async, ...$variables);
-$time = microtime(true) - $time;
-echo "Time async: {$time}\n";
+$time = round((microtime(true) - $time) * 1000);
+echo "Time (ms) async: {$time}\n";
 ```
 
 When running sync (blocking) jobs the execution time is higher than async (non-blocking) jobs. This is because async jobs run in parallel.
 
 ```plain
-Time sync: 2.5507028102875
-Time async: 1.5810508728027
+Time (ms)  sync: 2307
+Time (ms) async: 1119
 ```
 
 ### Conditional jobs

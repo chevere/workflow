@@ -24,29 +24,29 @@ require 'loader.php';
 php demo/sync-vs-async.php
 */
 $sync = workflow(
-    php: sync(
+    job1: sync(
         new FetchUrl(),
         url: variable('php'),
     ),
-    github: sync(
+    job2: sync(
         new FetchUrl(),
         url: variable('github'),
     ),
-    chevere: sync(
+    job3: sync(
         new FetchUrl(),
         url: variable('chevere'),
     ),
 );
 $async = workflow(
-    php: async(
+    job1: async(
         new FetchUrl(),
         url: variable('php'),
     ),
-    github: async(
+    job2: async(
         new FetchUrl(),
         url: variable('github'),
     ),
-    chevere: async(
+    job3: async(
         new FetchUrl(),
         url: variable('chevere'),
     ),
@@ -56,11 +56,13 @@ $variables = [
     'github' => 'https://github.com/chevere/workflow',
     'chevere' => 'https://chevere.org',
 ];
+
 $time = microtime(true);
 $run = run($sync, ...$variables);
-$time = microtime(true) - $time;
-echo "Time sync: {$time}\n";
+$time = round((microtime(true) - $time) * 1000);
+echo "Time (ms)  sync: {$time}\n";
+
 $time = microtime(true);
 $run = run($async, ...$variables);
-$time = microtime(true) - $time;
-echo "Time async: {$time}\n";
+$time = round((microtime(true) - $time) * 1000);
+echo "Time (ms) async: {$time}\n";
