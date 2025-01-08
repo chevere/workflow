@@ -21,6 +21,7 @@ use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersAccessInterface;
+use Chevere\Parameter\Interfaces\UnionParameterInterface;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
@@ -144,7 +145,9 @@ final class Jobs implements JobsInterface
     {
         $action = $item->action();
         $return = $action::return();
-        if ($return instanceof ParametersAccessInterface) {
+        if ($return instanceof ParametersAccessInterface
+            && ! ($return instanceof UnionParameterInterface)
+        ) {
             foreach ($return->parameters() as $key => $parameter) {
                 $this->references = $this->references
                     ->withPut(
