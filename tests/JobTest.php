@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
-use BadMethodCallException;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
@@ -47,7 +46,7 @@ final class JobTest extends TestCase
 
     public function testArgumentCountErrorRequired(): void
     {
-        $this->expectException(BadMethodCallException::class);
+        $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
             'Missing argument(s) [`'
             . 'string'
@@ -189,7 +188,7 @@ final class JobTest extends TestCase
 
     public function testWithMissingArgument(): void
     {
-        $this->expectException(BadMethodCallException::class);
+        $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
             'Missing argument(s) [`'
             . stdClass::class
