@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
-use BadMethodCallException;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
@@ -36,7 +35,9 @@ final class JobTest extends TestCase
         $this->expectExceptionMessage(
             '`'
             . TestActionNoParams::class
-            . '::run` requires 0 argument(s)'
+            . '::'
+            . TestActionNoParams::mainMethod()
+            . '` requires 0 argument(s)'
         );
         $action = new TestActionNoParams();
         new Job(
@@ -45,13 +46,31 @@ final class JobTest extends TestCase
         );
     }
 
-    public function testArgumentCountErrorRequired(): void
+    public function testArgumentCountErrorMissing(): void
     {
         $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
             '`'
             . TestActionParam::class
-            . '::run` requires 1 argument(s) `[foo]`'
+            . '::'
+            . TestActionParam::mainMethod()
+            . '` requires 1 argument(s) `[string $foo]'
+        );
+        $action = new TestActionParam();
+        new Job(
+            $action,
+            foo: 'extra',
+            pene: 'extra'
+        );
+    }
+
+    public function testArgumentCountErrorRequired(): void
+    {
+        $this->expectException(ArgumentCountError::class);
+        $this->expectExceptionMessage(
+            'Missing argument(s) [`string $foo`] for `'
+            . TestActionParam::class
+            . '`'
         );
         $action = new TestActionParam();
         new Job($action);
@@ -187,11 +206,11 @@ final class JobTest extends TestCase
 
     public function testWithMissingArgument(): void
     {
-        $this->expectException(BadMethodCallException::class);
+        $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
             'Missing argument(s) [`'
             . stdClass::class
-            . ' path`] for `'
+            . ' $path`] for `'
             . TestActionObjectConflict::class
             . '`'
         );

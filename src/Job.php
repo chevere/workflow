@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use ArgumentCountError;
-use BadMethodCallException;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
@@ -135,26 +134,13 @@ final class Job implements JobInterface
     {
         $this->assertArgumentsCount($argument);
         $values = [];
-        $missing = [];
         foreach ($this->parameters as $name => $parameter) {
             $value = $argument[$name] ?? null;
             if ($value !== null) {
                 $values[$name] = $value;
                 $this->inferDependencies($value);
                 $this->assertParameter($name, $parameter, $value);
-            } elseif ($this->parameters->requiredKeys()->contains($name)) {
-                $missing[] = $parameter->type()->typeHinting()
-                    . " {$name}";
             }
-        }
-        if ($missing !== []) {
-            throw new BadMethodCallException(
-                (string) message(
-                    'Missing argument(s) [`%arguments%`] for `%action%`',
-                    arguments: implode(', ', $missing),
-                    action: $this->action::class
-                )
-            );
         }
         $this->arguments = $values;
     }
@@ -165,22 +151,48 @@ final class Job implements JobInterface
     private function assertArgumentsCount(array $arguments): void
     {
         $countProvided = count($arguments);
-        $countRequired = count($this->parameters->requiredKeys());
-        if ($countRequired > $countProvided
-            || $countRequired !== $countProvided
+        $requiredKeys = $this->parameters->requiredKeys()->toArray();
+        $intersectKeys = array_intersect(array_keys($arguments), $requiredKeys);
+        $countIntersect = count($intersectKeys);
+        $missing = array_map(
+            fn (string $item) => $this->formatAsVariable($item),
+            array_diff($requiredKeys, $intersectKeys)
+        );
+        if ($missing !== []) {
+            throw new ArgumentCountError(
+                (string) message(
+                    'Missing argument(s) [`%arguments%`] for `%action%`',
+                    arguments: implode(', ', $missing),
+                    action: $this->action::class
+                )
+            );
+        }
+        if (count($requiredKeys) > $countProvided
+            || count($requiredKeys) !== $countIntersect
+            || $countProvided > count($this->parameters)
         ) {
-            $parameters = implode(', ', $this->parameters->requiredKeys()->toArray());
+            $requiredVars = array_map(
+                fn (string $item) => $this->formatAsVariable($item),
+                $requiredKeys
+            );
+            $parameters = implode(', ', $requiredVars);
             $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
             throw new ArgumentCountError(
                 (string) message(
-                    '`%symbol%` requires %countRequired% argument(s) `%parameters%`',
-                    symbol: $this->action::class . '::run',
-                    countRequired: strval($countRequired),
-                    parameters: $parameters
+                    '`%symbol%` requires %countRequired% argument(s)%parameters%',
+                    symbol: $this->action::class . '::' . $this->action::mainMethod(),
+                    countRequired: strval(count($requiredKeys)),
+                    parameters: $parameters === '' ? '' : " `{$parameters}`"
                 )
             );
         }
+    }
+
+    private function formatAsVariable(string $name): string
+    {
+        return $this->parameters->get($name)->type()->typeHinting()
+            . " \${$name}";
     }
 
     private function assertParameter(string $name, ParameterInterface $parameter, mixed $value): void
