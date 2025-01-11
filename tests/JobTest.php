@@ -47,11 +47,13 @@ final class JobTest extends TestCase
 
     public function testArgumentCountErrorRequired(): void
     {
-        $this->expectException(ArgumentCountError::class);
+        $this->expectException(BadMethodCallException::class);
         $this->expectExceptionMessage(
-            '`'
+            'Missing argument(s) [`'
+            . 'string'
+            . ' foo`] for `'
             . TestActionParam::class
-            . '::run` requires 1 argument(s) `[foo]`'
+            . '`'
         );
         $action = new TestActionParam();
         new Job($action);

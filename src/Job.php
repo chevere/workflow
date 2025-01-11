@@ -165,11 +165,38 @@ final class Job implements JobInterface
     private function assertArgumentsCount(array $arguments): void
     {
         $countProvided = count($arguments);
-        $countRequired = count($this->parameters->requiredKeys());
+        $requiredKeys = array_values($this->parameters->requiredKeys()->toArray());
+        $intersectKeys = array_intersect(array_keys($arguments), $requiredKeys);
+        $countRequired = count($requiredKeys);
+        $countIntersect = count($intersectKeys);
+        $countTotal = count($this->parameters->keys());
+
+        $missing = array_filter(
+            array_diff($requiredKeys, $intersectKeys),
+            fn(string $key) => $this->parameters->requiredKeys()->contains($key)
+        );
+
+        array_walk($missing, function (&$item) {
+            $parameter = $this->parameters->get($item);
+            $item = $parameter->type()->typeHinting()
+                . " {$item}";
+        });
+
+        if ($missing !== []) {
+            throw new BadMethodCallException(
+                (string) message(
+                    'Missing argument(s) [`%arguments%`] for `%action%`',
+                    arguments: implode(', ', $missing),
+                    action: $this->action::class
+                )
+            );
+        }
+
         if ($countRequired > $countProvided
-            || $countRequired !== $countProvided
+            || $countRequired !== $countIntersect
+            || $countProvided > $countTotal
         ) {
-            $parameters = implode(', ', $this->parameters->requiredKeys()->toArray());
+            $parameters = implode(', ', $requiredKeys);
             $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
             throw new ArgumentCountError(
