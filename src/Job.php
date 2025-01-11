@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use ArgumentCountError;
-use BadMethodCallException;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
@@ -148,7 +147,7 @@ final class Job implements JobInterface
             }
         }
         if ($missing !== []) {
-            throw new BadMethodCallException(
+            throw new ArgumentCountError(
                 (string) message(
                     'Missing argument(s) [`%arguments%`] for `%action%`',
                     arguments: implode(', ', $missing),
@@ -173,7 +172,7 @@ final class Job implements JobInterface
 
         $missing = array_filter(
             array_diff($requiredKeys, $intersectKeys),
-            fn(string $key) => $this->parameters->requiredKeys()->contains($key)
+            fn (string $key) => $this->parameters->requiredKeys()->contains($key)
         );
 
         array_walk($missing, function (&$item) {
@@ -183,7 +182,7 @@ final class Job implements JobInterface
         });
 
         if ($missing !== []) {
-            throw new BadMethodCallException(
+            throw new ArgumentCountError(
                 (string) message(
                     'Missing argument(s) [`%arguments%`] for `%action%`',
                     arguments: implode(', ', $missing),
