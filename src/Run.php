@@ -108,6 +108,11 @@ final class Run implements RunInterface
         return $this->map->get($job);
     }
 
+    public function getReturn(string $job): CastInterface
+    {
+        return $this->response($job);
+    }
+
     private function assertNoSkipOverflow(string $job, MessageInterface $message): void
     {
         if ($this->skip->contains($job)) {
