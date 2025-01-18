@@ -346,10 +346,19 @@ use function Chevere\Workflow\run;
 $run = run($workflow, ...$variables);
 ```
 
-Use `getResponse` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
+Use `response` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
 
 ```php
-$string = $run->getResponse('myJob')->string();
+$thumbFile = $run->response('thumb')->string();
+```
+
+If the response is of type `array` you can wrap using `cast` as needed.
+
+```php
+use function Chevere\Parameter\cast;
+
+$id = $run->response('user')->array()['id']; // ? type
+$id = cast($id)->int(); // int type
 ```
 
 ## Demo
