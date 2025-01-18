@@ -34,7 +34,7 @@ $run = run(
     $workflow,
     username: $argv[1] ?? 'World'
 );
-$greet = $run->getReturn('greet')->string();
+$greet = $run->response('greet')->string();
 echo <<<PLAIN
 {$greet}
 

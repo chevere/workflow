@@ -103,7 +103,7 @@ final class Run implements RunInterface
         return $new;
     }
 
-    public function getReturn(string $job): CastInterface
+    public function response(string $job): CastInterface
     {
         return $this->map->get($job);
     }

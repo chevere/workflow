@@ -41,7 +41,7 @@ $run = run(
 if ($run->skip()->contains('greet')) {
     exit;
 }
-$greet = $run->getReturn('greet')->string();
+$greet = $run->response('greet')->string();
 echo <<<PLAIN
 {$greet}
 

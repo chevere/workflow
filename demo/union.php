@@ -28,5 +28,5 @@ $workflow = workflow(
     ),
 );
 $run = run($workflow);
-$unionResponse = $run->getReturn('job1')->int();
+$unionResponse = $run->response('job1')->int();
 var_dump($unionResponse);

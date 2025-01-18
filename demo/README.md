@@ -23,7 +23,7 @@ $run = run(
     $workflow,
     username: $argv[1] ?? 'World'
 );
-$greet = $run->getReturn('greet')->string();
+$greet = $run->response('greet')->string();
 echo <<<PLAIN
 {$greet}
 
@@ -113,10 +113,19 @@ $run = run(
 );
 ```
 
-Use `getReturn` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
+Use `response` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
 
 ```php
-$thumbFile = $run->getReturn('thumb')->string();
+$thumbFile = $run->response('thumb')->string();
+```
+
+If the response is of type `array` you can wrap using `cast` as needed.
+
+```php
+use function Chevere\Parameter\cast;
+
+$id = $run->response('user')->array()['id']; // ? type
+$id = cast($id)->int(); // int type
 ```
 
 ## Sync vs Async

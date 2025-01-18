@@ -58,7 +58,7 @@ foreach ($graph as $level => $jobs) {
     echo " {$level}: " . implode('|', $jobs) . "\n";
 }
 echo <<<PLAIN
-thumbFile: {$run->getReturn('thumb')->string()}
-posterFile: {$run->getReturn('poster')->string()}
+thumbFile: {$run->response('thumb')->string()}
+posterFile: {$run->response('poster')->string()}
 
 PLAIN;
