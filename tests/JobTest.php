@@ -92,7 +92,7 @@ final class JobTest extends TestCase
         $success = [
             'foo' => 'foo',
         ];
-        $job = new Job($action, false, ...$success);
+        $job = new Job($action, ...$success);
         $this->assertSame($action, $job->action());
         $this->assertSame($success, $job->arguments());
         $success = [
@@ -105,7 +105,7 @@ final class JobTest extends TestCase
             'foo' => '1',
         ];
         $this->expectException(InvalidArgumentException::class);
-        new Job($action, false, ...$fail);
+        new Job($action, ...$fail);
     }
 
     public function testVariableArguments(): void
@@ -114,7 +114,7 @@ final class JobTest extends TestCase
         $success = [
             'foo' => variable('foo'),
         ];
-        $job = new Job($action, false, ...$success);
+        $job = new Job($action, ...$success);
         $this->assertSame($action, $job->action());
         $this->assertSame($success, $job->arguments());
     }
@@ -125,7 +125,7 @@ final class JobTest extends TestCase
         $success = [
             'foo' => response('job1', 'output'),
         ];
-        $job = new Job($action, true, ...$success);
+        $job = (new Job($action, ...$success))->withIsSync(true);
         $this->assertSame($action, $job->action());
         $this->assertSame($success, $job->arguments());
         $this->assertContains('job1', $job->dependencies());

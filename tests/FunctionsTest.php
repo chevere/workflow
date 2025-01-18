@@ -34,7 +34,7 @@ final class FunctionsTest extends TestCase
     {
         $action = new TestActionNoParamsIntResponse();
         $job = sync($action);
-        $alt = new Job($action, true);
+        $alt = (new Job($action))->withIsSync(true);
         $this->assertEquals($alt, $job);
     }
 
@@ -42,7 +42,7 @@ final class FunctionsTest extends TestCase
     {
         $action = new TestActionNoParamsIntResponse();
         $job = async($action);
-        $alt = new Job($action, false);
+        $alt = new Job($action);
         $this->assertEquals($alt, $job);
     }
 }

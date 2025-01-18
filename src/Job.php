@@ -47,14 +47,19 @@ final class Job implements JobInterface
      */
     private VectorInterface $runIf;
 
+    private bool $isSync;
+
+    /**
+     * Creates a Job (async by default).
+     */
     public function __construct(
-        private ActionInterface $action,
-        private bool $isSync = false,
+        private ActionInterface $_action,
         mixed ...$argument
     ) {
+        $this->isSync = false;
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
-        $this->parameters = getParameters($action::class);
+        $this->parameters = getParameters($_action::class);
         $this->arguments = [];
         $this->setArguments(...$argument);
     }
@@ -107,7 +112,7 @@ final class Job implements JobInterface
 
     public function action(): ActionInterface
     {
-        return $this->action;
+        return $this->_action;
     }
 
     public function arguments(): array
@@ -163,7 +168,7 @@ final class Job implements JobInterface
                 (string) message(
                     'Missing argument(s) [`%arguments%`] for `%action%`',
                     arguments: implode(', ', $missing),
-                    action: $this->action::class
+                    action: $this->_action::class
                 )
             );
         }
@@ -181,7 +186,7 @@ final class Job implements JobInterface
             throw new ArgumentCountError(
                 (string) message(
                     '`%symbol%` requires %countRequired% argument(s)%parameters%',
-                    symbol: $this->action::class . '::' . $this->action::mainMethod(),
+                    symbol: $this->_action::class . '::' . $this->_action::mainMethod(),
                     countRequired: strval(count($requiredKeys)),
                     parameters: $parameters === '' ? '' : " `{$parameters}`"
                 )
