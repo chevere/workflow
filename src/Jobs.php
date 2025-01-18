@@ -242,6 +242,17 @@ final class Jobs implements JobsInterface
         }
         /** @var ParameterInterface $stored */
         $stored = $map->get($identifier);
+        if ($parameter instanceof UnionParameterInterface) {
+            foreach ($parameter->parameters() as $tryParameter) {
+                try {
+                    $stored->assertCompatible($tryParameter);
+                    $parameter = $tryParameter;
+
+                    break;
+                } catch (TypeError $e) {
+                }
+            }
+        }
         if ($stored::class !== $parameter::class) {
             throw new TypeError(
                 (string) message(
