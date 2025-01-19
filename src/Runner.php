@@ -21,7 +21,6 @@ use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
-use InvalidArgumentException;
 use OutOfBoundsException;
 use Throwable;
 use function Amp\Future\await;
@@ -111,7 +110,9 @@ final class Runner implements RunnerInterface
         array $arguments
     ): CastInterface {
         try {
-            return cast($action->__invoke(...$arguments));
+            $toCast = $action->__invoke(...$arguments);
+
+            return cast($toCast);
         } catch (Throwable $e) { // @codeCoverageIgnoreStart
             $actionTrace = $e->getTrace()[1] ?? [];
             $fileLine = strtr('%file%:%line%', [
@@ -119,8 +120,8 @@ final class Runner implements RunnerInterface
                 '%line%' => $actionTrace['line'] ?? '0',
             ]);
 
-            throw new InvalidArgumentException(
-                previous: $e,
+            throw new $e(
+                code: $e->getCode(),
                 message: (string) message(
                     '%message% at `%fileLine%` for action `%action%`',
                     message: $e->getMessage(),
