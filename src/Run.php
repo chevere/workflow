@@ -25,6 +25,7 @@ use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OverflowException;
 use function Chevere\Message\message;
+use function Chevere\Parameter\cast;
 
 final class Run implements RunInterface
 {
@@ -103,9 +104,9 @@ final class Run implements RunInterface
         return $new;
     }
 
-    public function response(string $job): CastInterface
+    public function response(string $job, string|int ...$key): CastInterface
     {
-        return $this->map->get($job);
+        return cast($this->map->get($job)->mixed(), ...$key);
     }
 
     public function getReturn(string $job): CastInterface

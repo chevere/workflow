@@ -56,9 +56,9 @@ interface RunInterface extends StringMappedInterface
     public function withSkip(string ...$job): self;
 
     /**
-     * Provides access to the ResponseInterface instance for the given `$job`.
+     * Provides access to the CastInterface instance for the given `$job`.
      */
-    public function response(string $job): CastInterface;
+    public function response(string $job, string|int ...$key): CastInterface;
 
     /**
      * @deprecated Use `response` instead.
