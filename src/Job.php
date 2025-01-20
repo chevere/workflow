@@ -24,6 +24,7 @@ use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use InvalidArgumentException;
 use OverflowException;
+use ReflectionParameter;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
@@ -49,6 +50,8 @@ final class Job implements JobInterface
 
     private bool $isSync;
 
+    private bool $hasVariadic;
+
     /**
      * Creates a Job (async by default).
      */
@@ -60,6 +63,16 @@ final class Job implements JobInterface
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
         $this->parameters = getParameters($_action::class);
+        $this->hasVariadic = false;
+        if (count($this->parameters) > 0) {
+            $lastKey = array_key_last($this->parameters->keys());
+            $lastParameter = $this->parameters->keys()[$lastKey];
+            $reflection = new ReflectionParameter(
+                [$_action::class, $_action::mainMethod()],
+                $lastParameter
+            );
+            $this->hasVariadic = $reflection->isVariadic();
+        }
         $this->arguments = [];
         $this->setArguments(...$argument);
     }
@@ -137,7 +150,9 @@ final class Job implements JobInterface
 
     private function setArguments(mixed ...$argument): void
     {
-        $this->assertArgumentsCount($argument);
+        if (! $this->hasVariadic) {
+            $this->assertArgumentsCount($argument);
+        }
         $values = [];
         foreach ($this->parameters as $name => $parameter) {
             $value = $argument[$name] ?? null;
