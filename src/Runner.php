@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Amp\Parallel\Worker\Execution;
-use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Parameter\Interfaces\CastInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
@@ -22,7 +21,6 @@ use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use OutOfBoundsException;
-use ReflectionMethod;
 use Throwable;
 use function Amp\Future\await;
 use function Amp\Parallel\Worker\submit;
@@ -91,9 +89,10 @@ final class Runner implements RunnerInterface
         $action = $job->action();
 
         try {
-            $response = $new->getActionResponse($action, $arguments);
+            $response = cast($action(...$arguments));
         } catch (Throwable $e) {
             throw new $e(
+                previous: $e,
                 code: $e->getCode(),
                 message: (string) message(
                     '%message% at job `%name%` declared in %fileLine%',
@@ -114,35 +113,6 @@ final class Runner implements RunnerInterface
         return $runIf instanceof VariableInterface
                 ? $this->run->arguments()->required($runIf->__toString())->bool()
                 : $this->run->response($runIf->job())->array()[$runIf->key()];
-    }
-
-    /**
-     * @phpstan-ignore-next-line
-     */
-    private function getActionResponse(
-        ActionInterface $action,
-        array $arguments
-    ): CastInterface {
-        try {
-            return cast($action(...$arguments));
-        } catch (Throwable $e) { // @codeCoverageIgnoreStart
-            $reflector = new ReflectionMethod($action, $action::mainMethod());
-            $fileLine = strtr('%file%:%line%', [
-                '%file%' => $reflector->getFileName(),
-                '%line%' => $e->getLine(),
-            ]);
-
-            throw new $e(
-                code: $e->getCode(),
-                message: (string) message(
-                    '%message% for `%action%`',
-                    message: $e->getMessage(),
-                    fileLine: $fileLine,
-                    action: $action::class,
-                )
-            );
-        }
-        // @codeCoverageIgnoreEnd
     }
 
     /**
