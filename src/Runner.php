@@ -96,10 +96,10 @@ final class Runner implements RunnerInterface
             throw new $e(
                 code: $e->getCode(),
                 message: (string) message(
-                    'Workflow error %message% for Job `%job%` in %fileLine%',
+                    '%message% at job `%name%` declared in %fileLine%',
+                    name: $name,
                     message: $e->getMessage(),
                     fileLine: $job->caller(),
-                    action: $action::class,
                 )
             );
         }
@@ -135,7 +135,7 @@ final class Runner implements RunnerInterface
             throw new $e(
                 code: $e->getCode(),
                 message: (string) message(
-                    '%message% for `%action%` in %fileLine%',
+                    '%message% for `%action%`',
                     message: $e->getMessage(),
                     fileLine: $fileLine,
                     action: $action::class,
