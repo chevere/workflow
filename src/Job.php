@@ -52,6 +52,10 @@ final class Job implements JobInterface
 
     private bool $hasVariadic;
 
+    private string $caller;
+
+    private int $shift;
+
     /**
      * Creates a Job (async by default).
      */
@@ -75,6 +79,27 @@ final class Job implements JobInterface
         }
         $this->arguments = [];
         $this->setArguments(...$argument);
+        $this->shift = 0;
+        $this->setCaller();
+    }
+
+    public function withShift(int $shift): JobInterface
+    {
+        $new = clone $this;
+        $new->shift = $shift;
+        $new->setCaller();
+
+        return $new;
+    }
+
+    public function shift(): int
+    {
+        return $this->shift;
+    }
+
+    public function caller(): string
+    {
+        return $this->caller;
     }
 
     public function withArguments(mixed ...$argument): JobInterface
@@ -146,6 +171,20 @@ final class Job implements JobInterface
     public function isSync(): bool
     {
         return $this->isSync;
+    }
+
+    /**
+     * @infection-ignore-all
+     */
+    private function setCaller(): void
+    {
+        $debugBacktrace = debug_backtrace();
+        for ($i = 0; $i <= $this->shift; $i++) {
+            array_shift($debugBacktrace);
+        }
+        $file = $debugBacktrace[0]['file'] ?? 'unknown';
+        $line = $debugBacktrace[0]['line'] ?? '0';
+        $this->caller = "{$file}:{$line}";
     }
 
     private function setArguments(mixed ...$argument): void

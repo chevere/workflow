@@ -22,6 +22,7 @@ use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use OutOfBoundsException;
+use ReflectionMethod;
 use Throwable;
 use function Amp\Future\await;
 use function Amp\Parallel\Worker\submit;
@@ -88,7 +89,20 @@ final class Runner implements RunnerInterface
         }
         $arguments = $new->getJobArguments($job);
         $action = $job->action();
-        $response = $new->getActionResponse($action, $arguments);
+
+        try {
+            $response = $new->getActionResponse($action, $arguments);
+        } catch (Throwable $e) {
+            throw new $e(
+                code: $e->getCode(),
+                message: (string) message(
+                    'Workflow error %message% for Job `%job%` in %fileLine%',
+                    message: $e->getMessage(),
+                    fileLine: $job->caller(),
+                    action: $action::class,
+                )
+            );
+        }
         $new->addJobResponse($name, $response);
 
         return $new;
@@ -110,20 +124,18 @@ final class Runner implements RunnerInterface
         array $arguments
     ): CastInterface {
         try {
-            $toCast = $action->__invoke(...$arguments);
-
-            return cast($toCast);
+            return cast($action(...$arguments));
         } catch (Throwable $e) { // @codeCoverageIgnoreStart
-            $actionTrace = $e->getTrace()[1] ?? [];
+            $reflector = new ReflectionMethod($action, $action::mainMethod());
             $fileLine = strtr('%file%:%line%', [
-                '%file%' => $actionTrace['file'] ?? 'anon',
-                '%line%' => $actionTrace['line'] ?? '0',
+                '%file%' => $reflector->getFileName(),
+                '%line%' => $e->getLine(),
             ]);
 
             throw new $e(
                 code: $e->getCode(),
                 message: (string) message(
-                    '%message% at `%fileLine%` for action `%action%`',
+                    '%message% for `%action%` in %fileLine%',
                     message: $e->getMessage(),
                     fileLine: $fileLine,
                     action: $action::class,

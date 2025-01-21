@@ -41,7 +41,9 @@ function workflow(JobInterface ...$job): WorkflowInterface
  */
 function sync(ActionInterface $_action, mixed ...$argument): JobInterface
 {
-    return (new Job($_action, ...$argument))->withIsSync(true);
+    return (new Job($_action, ...$argument))
+        ->withShift(1)
+        ->withIsSync(true);
 }
 
 /**
@@ -51,7 +53,7 @@ function sync(ActionInterface $_action, mixed ...$argument): JobInterface
  */
 function async(ActionInterface $_action, mixed ...$argument): JobInterface
 {
-    return new Job($_action, ...$argument);
+    return (new Job($_action, ...$argument))->withShift(1);
 }
 
 /**

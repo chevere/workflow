@@ -34,15 +34,21 @@ final class FunctionsTest extends TestCase
     {
         $action = new TestActionNoParamsIntResponse();
         $job = sync($action);
-        $alt = (new Job($action))->withIsSync(true);
-        $this->assertEquals($alt, $job);
+        $fileLine = __FILE__ . ':' . (__LINE__ - 1);
+        $this->assertSame($fileLine, $job->caller());
+        $alt = (new Job($action))
+            ->withShift(1)
+            ->withIsSync(true);
+        $this->assertSame($alt->shift(), $job->shift());
     }
 
     public function testFunctionAsync(): void
     {
         $action = new TestActionNoParamsIntResponse();
         $job = async($action);
-        $alt = new Job($action);
-        $this->assertEquals($alt, $job);
+        $fileLine = __FILE__ . ':' . (__LINE__ - 1);
+        $this->assertSame($fileLine, $job->caller());
+        $alt = (new Job($action))->withShift(1);
+        $this->assertSame($alt->shift(), $job->shift());
     }
 }

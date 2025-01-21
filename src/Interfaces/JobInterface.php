@@ -55,4 +55,8 @@ interface JobInterface
      * @return VectorInterface<ResponseReferenceInterface|VariableInterface>
      */
     public function runIf(): VectorInterface;
+
+    public function caller(): string;
+
+    public function shift(): int;
 }
