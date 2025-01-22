@@ -92,7 +92,7 @@ final class Runner implements RunnerInterface
             $response = cast($action(...$arguments));
         } catch (Throwable $e) {
             throw new $e(
-                previous: $e,
+                previous: $e->getPrevious(),
                 code: $e->getCode(),
                 message: (string) message(
                     '%message% at job `%name%` declared in %fileLine%',

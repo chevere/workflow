@@ -19,6 +19,7 @@ use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
+use Chevere\Parameter\Interfaces\MixedParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersAccessInterface;
 use Chevere\Parameter\Interfaces\UnionParameterInterface;
@@ -168,7 +169,24 @@ final class Jobs implements JobsInterface
     {
         foreach ($item->arguments() as $argument => $value) {
             $action = $item->action();
-            $parameter = getParameters($action::class)->get($argument);
+            $parameters = getParameters($action::class);
+            if ($parameters->has($argument)) {
+                $parameter = $parameters->get($argument);
+            } elseif ($parameters->isVariadic()) {
+                $lastKey = array_key_last($parameters->keys());
+                $lastName = $parameters->keys()[$lastKey];
+                $parameter = $parameters->get($lastName);
+            }
+            if (! isset($parameter)) {
+                throw new LogicException(
+                    (string) message(
+                        'Parameter **%parameter%** not found at job **%job%**',
+                        parameter: $argument,
+                        job: $job,
+                    )
+                );
+            }
+
             $collection = match (true) {
                 $value instanceof VariableInterface => 'variables',
                 $value instanceof ResponseReferenceInterface => 'references',
@@ -252,6 +270,9 @@ final class Jobs implements JobsInterface
                 } catch (TypeError $e) {
                 }
             }
+        }
+        if ($parameter instanceof MixedParameterInterface) {
+            return;
         }
         if ($stored::class !== $parameter::class) {
             throw new TypeError(

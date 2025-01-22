@@ -24,7 +24,6 @@ use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use InvalidArgumentException;
 use OverflowException;
-use ReflectionParameter;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
@@ -50,8 +49,6 @@ final class Job implements JobInterface
 
     private bool $isSync;
 
-    private bool $hasVariadic;
-
     private string $caller;
 
     private int $shift;
@@ -67,16 +64,6 @@ final class Job implements JobInterface
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
         $this->parameters = getParameters($_action::class);
-        $this->hasVariadic = false;
-        if (count($this->parameters) > 0) {
-            $lastKey = array_key_last($this->parameters->keys());
-            $lastParameter = $this->parameters->keys()[$lastKey];
-            $reflection = new ReflectionParameter(
-                [$_action::class, $_action::mainMethod()],
-                $lastParameter
-            );
-            $this->hasVariadic = $reflection->isVariadic();
-        }
         $this->arguments = [];
         $this->setArguments(...$argument);
         $this->shift = 0;
@@ -189,13 +176,30 @@ final class Job implements JobInterface
 
     private function setArguments(mixed ...$argument): void
     {
-        if (! $this->hasVariadic) {
+        if (! $this->parameters->isVariadic()) {
             $this->assertArgumentsCount($argument);
         }
+        $lastKey = array_key_last($this->parameters->keys());
+        $lastName = $this->parameters->keys()[$lastKey] ?? null;
         $values = [];
         foreach ($this->parameters as $name => $parameter) {
-            $value = $argument[$name] ?? null;
-            if ($value !== null) {
+            if ($name === $lastName && $this->parameters->isVariadic()) {
+                $variadicKeys = array_diff_key(
+                    $argument,
+                    array_flip($this->parameters->keys())
+                );
+                foreach ($variadicKeys as $key => $value) {
+                    $key = strval($key);
+                    $values[$key] = $value;
+                    $this->inferDependencies($value);
+                    $this->assertParameter($name, $parameter, $value);
+                }
+
+                break;
+            }
+
+            if (array_key_exists($name, $argument)) {
+                $value = $argument[$name];
                 $values[$name] = $value;
                 $this->inferDependencies($value);
                 $this->assertParameter($name, $parameter, $value);

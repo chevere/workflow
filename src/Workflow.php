@@ -90,9 +90,14 @@ final class Workflow implements WorkflowInterface
     {
         $action = $job->action();
         $parameters = getParameters($action::class);
+
         $this->provided = $this->provided->withPut($name, $action::return());
-        foreach ($job->arguments() as $argument => $value) {
-            $parameter = $parameters->get($argument);
+        foreach ($job->arguments() as $name => $value) {
+            if ($parameters->isVariadic()) {
+                $lastKey = array_key_last($parameters->keys());
+                $name = $parameters->keys()[$lastKey];
+            }
+            $parameter = $parameters->get($name);
             $this->putVariableReference($value, $parameter);
         }
     }
