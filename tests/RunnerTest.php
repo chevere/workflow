@@ -18,10 +18,13 @@ use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamsFooBarResponse2;
+use Chevere\Tests\src\TestActionThrows;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Run;
 use Chevere\Workflow\Runner;
+use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
+use Exception;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
@@ -33,6 +36,8 @@ use function Chevere\Workflow\workflow;
 
 final class RunnerTest extends TestCase
 {
+    use ExpectWorkflowExceptionTrait;
+
     public function testRunnerForArguments(): void
     {
         $jobsRunArguments = [
@@ -245,6 +250,23 @@ final class RunnerTest extends TestCase
         $this->assertSame($jobsKeysSkip, $runner->run()->skip()->toArray());
         $run = run($workflow);
         $this->assertSame($jobsKeysSkip, $runner->run()->skip()->toArray());
+    }
+
+    public function testActionThrows(): void
+    {
+        $this->expectWorkflowException(
+            closure: function () {
+                run(
+                    workflow(
+                        job1: sync(new TestActionThrows()),
+                    )
+                );
+            },
+            instance: Exception::class,
+            job: 'job1',
+            message: 'Test exception',
+            code: 666
+        );
     }
 
     /**
