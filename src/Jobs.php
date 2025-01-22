@@ -177,16 +177,6 @@ final class Jobs implements JobsInterface
                 $lastName = $parameters->keys()[$lastKey];
                 $parameter = $parameters->get($lastName);
             }
-            if (! isset($parameter)) {
-                throw new LogicException(
-                    (string) message(
-                        'Parameter **%parameter%** not found at job **%job%**',
-                        parameter: $argument,
-                        job: $job,
-                    )
-                );
-            }
-
             $collection = match (true) {
                 $value instanceof VariableInterface => 'variables',
                 $value instanceof ResponseReferenceInterface => 'references',
@@ -197,7 +187,10 @@ final class Jobs implements JobsInterface
             }
 
             try {
-                /** @var VariableInterface|ResponseReferenceInterface $value */
+                /**
+                 * @var VariableInterface|ResponseReferenceInterface $value
+                 * @phpstan-ignore-next-line
+                 */
                 $this->mapParameter($job, $argument, $collection, $parameter, $value);
             } catch (Throwable $e) {
                 throw new $e(

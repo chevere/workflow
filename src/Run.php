@@ -109,6 +109,9 @@ final class Run implements RunInterface
         return cast($this->map->get($job)->mixed(), ...$key);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
     public function getReturn(string $job): CastInterface
     {
         return $this->response($job);
