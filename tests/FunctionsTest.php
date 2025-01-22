@@ -35,7 +35,7 @@ final class FunctionsTest extends TestCase
         $action = new TestActionNoParamsIntResponse();
         $job = sync($action);
         $fileLine = __FILE__ . ':' . (__LINE__ - 1);
-        $this->assertSame($fileLine, $job->caller());
+        $this->assertSame($fileLine, $job->caller()->__toString());
         $alt = (new Job($action))
             ->withShift(1)
             ->withIsSync(true);
@@ -47,7 +47,7 @@ final class FunctionsTest extends TestCase
         $action = new TestActionNoParamsIntResponse();
         $job = async($action);
         $fileLine = __FILE__ . ':' . (__LINE__ - 1);
-        $this->assertSame($fileLine, $job->caller());
+        $this->assertSame($fileLine, $job->caller()->__toString());
         $alt = (new Job($action))->withShift(1);
         $this->assertSame($alt->shift(), $job->shift());
     }

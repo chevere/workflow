@@ -94,7 +94,7 @@ final class JobTest extends TestCase
         ];
         $job = new Job($action, ...$success);
         $fileLine = __FILE__ . ':' . (__LINE__ - 1);
-        $this->assertSame($fileLine, $job->caller());
+        $this->assertSame($fileLine, $job->caller()->__toString());
         $this->assertSame($action, $job->action());
         $this->assertSame($success, $job->arguments());
         $success = [

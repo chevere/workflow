@@ -56,7 +56,7 @@ interface JobInterface
      */
     public function runIf(): VectorInterface;
 
-    public function caller(): string;
+    public function caller(): CallerInterface;
 
     public function shift(): int;
 }

@@ -19,6 +19,7 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
+use Chevere\Workflow\Interfaces\CallerInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
@@ -49,7 +50,7 @@ final class Job implements JobInterface
 
     private bool $isSync;
 
-    private string $caller;
+    private CallerInterface $caller;
 
     private int $shift;
 
@@ -84,7 +85,7 @@ final class Job implements JobInterface
         return $this->shift;
     }
 
-    public function caller(): string
+    public function caller(): CallerInterface
     {
         return $this->caller;
     }
@@ -170,8 +171,8 @@ final class Job implements JobInterface
             array_shift($debugBacktrace);
         }
         $file = $debugBacktrace[0]['file'] ?? 'unknown';
-        $line = $debugBacktrace[0]['line'] ?? '0';
-        $this->caller = "{$file}:{$line}";
+        $line = $debugBacktrace[0]['line'] ?? 0;
+        $this->caller = new Caller($file, (int) $line);
     }
 
     private function setArguments(mixed ...$argument): void
