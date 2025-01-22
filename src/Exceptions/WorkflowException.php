@@ -18,7 +18,7 @@ use Exception;
 use Throwable;
 
 /**
- * Exception thrown when validating Workflow runtime.
+ * Exception thrown by the Workflow runtime.
  */
 final class WorkflowException extends Exception
 {
