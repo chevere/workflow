@@ -60,7 +60,7 @@ final class JobTest extends TestCase
         new Job(
             $action,
             foo: 'extra',
-            pene: 'extra'
+            nepe: 'extra'
         );
     }
 

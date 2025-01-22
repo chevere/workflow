@@ -52,37 +52,33 @@ final class Job implements JobInterface
 
     private CallerInterface $caller;
 
-    private int $shift;
-
     /**
-     * Creates a Job (async by default).
+     * Creates a Job
+     * DO NOT use this method directly, use `sync` or `async` functions instead.
+     *
+     * @param ActionInterface $_ The action to run
+     * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
      */
     public function __construct(
-        private ActionInterface $_action,
+        private ActionInterface $_,
         mixed ...$argument
     ) {
         $this->isSync = false;
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
-        $this->parameters = getParameters($_action::class);
+        $this->parameters = getParameters($_::class);
         $this->arguments = [];
         $this->setArguments(...$argument);
-        $this->shift = 0;
-        $this->setCaller();
-    }
-
-    public function withShift(int $shift): JobInterface
-    {
-        $new = clone $this;
-        $new->shift = $shift;
-        $new->setCaller();
-
-        return $new;
-    }
-
-    public function shift(): int
-    {
-        return $this->shift;
+        $debugBacktrace = debug_backtrace(options: 0, limit: 2);
+        $callerFunction = $debugBacktrace[1]['function'] ?? '';
+        $index = (int) in_array(
+            $callerFunction,
+            ['Chevere\Workflow\sync', 'Chevere\Workflow\async']
+        );
+        $debugBacktrace = $debugBacktrace[$index];
+        $file = $debugBacktrace['file'] ?? 'unknown';
+        $line = $debugBacktrace['line'] ?? 0;
+        $this->caller = new Caller($file, (int) $line);
     }
 
     public function caller(): CallerInterface
@@ -138,7 +134,7 @@ final class Job implements JobInterface
 
     public function action(): ActionInterface
     {
-        return $this->_action;
+        return $this->_;
     }
 
     public function arguments(): array
@@ -159,20 +155,6 @@ final class Job implements JobInterface
     public function isSync(): bool
     {
         return $this->isSync;
-    }
-
-    /**
-     * @infection-ignore-all
-     */
-    private function setCaller(): void
-    {
-        $debugBacktrace = debug_backtrace();
-        for ($i = 0; $i <= $this->shift; $i++) {
-            array_shift($debugBacktrace);
-        }
-        $file = $debugBacktrace[0]['file'] ?? 'unknown';
-        $line = $debugBacktrace[0]['line'] ?? 0;
-        $this->caller = new Caller($file, (int) $line);
     }
 
     private function setArguments(mixed ...$argument): void
@@ -227,7 +209,7 @@ final class Job implements JobInterface
                 (string) message(
                     'Missing argument(s) [`%arguments%`] for `%action%`',
                     arguments: implode(', ', $missing),
-                    action: $this->_action::class
+                    action: $this->_::class
                 )
             );
         }
@@ -245,7 +227,7 @@ final class Job implements JobInterface
             throw new ArgumentCountError(
                 (string) message(
                     '`%symbol%` requires %countRequired% argument(s)%parameters%',
-                    symbol: $this->_action::class . '::' . $this->_action::mainMethod(),
+                    symbol: $this->_::class . '::' . $this->_::mainMethod(),
                     countRequired: strval(count($requiredKeys)),
                     parameters: $parameters === '' ? '' : " `{$parameters}`"
                 )

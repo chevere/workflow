@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
-use Chevere\Workflow\Job;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
 use PHPUnit\Framework\TestCase;
@@ -36,10 +35,7 @@ final class FunctionsTest extends TestCase
         $job = sync($action);
         $fileLine = __FILE__ . ':' . (__LINE__ - 1);
         $this->assertSame($fileLine, $job->caller()->__toString());
-        $alt = (new Job($action))
-            ->withShift(1)
-            ->withIsSync(true);
-        $this->assertSame($alt->shift(), $job->shift());
+        $this->assertTrue($job->isSync());
     }
 
     public function testFunctionAsync(): void
@@ -48,7 +44,6 @@ final class FunctionsTest extends TestCase
         $job = async($action);
         $fileLine = __FILE__ . ':' . (__LINE__ - 1);
         $this->assertSame($fileLine, $job->caller()->__toString());
-        $alt = (new Job($action))->withShift(1);
-        $this->assertSame($alt->shift(), $job->shift());
+        $this->assertFalse($job->isSync());
     }
 }

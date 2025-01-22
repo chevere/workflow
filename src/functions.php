@@ -37,23 +37,24 @@ function workflow(JobInterface ...$job): WorkflowInterface
 /**
  * Creates a synchronous job for the given action and arguments.
  *
+ * @param ActionInterface $_ The action to run
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function sync(ActionInterface $_action, mixed ...$argument): JobInterface
+function sync(ActionInterface $_, mixed ...$argument): JobInterface
 {
-    return (new Job($_action, ...$argument))
-        ->withShift(1)
+    return (new Job($_, ...$argument))
         ->withIsSync(true);
 }
 
 /**
  * Creates an asynchronous job for the given action and arguments.
  *
+ * @param ActionInterface $_ The action to run
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function async(ActionInterface $_action, mixed ...$argument): JobInterface
+function async(ActionInterface $_, mixed ...$argument): JobInterface
 {
-    return (new Job($_action, ...$argument))->withShift(1);
+    return new Job($_, ...$argument);
 }
 
 /**
