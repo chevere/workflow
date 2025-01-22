@@ -265,7 +265,7 @@ final class Jobs implements JobsInterface
             }
         }
         if ($parameter instanceof MixedParameterInterface) {
-            return;
+            return; // @codeCoverageIgnore
         }
         if ($stored::class !== $parameter::class) {
             throw new TypeError(
