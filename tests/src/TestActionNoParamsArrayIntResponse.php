@@ -18,7 +18,7 @@ use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\int;
 
-final class TestActionNoParamsIntResponse extends Action
+final class TestActionNoParamsArrayIntResponse extends Action
 {
     public static function return(): ParameterInterface
     {

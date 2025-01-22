@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\src\TestActionNoParamsIntResponse;
+use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
@@ -32,7 +32,7 @@ final class FunctionsTest extends TestCase
 
     public function testFunctionSync(): void
     {
-        $action = new TestActionNoParamsIntResponse();
+        $action = new TestActionNoParamsArrayIntResponse();
         $job = sync($action);
         $fileLine = __FILE__ . ':' . (__LINE__ - 1);
         $this->assertSame($fileLine, $job->caller()->__toString());
@@ -44,7 +44,7 @@ final class FunctionsTest extends TestCase
 
     public function testFunctionAsync(): void
     {
-        $action = new TestActionNoParamsIntResponse();
+        $action = new TestActionNoParamsArrayIntResponse();
         $job = async($action);
         $fileLine = __FILE__ . ':' . (__LINE__ - 1);
         $this->assertSame($fileLine, $job->caller()->__toString());

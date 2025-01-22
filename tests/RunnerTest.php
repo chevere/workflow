@@ -13,12 +13,15 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
+use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
-use Chevere\Tests\src\TestActionNoParamsIntResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamsFooBarResponse2;
 use Chevere\Tests\src\TestActionThrows;
+use Chevere\Tests\src\TestActionUnion;
+use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Run;
@@ -27,6 +30,7 @@ use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
 use Exception;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\run;
@@ -221,8 +225,8 @@ final class RunnerTest extends TestCase
     {
         $job1 = async(new TestActionNoParamsBoolResponses());
         $job2 = async(new TestActionNoParamsBoolResponses());
-        $job3 = async(new TestActionNoParamsIntResponse());
-        $job4 = async(new TestActionNoParamsIntResponse());
+        $job3 = async(new TestActionNoParamsArrayIntResponse());
+        $job4 = async(new TestActionNoParamsArrayIntResponse());
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIf(response('job1', 'true')),
@@ -266,6 +270,90 @@ final class RunnerTest extends TestCase
             job: 'job1',
             message: 'Test exception',
             code: 666
+        );
+    }
+
+    public function testActionUnion(): void
+    {
+        $run = run(
+            workflow(
+                job1: sync(
+                    new TestActionNoParamsArrayIntResponse(),
+                ),
+                job2: sync(
+                    new TestActionUnion(),
+                    foo: response('job1', 'id')
+                ),
+            ),
+        );
+        $this->assertSame(
+            [
+                'foo' => $run->response('job1', 'id')->int(),
+            ],
+            $run->response('job2')->array()
+        );
+    }
+
+    public function testActionUnionConflict(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Reference **job1** is of type `string`, parameter **foo** expects `union` at job **job2**
+            PLAIN
+        );
+        run(
+            workflow(
+                job1: sync(
+                    new TestActionIntToString(),
+                    int: 123,
+                ),
+                job2: sync(
+                    new TestActionUnion(),
+                    foo: response('job1')
+                ),
+            ),
+        );
+    }
+
+    public function testActionVariadic(): void
+    {
+        $run = run(
+            workflow(
+                job1: sync(
+                    new TestActionIntToString(),
+                    int: variable('intVariable'),
+                ),
+                job2: sync(
+                    new TestActionNoParamsArrayIntResponse(),
+                ),
+                job3: sync(
+                    new TestActionVariadic(),
+                    bar1: variable('intVariable'),
+                    bar2: response('job2', 'id'),
+                ),
+            ),
+            intVariable: 321
+        );
+        $this->assertSame(
+            '321',
+            $run->response('job1')->string()
+        );
+        $this->assertSame(
+            [
+                'id' => 123,
+            ],
+            $run->response('job2')->array()
+        );
+        $this->assertSame(
+            [
+                'foo' => 'baz',
+                'bar' => [
+                    'bar1' => 321,
+                    'bar2' => 123,
+                ],
+            ],
+            $run->response('job3')->array()
         );
     }
 
