@@ -15,6 +15,7 @@ namespace Chevere\Workflow;
 
 use Amp\Parallel\Worker\Execution;
 use Chevere\Parameter\Interfaces\CastInterface;
+use Chevere\Workflow\Exceptions\WorkflowException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -91,14 +92,15 @@ final class Runner implements RunnerInterface
         try {
             $response = cast($action(...$arguments));
         } catch (Throwable $e) {
-            throw new $e(
-                previous: $e->getPrevious(),
-                code: $e->getCode(),
+            throw new WorkflowException(
+                name: $name,
+                job: $job,
+                throwable: $e,
                 message: (string) message(
                     '%message% at job `%name%` declared in %fileLine%',
                     name: $name,
                     message: $e->getMessage(),
-                    fileLine: $job->caller(),
+                    fileLine: strval($job->caller()),
                 )
             );
         }
