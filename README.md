@@ -338,7 +338,7 @@ job(new SomeAction())
 
 ## Running a Workflow
 
-To run a Workflow use the `run` function by passing a Workflow and an `array` for its variables (if any).
+To run a Workflow use the `run` function by passing a Workflow and its variables (if any).
 
 ```php
 use function Chevere\Workflow\run;
@@ -352,13 +352,58 @@ Use `response` to retrieve a job response as a `CastArgument` object which can b
 $thumbFile = $run->response('thumb')->string();
 ```
 
-If the response is of type `array` you can wrap using `cast` as needed.
+🪄 If the response is of type `array|ArrayAccess` you can shortcut key access casting.
 
 ```php
 use function Chevere\Parameter\cast;
 
-$id = $run->response('user')->array()['id']; // ? type
-$id = cast($id)->int(); // int type
+$id = $run->response('user', 'id')->int();
+```
+
+### WorkflowException
+
+When running a Workflow, if a Job fails a `WorkflowException` will be thrown. This is an exception wrapper for the job that thrown the exception.
+
+```php
+try {
+    $run = run($workflow, ...$variables);
+} catch (WorkflowException $e) {
+    // Job name that thrown the exception
+    $e->name;
+    // Job instance that thrown the exception
+    $e->job;
+    // The exception thrown by the Job
+    $e->throwable;
+}
+```
+
+## WorkflowTrait
+
+The `WorkflowTrait` provides methods `execute()`  and `run()` methods for easing handling a Workflow.
+
+```php
+use Chevere\Workflow\WorkflowTrait;
+
+class MyAction
+{
+    use WorkflowTrait;
+
+    public function main(): void
+    {
+        $workflow = workflow(
+            job1: sync(
+                new MyAction(),
+                foo: variable('bar')
+            )
+        );
+        $this->execute($workflow, foo: $bar);
+    }
+}
+
+$action = new MyAction();
+$action->main();
+// Once executed you can get the response
+$bar = $action->run()->response('job1')->string();
 ```
 
 ## Demo
@@ -387,13 +432,13 @@ For each level jobs will run in parallel, but the next level will run after the 
 
 ## Testing
 
-Workflow checks on variables, references and any other configuration so you don't have to worry about that.
+Workflow checks for you on variables, references and any other configuration. You don't have to worry about that.
 
 Testing the Workflow itself is not necessary as it's just a configuration. What you need to test is the Workflow definition and their Jobs (Actions).
 
-### Testing Workflow
+### Testing Workflow order
 
-For testing a Workflow what you need to assert is the expected Workflow graph (execution order).
+For testing a Workflow order what you need to assert is the expected Workflow graph (execution order).
 
 ```php
 assertSame(
@@ -402,15 +447,27 @@ assertSame(
 );
 ```
 
-### Testing Job
+## Testing Job response
 
-For testing a Job what you need to test is the Action that defines that given Job against the response from the Action `main` method.
+For testing a response what you need to check is the response value.
+
+```php
+$run = run($workflow, ...$variables);
+assertSame(
+    $expected,
+    $run->response('job1')->int()
+);
+```
+
+### Testing Job action
+
+For testing a Job what you need to test is the Action that defines that given Job against `__invoke` action.
 
 ```php
 $action = new MyAction();
 assertSame(
     $expected,
-    $action->main(...$arguments)
+    $action(...$arguments)
 );
 ```
 
