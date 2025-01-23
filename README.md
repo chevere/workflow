@@ -44,6 +44,46 @@ By breaking down monolithic procedures into modular workflow jobs, developers ga
  Read [Workflow for PHP](https://rodolfoberrios.com/2022/04/09/workflow-php/) at Rodolfo's blog for a compressive introduction to this package.
 :::
 
+## Architecture
+
+```mermaid
+graph TD
+    subgraph Client Application
+        WF[Workflow Definition]
+        Run[run Function]
+    end
+
+    subgraph Core Components
+        Jobs[Jobs Manager]
+        Graph[Graph Manager]
+        Job[Job]
+        Action[Action]
+    end
+
+    subgraph References
+        Var[Variables]
+        Resp[Responses]
+    end
+
+    subgraph Execution
+        Runner[Workflow Runner]
+        Sync[Sync Executor]
+        Async[Async Executor]
+    end
+
+    WF --> Jobs
+    Jobs --> Graph
+    Jobs --> |manages| Job
+    Job --> |executes| Action
+    Job --> |depends on| Var
+    Job --> |depends on| Resp
+    Run --> Runner
+    Runner --> |uses| Jobs
+    Runner --> |resolves| Graph
+    Runner --> |executes via| Sync
+    Runner --> |executes via| Async
+```
+
 ## How to use
 
 The Workflow package provides a set of core functions in the `Chevere\Workflow` namespace that allow you to build and manage workflow processes. These functions work together to create flexible, maintainable workflow definitions.
