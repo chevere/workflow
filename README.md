@@ -34,11 +34,11 @@ The Workflow package provides a robust system for defining and executing structu
 
 By breaking down monolithic procedures into modular workflow jobs, developers gain several advantages:
 
-- Improved testability of individual components
-- Better code organization and maintainability
-- Reusable job definitions across different workflows
-- Clear visualization of process flows
-- Flexible execution patterns (sync/async)
+* Improved testability of individual components
+* Better code organization and maintainability
+* Reusable job definitions across different workflows
+* Clear visualization of process flows
+* Flexible execution patterns (sync/async)
 
 ::: tip 💡 Workflow introduction
  Read [Workflow for PHP](https://rodolfoberrios.com/2022/04/09/workflow-php/) at Rodolfo's blog for a compressive introduction to this package.
@@ -60,9 +60,9 @@ The Workflow package provides a set of core functions in the `Chevere\Workflow` 
 
 ### Key concepts
 
-- [Job](#job-reference): Self-contained unit of work defined by [Action](https://chevere.org/packages/action)
-- [Variable](#variable): Shared workflow-level inputs accessed by multiple jobs
-- [Response](#response): Links between job outputs (`response()`) and inputs
+* [Job](#job): Self-contained unit of work defined by [Action](https://chevere.org/packages/action)
+* [Variable](#variable): Shared workflow-level inputs accessed by multiple jobs
+* [Response](#response): Links between job outputs (`response()`) and inputs
 
 ## Workflow example
 
@@ -86,6 +86,8 @@ Create Workflow with your `MyAction` Job:
 
 ```php
 use function Chevere\Workflow\sync;
+use function Chevere\Workflow\variable;
+use function Chevere\Workflow\response;
 
 $workflow = workflow(
     greet: sync(
@@ -116,24 +118,51 @@ echo $hello->response('capo')->string() . PHP_EOL;
 
 ## Variable
 
-Use function `variable` to declare a Workflow variable. This denotes a variable which must be injected by at Workflow run layer.
+Use function `variable` to declare a Workflow variable that will be injected when running the workflow. Variables allow you to pass external values into your workflow jobs during execution.
 
 ```php
 use function Chevere\Workflow\variable;
 
+// Basic variable declaration
 variable('myVar');
+
+// Usage in a job
+sync(
+    new MyAction(),
+    parameter: variable('myVar')
+);
+```
+
+When running the workflow, you must provide values for all declared variables:
+
+```php
+use function Chevere\Workflow\run;
+
+run($workflow, myVar: 'some value');
 ```
 
 ## Response
 
-Use function `response` to declare a Job response reference to a response returned by a previous Job.
+Use function `response` to declare a reference to a response returned by a previous Job. This allows you to chain job outputs as inputs to subsequent jobs.
 
-🪄 When using a response it will **auto declare** the referenced Job as [dependency](#dependencies).
+🪄 When using a response it will **auto declare** the referenced Job as a [dependency](#dependencies), ensuring proper execution order.
 
 ```php
 use function Chevere\Workflow\response;
 
-response(job: 'task');
+// Basic response declaration
+response('job1');
+
+// Usage in a Workflow
+workflow(
+    job1: sync(
+        new SomeAction(),
+    ),
+    job2: sync(
+        new MyAction(),
+        parameter: response('job1')
+    );
+);
 ```
 
 References can be also made on a response member identified by `key`.
@@ -141,18 +170,44 @@ References can be also made on a response member identified by `key`.
 ```php
 use function Chevere\Workflow\response;
 
-response(job: 'task', key: 'name');
+response('job1', 'id');
 ```
 
-## Job reference
+## Job
 
-The `Job` class defines an [Action](https://chevere.org/packages/action) with arguments which can be passed passed "as-is", [variable](#variable) or [response](#response) on constructor using named arguments.
+The `Job` class defines an [Action](https://chevere.org/packages/action) that can be executed as part of a workflow.
 
-**Note:** Actions must support [serialization](https://www.php.net/manual/en/function.serialize.php) for being used on `async` jobs. For not serializable Actions as these interacting with connections (namely streams, database clients, etc.) you should use `sync` job.
+### Arguments
+
+Job arguments can be passed in three ways:
+
+* As-is values: Direct values passed to the Action
+* [Variables](#variable): Workflow-level inputs
+* [Responses](#response): References to previous job outputs
+
+```php
+sync(
+    new SomeAction(),
+    context: 'public',
+    role: variable('role'),
+    userId: response('user', 'id'),
+);
+```
+
+For the code above, argument `context` will be passed "as-is" (`public`) to `SomeAction`, arguments `role` and `userId` will be dynamic provided. When running the Workflow these arguments will be matched against the Parameters defined at the [main method](https://chevere.org/packages/action#mai-method) for `SomeAction`.
 
 ### Asynchronous jobs
 
 Use function `async` to create an asynchronous job, which runs non-blocking.
+
+**Important:** When using `async` jobs, your Actions must support [serialization](https://www.php.net/manual/en/function.serialize.php). For Actions that work with non-serializable resources like:
+
+* Database connections
+* File handles
+* Stream resources
+* Network sockets
+
+You must use `sync` jobs instead.
 
 In the example below a Workflow describes an image creation procedure for multiple image sizes.
 
@@ -286,19 +341,6 @@ run(
 );
 ```
 
-### Arguments
-
-```php
-sync(
-    new SomeAction(),
-    context: 'public',
-    role: variable('role'),
-    userId: response('user', 'id'),
-);
-```
-
-For the code above, argument `context` will be passed "as-is" (`public`) to `SomeAction`, arguments `role` and `userId` will be dynamic provided. When running the Workflow these arguments will be matched against the Parameters defined at the [main method](https://chevere.org/packages/action#mai-method) for `SomeAction`.
-
 ### Conditional running
 
 Method `withRunIf` enables to pass arguments of type [Variable](#variable) or [Response](#response) for conditionally running a Job.
@@ -401,7 +443,15 @@ See the [demo](demo) directory for a set of examples.
 
 ## Debugging
 
-When working with this package you may want to debug the Workflow to ensure that the jobs are declared as expected.
+When working with this package you may want to debug the Workflow to ensure that the jobs are properly configured and will execute in the expected order.
+
+### Graph Inspection
+
+The most powerful debugging tool is the Jobs graph. It shows job names organized by execution levels, where:
+
+* Jobs at the same level run in parallel
+* Each level must complete before the next level starts
+* Job dependencies determine level placement
 
 To debug a Workflow inspect the Jobs graph. It will show the job names and their dependencies for each execution level.
 
@@ -416,14 +466,11 @@ $workflow->jobs()->graph()->toArray();
 
 For each level jobs will run in parallel, but the next level will run after the previous level gets resolved.
 
-> [!NOTE]
-> For runtime debugging is strongly recommended to use a non-blocking debugger like [xrDebug](https://xrdebug.com).
-
 ## Testing
 
-Workflow checks for you on variables, references and any other configuration. You don't have to worry about that.
+Workflow checks on variables, references and dependencies. It asserts the entire Workflow definition. Testing the Workflow itself is not necessary as is just a configuration.
 
-Testing the Workflow itself is not necessary as it's just a configuration. What you need to test is the Workflow definition and their Jobs (Actions).
+Need to test the Workflow definition (execution order) and their Jobs (Actions).
 
 ### Testing Workflow order
 
@@ -458,6 +505,43 @@ assertSame(
     $expected,
     $action(...$arguments)
 );
+```
+
+### PHPUnit test Workflow
+
+Use `ExpectWorkflowExceptionTrait` for testing Workflow definitions using PHPUnit. Wrap the logic that runs the Workflow in a closure and use `expectWorkflowException` method to assert the expected exception.
+
+```php
+use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
+use PHPUnit\Framework\TestCase;
+
+use function Chevere\Workflow\run;
+use function Chevere\Workflow\sync;
+
+class MyTest extends TestCase
+{
+    use ExpectWorkflowExceptionTrait;
+
+    public function testMyWorkflow(): void
+    {
+        $closure = fn () => run(
+            workflow(
+                job1: sync(
+                    new MyAction(),
+                    foo: variable('bar')
+                ),
+            ),
+            bar: 'baz'
+        );
+        $this->expectWorkflowException(
+            closure: $closure,
+            exception: LogicException::class, // Thrown by MyAction
+            job: 'job1', // Job that thrown the exception
+            message: 'MyAction failed',
+            code: 171
+        );
+    }
+}
 ```
 
 ## Documentation
