@@ -26,6 +26,13 @@ use Throwable;
 
 /**
  * Creates a WorkflowInterface instance for the given jobs.
+ *
+ * workflow(
+ *     job1: sync|async(
+ *        new MyAction(),
+ *        foo: $foo, <variable|reference|raw>
+ *     ),
+ * )
  */
 function workflow(JobInterface ...$job): WorkflowInterface
 {
