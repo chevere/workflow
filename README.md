@@ -60,10 +60,9 @@ The Workflow package provides a set of core functions in the `Chevere\Workflow` 
 
 ### Key concepts
 
-- **Jobs**: Self-contained units of work defined by [Actions](https://chevere.org/packages/action)
-- **Variables**: Shared workflow-level inputs accessed by multiple jobs
-- **References**: Links between job outputs (`response()`) and inputs
-- **Execution**: Jobs can run synchronously or asynchronously
+- [Job](#job-reference): Self-contained unit of work defined by [Action](https://chevere.org/packages/action)
+- [Variable](#variable): Shared workflow-level inputs accessed by multiple jobs
+- [Response](#response): Links between job outputs (`response()`) and inputs
 
 ## Workflow example
 
@@ -100,7 +99,7 @@ $workflow = workflow(
 );
 ```
 
-3. Run the Workflow:
+Run the Workflow:
 
 ```php
 use function Chevere\Workflow\run;
