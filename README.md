@@ -450,16 +450,16 @@ try {
 
 ## WorkflowTrait
 
-The `WorkflowTrait` provides methods `execute()`  and `run()` methods for easing handling a Workflow.
+The `WorkflowTrait` provides methods `execute`  and `run` for easing handling a Workflow within a class.
 
 ```php
 use Chevere\Workflow\WorkflowTrait;
 
-class MyAction
+class Something
 {
     use WorkflowTrait;
 
-    public function main(): void
+    public function __construct()
     {
         $workflow = workflow(
             job1: sync(
@@ -467,14 +467,13 @@ class MyAction
                 foo: variable('bar')
             )
         );
-        $this->execute($workflow, foo: $bar);
+        // Use execute to run the Workflow
+        $this->execute($workflow, bar: 'baz');
     }
 }
 
-$action = new MyAction();
-$action->main();
-// Once executed you can get the response
-$bar = $action->run()->response('job1')->string();
+$some = new Something();
+$bar = $some->run()->response('job1')->string();
 ```
 
 ## Demo
@@ -547,9 +546,11 @@ assertSame(
 );
 ```
 
-### PHPUnit test Workflow
+### Testing with PHPUnit
 
-Use `ExpectWorkflowExceptionTrait` for testing Workflow definitions using PHPUnit. Wrap the logic that runs the Workflow in a closure and use `expectWorkflowException` method to assert the expected exception.
+Use `ExpectWorkflowExceptionTrait` for testing Workflow definitions using PHPUnit.
+
+Wrap the logic that runs the Workflow in a closure and use `expectWorkflowException` method to assert the expected exception.
 
 ```php
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
