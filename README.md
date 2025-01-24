@@ -30,7 +30,7 @@ composer require chevere/workflow
 
 ## What it does?
 
-The Workflow package provides a robust system for defining and executing structured procedures based on the [workflow pattern](https://en.wikipedia.org/wiki/Workflow_pattern). It enables you to organize complex logic into a series of interconnected, independent jobs that can be executed in a controlled manner.
+The Workflow package provides a robust system for defining and executing structured procedures based on the [workflow pattern](https://en.wikipedia.org/wiki/Workflow_pattern). It enables to organize complex logic into a series of interconnected, independent jobs that can be executed in a controlled manner.
 
 By breaking down monolithic procedures into modular workflow jobs, developers gain several advantages:
 
@@ -43,46 +43,6 @@ By breaking down monolithic procedures into modular workflow jobs, developers ga
 ::: tip 💡 Workflow introduction
  Read [Workflow for PHP](https://rodolfoberrios.com/2022/04/09/workflow-php/) at Rodolfo's blog for a compressive introduction to this package.
 :::
-
-## Architecture
-
-```mermaid
-graph TD
-    subgraph Client Application
-        WF[Workflow Definition]
-        Run[run Function]
-    end
-
-    subgraph Core Components
-        Jobs[Jobs]
-        Graph[Graph]
-        Job[Job]
-        Action[Action]
-    end
-
-    subgraph References
-        Var[Variables]
-        Resp[Responses]
-    end
-
-    subgraph Execution
-        Runner[Workflow Runner]
-        Sync[Sync Executor]
-        Async[Async Executor]
-    end
-
-    WF --> Jobs
-    Jobs --> |define| Graph
-    Jobs --> |manages| Job
-    Job --> |executes| Action
-    Job --> |depends on| Var
-    Job --> |depends on| Resp
-    Run --> Runner
-    Runner --> |uses| Jobs
-    Runner --> |resolves| Graph
-    Runner --> |executes via| Sync
-    Runner --> |executes via| Async
-```
 
 ## How to use
 
@@ -219,22 +179,53 @@ The `Job` class defines an [Action](https://chevere.org/packages/action) that ca
 
 Job arguments can be passed in three ways:
 
-* As-is values: Direct values passed to the Action
-* [Variables](#variable): Workflow-level inputs
-* [Responses](#response): References to previous job outputs
+* **As-is values**: Direct values passed to the Action
+* **Variables**: Workflow-level inputs declared using the `variable` function
+* **Responses**: References to previous job outputs declared using the `response` function
 
 ```php
-sync(
-    new SomeAction(),
-    context: 'public',
-    role: variable('role'),
-    userId: response('user', 'id'),
+class SomeAction extends Action
+{
+    protected function main(
+        string $context,
+        int $userId,
+        mixed ...$bag,
+    ): void
+    {
+        // On runtime:
+        // $context = 'public'
+        // $userId = (( user.id response ))
+        // $bag = ['group' => 'admin', 'mask' => 1024]
+    }
+}
+
+$workflow = workflow(
+    user: sync(
+        new GetUser(),
+        request: variable('userId')
+    ),
+    job1: sync(
+        new SomeAction(),
+        context: 'public',               // As-is value
+        userId: variable('userId'),      // Variable
+        group: response('user', 'group'),// Response
+        mask: 1024,                      // As-is value
+    );
 );
+
+run($workflow, userId: 123);
 ```
 
-For the code above, argument `context` will be passed "as-is" (`public`) to `SomeAction`, arguments `role` and `userId` will be dynamic provided. When running the Workflow these arguments will be matched against the Parameters defined at the [main method](https://chevere.org/packages/action.html#main-method) for `SomeAction`.
+In the example above:
 
-### Asynchronous jobs
+* The `context` argument is passed as-is with the value `public`.
+* The `userId` argument is dynamically provided as a variable.
+* The `group` argument is dynamically provided as a response from a previous job.
+* The `mask` argument is passed as-is with the value `1024`.
+
+When running the Workflow, these arguments will be matched against the parameters defined in the [main method](https://chevere.org/packages/action.html#main-method) of `SomeAction`.
+
+### Asynchronous
 
 Use function `async` to create an asynchronous job, which runs non-blocking.
 
@@ -295,7 +286,7 @@ $workflow->jobs()->graph()->toArray();
 ];
 ```
 
-To complete the example, here's how to [Run](#running-a-workflow) the Workflow previously defined:
+To complete the example, here's how to [Run](#running) the Workflow previously defined:
 
 ```php
 use function Chevere\Workflow\run;
@@ -308,7 +299,7 @@ run(
 );
 ```
 
-### Synchronous jobs
+### Synchronous
 
 Use function `sync` to create a synchronous job, which block execution until it gets resolved.
 
@@ -361,7 +352,7 @@ $workflow->jobs()->graph()->toArray();
 ];
 ```
 
-To complete the example, here's how to [Run](#running-a-workflow) the Workflow previously defined:
+To complete the example, here's how to [Run](#running) the Workflow previously defined:
 
 ```php
 use function Chevere\Workflow\run;
@@ -399,7 +390,7 @@ job(new SomeAction())
     ->withDepends('myJob');
 ```
 
-## Running a Workflow
+## Running
 
 To run a Workflow use the `run` function by passing a Workflow and its variables (if any).
 
@@ -408,6 +399,8 @@ use function Chevere\Workflow\run;
 
 $run = run($workflow, ...$variables);
 ```
+
+### Access Job response
 
 Use `response` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
 
@@ -423,24 +416,7 @@ use function Chevere\Parameter\cast;
 $id = $run->response('user', 'id')->int();
 ```
 
-### WorkflowException
-
-When running a Workflow, if a Job fails a `WorkflowException` will be thrown. This is an exception wrapper for the job that thrown the exception.
-
-```php
-try {
-    $run = run($workflow, ...$variables);
-} catch (WorkflowException $e) {
-    // Job that thrown the exception
-    $e->name;
-    // Job instance that thrown the exception
-    $e->job;
-    // The exception thrown by the Job
-    $e->throwable;
-}
-```
-
-## WorkflowTrait
+### WorkflowTrait
 
 The `WorkflowTrait` provides methods `execute`  and `run` for easing handling a Workflow within a class.
 
@@ -466,6 +442,31 @@ class Something
 
 $some = new Something();
 $bar = $some->run()->response('job1')->string();
+```
+
+### Exception handling
+
+When running a Workflow, if a Job fails a `WorkflowException` will be thrown. This is an exception wrapper for the job that thrown the exception.
+
+```php
+try {
+    $run = run($workflow, ...$variables);
+} catch (WorkflowException $e) {
+    // Job that thrown the exception
+    $e->name;
+    // Job instance that thrown the exception
+    $e->job;
+    // The exception thrown by the Job
+    $e->throwable;
+}
+
+// If using WorkflowTrait
+try {
+    $this->execute($workflow, ...$variables);
+    $run = $this->run();
+} catch (WorkflowException $e) {
+    // ...
+}
 ```
 
 ## Demo
@@ -565,6 +566,48 @@ class WorkflowTest extends TestCase
         );
     }
 }
+```
+
+## Architecture
+
+The architecture of the Workflow package is designed to provide a clear separation of concerns, making it easier to define, manage, and execute workflows. The following diagram illustrates the core components and their interactions:
+
+```mermaid
+graph TD
+    subgraph Client Application
+        WF[Workflow Definition]
+        Run[run Function]
+    end
+
+    subgraph Core Components
+        Jobs[Jobs]
+        Graph[Graph]
+        Job[Job]
+        Action[Action]
+    end
+
+    subgraph References
+        Var[Variables]
+        Resp[Responses]
+    end
+
+    subgraph Execution
+        Runner[Workflow Runner]
+        Sync[Sync Executor]
+        Async[Async Executor]
+    end
+
+    WF --> Jobs
+    Jobs --> |define| Graph
+    Jobs --> |manages| Job
+    Job --> |executes| Action
+    Job --> |depends on| Var
+    Job --> |depends on| Resp
+    Run --> Runner
+    Runner --> |uses| Jobs
+    Runner --> |resolves| Graph
+    Runner --> |executes via| Sync
+    Runner --> |executes via| Async
 ```
 
 ## Documentation
