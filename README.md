@@ -117,7 +117,7 @@ class MyAction extends Action
 {
     protected function main(string $foo): string
     {
-        return 'Hello, ' . $foo;
+        return "Hello, {$foo}";
     }
 }
 ```
@@ -125,9 +125,7 @@ class MyAction extends Action
 Create Workflow with your `MyAction` Job:
 
 ```php
-use function Chevere\Workflow\sync;
-use function Chevere\Workflow\variable;
-use function Chevere\Workflow\response;
+use function Chevere\Workflow\{workflow,sync,variable,response};
 
 $workflow = workflow(
     greet: sync(
@@ -252,10 +250,7 @@ You must use `sync` jobs instead.
 In the example below a Workflow describes an image creation procedure for multiple image sizes.
 
 ```php
-use function Chevere\Workflow\sync;
-use function Chevere\Workflow\response;
-use function Chevere\Workflow\variable;
-use function Chevere\Workflow\workflow;
+use function Chevere\Workflow\{sync,async,response,variable,workflow};
 
 workflow(
     thumb: async(
@@ -320,10 +315,7 @@ Use function `sync` to create a synchronous job, which block execution until it 
 In the example below a Workflow describes an image uploading procedure.
 
 ```php
-use function Chevere\Workflow\sync;
-use function Chevere\Workflow\response;
-use function Chevere\Workflow\variable;
-use function Chevere\Workflow\workflow;
+use function Chevere\Workflow\{sync,response,variable,workflow};
 
 workflow(
     user: sync(
@@ -480,108 +472,96 @@ $bar = $some->run()->response('job1')->string();
 
 See the [demo](demo) directory for a set of examples.
 
-## Debugging
-
-When working with this package you may want to debug the Workflow to ensure that the jobs are properly configured and will execute in the expected order.
-
-### Graph Inspection
-
-The most powerful debugging tool is the Jobs graph. It shows job names organized by execution levels, where:
-
-* Jobs at the same level run in parallel
-* Each level must complete before the next level starts
-* Job dependencies determine level placement
-
-To debug a Workflow inspect the Jobs graph. It will show the job names and their dependencies for each execution level.
-
-```php
-$workflow->jobs()->graph()->toArray();
-[
-    ['job1', 'job2'], // 1st level
-    ['job3', 'job4'], // 2nd level
-    ['job5'],         // 3rd level
-];
-```
-
-For each level jobs will run in parallel, but the next level will run after the previous level gets resolved.
-
 ## Testing
 
-Workflow checks on variables, references and dependencies. It asserts the entire Workflow definition. Testing the Workflow itself is not necessary as is just a configuration.
+Workflow provides several approaches for testing your implementations. While the Workflow itself doesn't need testing (it's a configuration), you should test:
 
-Need to test the Workflow definition (execution order) and their Jobs (Actions).
+1. Job actions (unit tests)
+2. Workflow execution order (graph)
+3. Job responses
+4. Exception handling
 
-### Testing Workflow order
+### Testing Job Actions
 
-For testing a Workflow order assert the expected Workflow graph (execution order).
-
-```php
-assertSame(
-    $expectedGraph,
-    $workflow->jobs()->graph()->toArray()
-);
-```
-
-### Testing Job response
-
-For testing a Job response within a Workflow assert the response value.
+The primary testing focus should be on your Action implementations:
 
 ```php
-$run = run($workflow, ...$variables);
-assertSame(
-    $expected,
-    $run->response('job1')->int()
-);
+use PHPUnit\Framework\TestCase;
+
+class MyActionTest extends TestCase
+{
+    public function testAction(): void
+    {
+        $action = new MyAction();
+        // 🪄 Chevere automatically validates Action I/O
+        $response = $action(foo: 'bar');
+        $this->assertSame('expected', $response);
+    }
+}
 ```
 
-### Testing Job action
+### Testing Workflow Graph
 
-For testing a Job test the Action that defines that given Job against `__invoke` action.
-
-🪄 Chevere will automatically check your Action I/O.
+Verify the execution order by testing the Workflow graph:
 
 ```php
-$action = new MyAction();
-assertSame(
-    $expected,
-    $action(...$arguments)
-);
+public function testWorkflowOrder(): void
+{
+    $expectedGraph = [
+        ['job1', 'job2'], // parallel jobs
+        ['job3'],         // depends on job1, job2
+    ];
+    $this->assertSame(
+        $expectedGraph,
+        $workflow->jobs()->graph()->toArray()
+    );
+}
 ```
 
-### Testing with PHPUnit
+### Testing Job Responses
 
-Use `ExpectWorkflowExceptionTrait` for testing Workflow definitions using PHPUnit.
+Test how jobs interact by checking their responses:
 
-Wrap the logic running the Workflow in a closure and use `expectWorkflowException` method to assert the expected exception.
+```php
+public function testJobResponses(): void
+{
+    $run = run($workflow, input: 'test');
+    // Access typed responses
+    $this->assertSame(
+        123,
+        $run->response('job1')->int()
+    );
+    $this->assertSame(
+        'test',
+        $run->response('job2')->string()
+    );
+    // Access array responses
+    $this->assertSame(
+        10.2,
+        $run->response('job3', 'rate')->float()
+    );
+}
+```
+
+### Testing Exception Handling
+
+Use `ExpectWorkflowExceptionTrait` to test error scenarios:
 
 ```php
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
-use PHPUnit\Framework\TestCase;
-
 use function Chevere\Workflow\run;
-use function Chevere\Workflow\sync;
 
-class MyTest extends TestCase
+class WorkflowTest extends TestCase
 {
     use ExpectWorkflowExceptionTrait;
 
-    public function testMyWorkflow(): void
+    public function testFailingJob(): void
     {
-        $closure = fn () => run(
-            workflow(
-                job1: sync(
-                    new MyAction(),
-                    foo: variable('bar')
-                ),
-            ),
-            bar: 'baz'
-        );
         $this->expectWorkflowException(
-            closure: $closure,
-            exception: LogicException::class, // Thrown by MyAction
-            job: 'job1', // Job that thrown the exception
-            message: 'MyAction failed',
-            code: 171
+            closure: fn () => run($workflow, input: 'invalid'),
+            exception: LogicException::class,
+            job: 'validation',
+            message: 'Invalid input'
         );
     }
 }

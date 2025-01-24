@@ -11,11 +11,7 @@
 
 declare(strict_types=1);
 
-use function Chevere\Workflow\response;
-use function Chevere\Workflow\run;
-use function Chevere\Workflow\sync;
-use function Chevere\Workflow\variable;
-use function Chevere\Workflow\workflow;
+use function Chevere\Workflow\{response,run,sync,variable,workflow};
 
 require 'loader.php';
 
@@ -29,7 +25,7 @@ class MyAction extends Action
 {
     protected function main(string $foo): string
     {
-        return 'Hello, ' . $foo;
+        return "Hello, {$foo}";
     }
 }
 
