@@ -54,8 +54,8 @@ graph TD
     end
 
     subgraph Core Components
-        Jobs[Jobs Manager]
-        Graph[Graph Manager]
+        Jobs[Jobs]
+        Graph[Graph]
         Job[Job]
         Action[Action]
     end
@@ -72,7 +72,7 @@ graph TD
     end
 
     WF --> Jobs
-    Jobs --> Graph
+    Jobs --> |define| Graph
     Jobs --> |manages| Job
     Job --> |executes| Action
     Job --> |depends on| Var
@@ -234,7 +234,7 @@ sync(
 );
 ```
 
-For the code above, argument `context` will be passed "as-is" (`public`) to `SomeAction`, arguments `role` and `userId` will be dynamic provided. When running the Workflow these arguments will be matched against the Parameters defined at the [main method](https://chevere.org/packages/action#mai-method) for `SomeAction`.
+For the code above, argument `context` will be passed "as-is" (`public`) to `SomeAction`, arguments `role` and `userId` will be dynamic provided. When running the Workflow these arguments will be matched against the Parameters defined at the [main method](https://chevere.org/packages/action.html#main-method) for `SomeAction`.
 
 ### Asynchronous jobs
 
@@ -439,7 +439,7 @@ When running a Workflow, if a Job fails a `WorkflowException` will be thrown. Th
 try {
     $run = run($workflow, ...$variables);
 } catch (WorkflowException $e) {
-    // Job name that thrown the exception
+    // Job that thrown the exception
     $e->name;
     // Job instance that thrown the exception
     $e->job;
@@ -513,7 +513,7 @@ Need to test the Workflow definition (execution order) and their Jobs (Actions).
 
 ### Testing Workflow order
 
-For testing a Workflow order what you need to assert is the expected Workflow graph (execution order).
+For testing a Workflow order assert the expected Workflow graph (execution order).
 
 ```php
 assertSame(
@@ -524,7 +524,7 @@ assertSame(
 
 ### Testing Job response
 
-For testing a response what you need to check is the response value.
+For testing a Job response within a Workflow assert the response value.
 
 ```php
 $run = run($workflow, ...$variables);
@@ -536,7 +536,9 @@ assertSame(
 
 ### Testing Job action
 
-For testing a Job what you need to test is the Action that defines that given Job against `__invoke` action.
+For testing a Job test the Action that defines that given Job against `__invoke` action.
+
+🪄 Chevere will automatically check your Action I/O.
 
 ```php
 $action = new MyAction();
@@ -550,7 +552,7 @@ assertSame(
 
 Use `ExpectWorkflowExceptionTrait` for testing Workflow definitions using PHPUnit.
 
-Wrap the logic that runs the Workflow in a closure and use `expectWorkflowException` method to assert the expected exception.
+Wrap the logic running the Workflow in a closure and use `expectWorkflowException` method to assert the expected exception.
 
 ```php
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
