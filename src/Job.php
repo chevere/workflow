@@ -64,12 +64,6 @@ final class Job implements JobInterface
         private ActionInterface $_,
         mixed ...$argument
     ) {
-        $this->isSync = false;
-        $this->runIf = new Vector();
-        $this->dependencies = new Vector();
-        $this->parameters = getParameters($_::class);
-        $this->arguments = [];
-        $this->setArguments(...$argument);
         $debugBacktrace = debug_backtrace(options: 0, limit: 2);
         $callerFunction = $debugBacktrace[1]['function'] ?? '';
         $index = (int) in_array(
@@ -80,6 +74,12 @@ final class Job implements JobInterface
         $file = $debugBacktrace['file'] ?? 'unknown';
         $line = $debugBacktrace['line'] ?? 0;
         $this->caller = new Caller($file, (int) $line);
+        $this->isSync = false;
+        $this->runIf = new Vector();
+        $this->dependencies = new Vector();
+        $this->parameters = getParameters($_::class);
+        $this->arguments = [];
+        $this->setArguments(...$argument);
     }
 
     public function caller(): CallerInterface
@@ -207,10 +207,9 @@ final class Job implements JobInterface
         );
         if ($missing !== []) {
             $reflection = new ReflectionClass($this->_);
-            $class = $reflection->getName();
-            $class = "`{$class}`";
+            $class = "`{$reflection->getName()}`";
             if ($reflection->isAnonymous()) {
-                $class = 'Anonymous class in '
+                $class = 'anon class in '
                     . $reflection->getFileName() . ':' . $reflection->getStartLine();
             }
 

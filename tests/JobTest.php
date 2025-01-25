@@ -50,11 +50,9 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
-            '`'
-            . TestActionParam::class
-            . '::'
-            . TestActionParam::mainMethod()
-            . '` requires 1 argument(s) `[string $foo]'
+            <<<PLAIN
+            `Chevere\Tests\src\TestActionParam::main` requires 1 argument(s) `[string \$foo]`
+            PLAIN
         );
         $action = new TestActionParam();
         new Job(
@@ -68,9 +66,9 @@ final class JobTest extends TestCase
     {
         $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
-            'Missing argument(s) [`string $foo`] for `'
-            . TestActionParam::class
-            . '`'
+            <<<PLAIN
+            Missing argument(s) [`string \$foo`] for `Chevere\Tests\src\TestActionParam`
+            PLAIN
         );
         $action = new TestActionParam();
         new Job($action);
@@ -107,6 +105,11 @@ final class JobTest extends TestCase
             'foo' => '1',
         ];
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Argument [foo]: Argument value provided `1` doesn't match the regex `/^foo|bar$/`
+            PLAIN
+        );
         new Job($action, ...$fail);
     }
 
