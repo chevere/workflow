@@ -25,6 +25,7 @@ use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use InvalidArgumentException;
 use OverflowException;
+use ReflectionClass;
 use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
@@ -205,11 +206,19 @@ final class Job implements JobInterface
             array_diff($requiredKeys, $intersectKeys)
         );
         if ($missing !== []) {
+            $reflection = new ReflectionClass($this->_);
+            $class = $reflection->getName();
+            $class = "`{$class}`";
+            if ($reflection->isAnonymous()) {
+                $class = 'Anonymous class in '
+                    . $reflection->getFileName() . ':' . $reflection->getStartLine();
+            }
+
             throw new ArgumentCountError(
                 (string) message(
-                    'Missing argument(s) [`%arguments%`] for `%action%`',
+                    'Missing argument(s) [`%arguments%`] for %action%',
                     arguments: implode(', ', $missing),
-                    action: $this->_::class
+                    action: $class
                 )
             );
         }
