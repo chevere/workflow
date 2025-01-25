@@ -23,6 +23,7 @@ use Chevere\Parameter\Interfaces\MixedParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersAccessInterface;
 use Chevere\Parameter\Interfaces\UnionParameterInterface;
+use Chevere\Workflow\Exceptions\JobsException;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\JobsInterface;
@@ -167,6 +168,7 @@ final class Jobs implements JobsInterface
 
     private function handleArguments(string $job, JobInterface $item): void
     {
+        $errors = [];
         foreach ($item->arguments() as $argument => $value) {
             $action = $item->action();
             $parameters = getParameters($action::class);
@@ -193,13 +195,25 @@ final class Jobs implements JobsInterface
                  */
                 $this->mapParameter($job, $argument, $collection, $parameter, $value);
             } catch (Throwable $e) {
-                throw new $e(
-                    strtr($e->getMessage(), [
+                $class = $e::class;
+                $errors[] = "{{$class}} "
+                    . strtr($e->getMessage(), [
                         '%parameter%' => $argument,
                         '%job%' => $job,
-                    ])
-                );
+                    ]);
             }
+        }
+
+        if ($errors !== []) {
+            throw new JobsException(
+                $job,
+                $item,
+                (string) message(
+                    '[Job %job%]: %errors%',
+                    job: $job,
+                    errors: implode('; ', $errors)
+                ),
+            );
         }
     }
 
@@ -238,7 +252,7 @@ final class Jobs implements JobsInterface
             } catch (OutOfBoundsException) {
                 throw new OutOfBoundsException(
                     (string) message(
-                        '%subject% **%key%** not found at job **%job%**',
+                        '%subject% **%key%** not found',
                         subject: $subject,
                         key: $identifier
                     )
@@ -286,11 +300,10 @@ final class Jobs implements JobsInterface
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException(
                 (string) message(
-                    '%subject% **%key%** conflict for parameter **%parameter%** on job **%job%** (%message%).',
+                    '%subject% **%key%** conflict for parameter **%parameter%** (%message%).',
                     subject: $subject,
                     key: $identifier,
                     parameter: $argument,
-                    job: $job,
                     message: $e->getMessage()
                 )
             );

@@ -20,9 +20,8 @@ use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Tests\src\TestActionParams;
+use Chevere\Workflow\Exceptions\JobsException;
 use Chevere\Workflow\Jobs;
-use InvalidArgumentException;
-use LogicException;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
@@ -189,10 +188,10 @@ final class JobsTest extends TestCase
 
     public function testWithReferenceShouldFail(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<STRING
-            Reference **one:bar** conflict for parameter **foo** on job **two** (Expected regex `/^bar$/`, provided `/^.*$/s`)
+            [Job two]: {InvalidArgumentException} Reference **one:bar** conflict for parameter **foo** (Expected regex `/^bar$/`, provided `/^.*$/s`)
             STRING
         );
         new Jobs(
@@ -209,8 +208,12 @@ final class JobsTest extends TestCase
 
     public function testMissingReference(): void
     {
-        $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Reference **zero:key** not found at job **two**');
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [Job two]: {OutOfBoundsException} Reference **zero:key** not found
+            PLAIN
+        );
         new Jobs(
             one: async(
                 new TestActionNoParams()
@@ -224,8 +227,12 @@ final class JobsTest extends TestCase
 
     public function testWrongReferenceType(): void
     {
-        $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference **one:id** is of type `int`, parameter **foo** expects `string` at job **two**');
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [Job two]: {TypeError} Reference **one:id** is of type `int`, parameter **foo** expects `string`
+            PLAIN
+        );
         new Jobs(
             one: async(
                 new TestActionNoParamsArrayIntResponse(),
@@ -345,8 +352,12 @@ final class JobsTest extends TestCase
 
     public function testWithMissingReference(): void
     {
-        $this->expectException(OutOfBoundsException::class);
-        $this->expectExceptionMessage('Reference **job1:missing** not found at job **job2**');
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [Job job2]: {OutOfBoundsException} Reference **job1:missing** not found
+            PLAIN
+        );
         new Jobs(
             job1: async(
                 new TestActionParamFooResponseBar(),
@@ -361,10 +372,10 @@ final class JobsTest extends TestCase
 
     public function testWithInvalidReference(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            Invalid reference **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
+            [Job job2]: {LogicException} Invalid reference **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
             PLAIN
         );
         new Jobs(
@@ -380,8 +391,12 @@ final class JobsTest extends TestCase
 
     public function testWithInvalidTypeReference(): void
     {
-        $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference **job1:baz** is of type `float`, parameter **foo** expects `string` at job **job2**');
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [Job job2]: {TypeError} Reference **job1:baz** is of type `float`, parameter **foo** expects `string`
+            PLAIN
+        );
         new Jobs(
             job1: async(
                 new TestActionParamFooResponseBar(),

@@ -22,6 +22,7 @@ use Chevere\Tests\src\TestActionParamsFooBarResponse2;
 use Chevere\Tests\src\TestActionThrows;
 use Chevere\Tests\src\TestActionUnion;
 use Chevere\Tests\src\TestActionVariadic;
+use Chevere\Workflow\Exceptions\JobsException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Run;
@@ -30,7 +31,6 @@ use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
 use Exception;
 use OutOfBoundsException;
 use PHPUnit\Framework\TestCase;
-use TypeError;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\run;
@@ -296,10 +296,10 @@ final class RunnerTest extends TestCase
 
     public function testActionUnionConflict(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            Reference **job1** is of type `string`, parameter **foo** expects `union` at job **job2**
+            [Job job2]: {TypeError} Reference **job1** is of type `string`, parameter **foo** expects `union`
             PLAIN
         );
         run(
