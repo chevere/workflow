@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Exceptions;
 
 /**
- * Exception thrown by the Jobs runtime (static).
+ * Exception thrown by the Workflow runner (dynamic).
  */
-final class JobsException extends WorkflowException
+final class RunnerException extends WorkflowException
 {
 }

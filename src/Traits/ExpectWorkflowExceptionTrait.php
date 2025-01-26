@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Traits;
 
-use Chevere\Workflow\Exceptions\WorkflowException;
+use Chevere\Workflow\Exceptions\RunnerException;
 use Closure;
 
 /**
@@ -42,7 +42,11 @@ trait ExpectWorkflowExceptionTrait // @phpstan-ignore-line
     ): void {
         try {
             $closure();
-        } catch (WorkflowException $e) {
+        } catch (RunnerException $e) {
+            $this->assertSame(
+                $e->getMessage(),
+                "[{$job}]: {$message}"
+            );
             $this->assertInstanceOf($instance, $e->throwable);
             if ($job !== null) {
                 $this->assertSame($job, $e->name);

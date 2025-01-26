@@ -260,10 +260,11 @@ final class RunnerTest extends TestCase
     {
         $closure = fn () => run(
             workflow(
-                job1: sync(new TestActionThrows()),
+                job1: sync(
+                    new TestActionThrows()
+                ),
             )
         );
-
         $this->expectWorkflowException(
             closure: $closure,
             instance: Exception::class,
