@@ -296,10 +296,11 @@ final class RunnerTest extends TestCase
 
     public function testActionUnionConflict(): void
     {
+        // previous: TypeError
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [Job job2]: {TypeError} Reference **job1** is of type `string`, parameter **foo** expects `union`
+            [job2]: Reference **job1** is of type `string`, parameter **foo** expects `union`
             PLAIN
         );
         run(

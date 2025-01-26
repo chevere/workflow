@@ -188,10 +188,11 @@ final class JobsTest extends TestCase
 
     public function testWithReferenceShouldFail(): void
     {
+        // previous: InvalidArgumentException
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<STRING
-            [Job two]: {InvalidArgumentException} Reference **one:bar** conflict for parameter **foo** (Expected regex `/^bar$/`, provided `/^.*$/s`)
+            [two]: Reference **one:bar** conflict for parameter **foo** (Expected regex `/^bar$/`, provided `/^.*$/s`)
             STRING
         );
         new Jobs(
@@ -208,10 +209,11 @@ final class JobsTest extends TestCase
 
     public function testMissingReference(): void
     {
+        // previous: OutOfBoundsException
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [Job two]: {OutOfBoundsException} Reference **zero:key** not found
+            [two]: Reference **zero:key** not found
             PLAIN
         );
         new Jobs(
@@ -227,10 +229,11 @@ final class JobsTest extends TestCase
 
     public function testWrongReferenceType(): void
     {
+        // previous: TypeError
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [Job two]: {TypeError} Reference **one:id** is of type `int`, parameter **foo** expects `string`
+            [two]: Reference **one:id** is of type `int`, parameter **foo** expects `string`
             PLAIN
         );
         new Jobs(
@@ -352,10 +355,11 @@ final class JobsTest extends TestCase
 
     public function testWithMissingReference(): void
     {
+        // previous: OutOfBoundsException
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [Job job2]: {OutOfBoundsException} Reference **job1:missing** not found
+            [job2]: Reference **job1:missing** not found
             PLAIN
         );
         new Jobs(
@@ -372,10 +376,11 @@ final class JobsTest extends TestCase
 
     public function testWithInvalidReference(): void
     {
+        // previous: LogicException
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [Job job2]: {LogicException} Invalid reference **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
+            [job2]: Invalid reference **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
             PLAIN
         );
         new Jobs(
@@ -391,10 +396,11 @@ final class JobsTest extends TestCase
 
     public function testWithInvalidTypeReference(): void
     {
+        // previous: TypeError
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [Job job2]: {TypeError} Reference **job1:baz** is of type `float`, parameter **foo** expects `string`
+            [job2]: Reference **job1:baz** is of type `float`, parameter **foo** expects `string`
             PLAIN
         );
         new Jobs(

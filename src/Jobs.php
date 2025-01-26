@@ -193,32 +193,18 @@ final class Jobs implements JobsInterface
                  * @var VariableInterface|ResponseReferenceInterface $value
                  * @phpstan-ignore-next-line
                  */
-                $this->mapParameter($job, $argument, $collection, $parameter, $value);
+                $this->mapParameter($argument, $collection, $parameter, $value);
             } catch (Throwable $e) {
-                $class = $e::class;
-                $errors[] = "{{$class}} "
-                    . strtr($e->getMessage(), [
-                        '%parameter%' => $argument,
-                        '%job%' => $job,
-                    ]);
+                throw new JobsException(
+                    name: $job,
+                    job: $item,
+                    throwable: $e
+                );
             }
-        }
-
-        if ($errors !== []) {
-            throw new JobsException(
-                $job,
-                $item,
-                (string) message(
-                    '[Job %job%]: %errors%',
-                    job: $job,
-                    errors: implode('; ', $errors)
-                ),
-            );
         }
     }
 
     private function mapParameter(
-        string $job,
         string $argument,
         string $collection,
         ParameterInterface $parameter,
@@ -286,7 +272,8 @@ final class Jobs implements JobsInterface
         if ($stored::class !== $parameter::class) {
             throw new TypeError(
                 (string) message(
-                    '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects `%expected%` at job **%job%**',
+                    '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects `%expected%`',
+                    parameter: $argument,
                     type: $stored->type()->primitive(),
                     expected: $parameter->type()->primitive(),
                     subject: $subject,

@@ -15,6 +15,7 @@ namespace Chevere\Workflow\Exceptions;
 
 use Chevere\Workflow\Interfaces\JobInterface;
 use Exception;
+use Throwable;
 
 /**
  * Exception thrown by the Jobs runtime.
@@ -31,14 +32,21 @@ final class JobsException extends Exception
      */
     public readonly JobInterface $job;
 
+    /**
+     * The exception thrown by the job.
+     */
+    public readonly Throwable $throwable;
+
     public function __construct(
         string $name,
         JobInterface $job,
-        string $message,
+        Throwable $throwable,
     ) {
-        parent::__construct(message: $message);
+        $message = "[{$name}]: " . $throwable->getMessage();
+        parent::__construct(message: $message, previous: $throwable);
         $this->name = $name;
         $this->job = $job;
+        $this->throwable = $throwable;
         $this->file = $job->caller()->file();
         $this->line = $job->caller()->line();
     }
