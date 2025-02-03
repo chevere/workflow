@@ -215,9 +215,10 @@ final class Job implements JobInterface
 
             throw new ArgumentCountError(
                 (string) message(
-                    'Missing argument(s) [`%arguments%`] for %action%',
+                    'Missing argument(s) [`%arguments%`] for %action% in %fileLine%',
                     arguments: implode(', ', $missing),
-                    action: $class
+                    action: $class,
+                    fileLine: $this->caller->__toString()
                 )
             );
         }
