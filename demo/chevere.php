@@ -11,6 +11,7 @@
 
 declare(strict_types=1);
 
+use Chevere\Demo\Actions\MyAction;
 use function Chevere\Workflow\{response,run,sync,variable,workflow};
 
 require 'loader.php';
@@ -18,16 +19,6 @@ require 'loader.php';
 /*
  * php demo/chevere.php
  */
-
-use Chevere\Action\Action;
-
-class MyAction extends Action
-{
-    protected function main(string $foo): string
-    {
-        return "Hello, {$foo}";
-    }
-}
 
 $workflow = workflow(
     greet: sync(
