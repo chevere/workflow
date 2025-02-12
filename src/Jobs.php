@@ -168,8 +168,8 @@ final class Jobs implements JobsInterface
 
     private function handleArguments(string $job, JobInterface $item): void
     {
-        $errors = [];
         foreach ($item->arguments() as $argument => $value) {
+            $argument = strval($argument);
             $action = $item->action();
             $parameters = getParameters($action::class);
             if ($parameters->has($argument)) {
