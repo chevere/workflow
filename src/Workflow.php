@@ -23,7 +23,6 @@ use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OutOfBoundsException;
-use function Chevere\Action\getParameters;
 use function Chevere\Parameter\bool;
 
 final class Workflow implements WorkflowInterface
@@ -89,15 +88,23 @@ final class Workflow implements WorkflowInterface
     private function putParameters(string $name, JobInterface $job): void
     {
         $action = $job->action();
-        $parameters = getParameters($action::class);
-
+        $parameters = $action::parameters();
+        $positions = array_keys($parameters->keys());
+        $lastKey = array_key_last($parameters->keys());
         $this->provided = $this->provided->withPut($name, $action::return());
-        foreach ($job->arguments() as $name => $value) {
-            if ($parameters->isVariadic()) {
-                $lastKey = array_key_last($parameters->keys());
-                $name = $parameters->keys()[$lastKey];
+        foreach ($job->arguments() as $id => $value) {
+            $id = strval($id);
+            if (! $parameters->has($id)) {
+                $search = array_search($id, $positions);
+                $id = $parameters->keys()[$search] ?? null;
+                if ($id === null && $parameters->isVariadic()) {
+                    $id = $parameters->keys()[$lastKey];
+                }
+                if ($id === null) {
+                    continue;
+                }
             }
-            $parameter = $parameters->get($name);
+            $parameter = $parameters->get($id);
             $this->putVariableReference($value, $parameter);
         }
     }
