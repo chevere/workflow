@@ -35,7 +35,6 @@ use OutOfBoundsException;
 use OverflowException;
 use Throwable;
 use TypeError;
-use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
 
@@ -171,7 +170,17 @@ final class Jobs implements JobsInterface
         foreach ($item->arguments() as $argument => $value) {
             $argument = strval($argument);
             $action = $item->action();
-            $parameters = getParameters($action::class);
+            $parameters = $action::parameters();
+            $positions = array_keys($parameters->keys());
+            if ($parameters->has($argument)) {
+                $parameter = $parameters->get($argument);
+            } else {
+                $find = array_search($argument, $positions);
+                if ($find === false) {
+                    continue;
+                }
+                $argument = $parameters->keys()[$find];
+            }
             if ($parameters->has($argument)) {
                 $parameter = $parameters->get($argument);
             } elseif ($parameters->isVariadic()) {
