@@ -96,10 +96,14 @@ final class Workflow implements WorkflowInterface
             $id = strval($id);
             if (! $parameters->has($id)) {
                 $search = array_search($id, $positions);
-                $id = $parameters->keys()[$search] ?? null;
-                if ($id === null && $parameters->isVariadic()) {
-                    $id = $parameters->keys()[$lastKey];
+                if ($search) {
+                    $id = $parameters->keys()[$search];
+                } else {
+                    $id = $parameters->isVariadic()
+                        ? $parameters->keys()[$lastKey]
+                        : null;
                 }
+
                 if ($id === null) {
                     continue;
                 }
