@@ -408,7 +408,7 @@ Use `response` to retrieve a job response as a `CastArgument` object which can b
 $thumbFile = $run->response('thumb')->string();
 ```
 
-🪄 If the response is of type `array|ArrayAccess` you can shortcut key access casting.
+🪄 If the response is of type `array` you can shortcut key access casting.
 
 ```php
 use function Chevere\Parameter\cast;
