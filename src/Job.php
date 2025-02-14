@@ -15,11 +15,12 @@ namespace Chevere\Workflow;
 
 use ArgumentCountError;
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Caller\Caller;
+use Chevere\Caller\Interfaces\CallerInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
-use Chevere\Workflow\Interfaces\CallerInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;

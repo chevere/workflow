@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Caller\Interfaces\CallerInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 
 /**
