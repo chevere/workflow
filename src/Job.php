@@ -169,14 +169,19 @@ final class Job implements JobInterface
 
             return;
         }
+        $values = [];
         $isPositional = array_is_list($argument);
         $lastKey = array_key_last($this->parameters->keys());
         $lastName = $this->parameters->keys()[$lastKey] ?? null;
         foreach ($this->parameters as $name => $parameter) {
             if ($name === $lastName && $this->parameters->isVariadic()) {
                 if ($isPositional) {
-                    /** @var int $lastKey */
-                    $variadicKeys = array_slice($argument, $lastKey);
+                    $sliceAt = count($this->parameters) - 1;
+                    $variadicKeys = array_slice($argument, $sliceAt);
+                    $variadicKeys = array_combine(
+                        range($sliceAt, $sliceAt + count($variadicKeys) - 1),
+                        $variadicKeys
+                    );
                 } else {
                     $variadicKeys = array_diff_key(
                         $argument,
@@ -193,11 +198,20 @@ final class Job implements JobInterface
                 break;
             }
 
+            if (! array_key_exists($name, $argument)) {
+                $named = strval($name);
+                $name = array_search($name, $this->parameters->keys());
+                if ($name === false) {
+                    continue;
+                }
+                $name = strval($name);
+            }
+
             if (array_key_exists($name, $argument)) {
                 $value = $argument[$name];
                 $values[$name] = $value;
                 $this->inferDependencies($value);
-                $this->assertParameter($name, $parameter, $value);
+                $this->assertParameter($named ?? $name, $parameter, $value);
             }
         }
         $this->arguments = $values;
