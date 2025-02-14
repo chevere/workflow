@@ -164,15 +164,25 @@ final class Job implements JobInterface
         if (! $this->parameters->isVariadic()) {
             $this->assertArgumentsCount($argument);
         }
+        if (count($this->parameters) === 0) {
+            $this->arguments = $argument; // @phpstan-ignore-line
+
+            return;
+        }
+        $isPositional = array_is_list($argument);
         $lastKey = array_key_last($this->parameters->keys());
         $lastName = $this->parameters->keys()[$lastKey] ?? null;
-        $values = [];
         foreach ($this->parameters as $name => $parameter) {
             if ($name === $lastName && $this->parameters->isVariadic()) {
-                $variadicKeys = array_diff_key(
-                    $argument,
-                    array_flip($this->parameters->keys())
-                );
+                if ($isPositional) {
+                    /** @var int $lastKey */
+                    $variadicKeys = array_slice($argument, $lastKey);
+                } else {
+                    $variadicKeys = array_diff_key(
+                        $argument,
+                        array_flip($this->parameters->keys())
+                    );
+                }
                 foreach ($variadicKeys as $key => $value) {
                     $key = strval($key);
                     $values[$key] = $value;
