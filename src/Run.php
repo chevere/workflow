@@ -61,6 +61,16 @@ final class Run implements RunInterface
         $this->skip = new Vector();
     }
 
+    public function toArray(): array
+    {
+        $return = [];
+        foreach ($this->map as $name => $cast) {
+            $return[$name] = $cast->mixed();
+        }
+
+        return $return;
+    }
+
     public function uuid(): string
     {
         return $this->uuid;
@@ -86,7 +96,8 @@ final class Run implements RunInterface
         $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
         $new = clone $this;
         $new->workflow->jobs()->get($job);
-        $new->workflow->getJobResponseParameter($job)->__invoke($response->mixed());
+        $new->workflow->getJobResponseParameter($job)
+            ->__invoke($response->mixed());
         $new->map = $new->map->withPut($job, $response);
 
         return $new;

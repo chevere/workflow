@@ -64,4 +64,9 @@ interface RunInterface extends StringMappedInterface
      * @deprecated Use `response` instead.
      */
     public function getReturn(string $job): CastInterface;
+
+    /**
+     * @return array<string, mixed> Returns all jobs and their raw return.
+     */
+    public function toArray(): array;
 }

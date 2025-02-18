@@ -41,6 +41,7 @@ final class RunTest extends TestCase
             'foo' => 'bar',
         ];
         $run = new Run($workflow, ...$arguments);
+        $this->assertSame([], $run->toArray());
         $this->assertMatchesRegularExpression(
             '/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i',
             $run->uuid()
@@ -71,9 +72,19 @@ final class RunTest extends TestCase
             'baz' => 'ql',
         ];
         $run = (new Run($workflow, ...$arguments));
-        $workflowRunWithStepResponse = $run->withResponse('job0', new Cast([]));
-        $this->assertNotSame($run, $workflowRunWithStepResponse);
-        $this->assertSame([], $workflowRunWithStepResponse->response('job0')->array());
+        $with = $run
+            ->withResponse('job0', new Cast(['a']))
+            ->withResponse('job1', new Cast(['b']));
+        $this->assertSame(
+            [
+                'job0' => ['a'],
+                'job1' => ['b'],
+            ],
+            $with->toArray()
+        );
+        $this->assertNotSame($run, $with);
+        $this->assertSame(['a'], $with->response('job0')->array());
+        $this->assertSame(['b'], $with->response('job1')->array());
     }
 
     public function testWithAddedNotFound(): void
@@ -124,19 +135,18 @@ final class RunTest extends TestCase
         );
         $run = new Run($workflow);
         $this->assertCount(0, $run->skip());
-        $immutable = $run->withSkip('job1', 'job2');
-        $this->assertNotSame($run, $immutable);
-        $this->assertCount(2, $immutable->skip());
-        $this->assertSame(['job1', 'job2'], $immutable->skip()->toArray());
+        $with = $run->withSkip('job1', 'job2');
+        $this->assertNotSame($run, $with);
+        $this->assertCount(2, $with->skip());
+        $this->assertSame(['job1', 'job2'], $with->skip()->toArray());
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Job job1 already skipped');
-        $immutable->withSkip('job1');
+        $with->withSkip('job1');
     }
 
     public function testWithSkipMissingJob(): void
     {
-        $workflow = workflow();
-        $run = new Run($workflow);
+        $run = new Run(workflow());
         $this->expectException(OutOfBoundsException::class);
         $run->withSkip('job1', 'job2');
     }
