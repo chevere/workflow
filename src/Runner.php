@@ -53,10 +53,12 @@ final class Runner implements RunnerInterface
             }
             $executions = $new->getExecutions($node);
             /** @var RunnerInterface[] $responses */
-            $responses = await(array_map(
-                fn (Execution $e) => $e->getFuture(),
-                $executions,
-            ));
+            $responses = await(
+                array_map(
+                    fn (Execution $e) => $e->getFuture(),
+                    $executions,
+                )
+            );
             foreach ($responses as $runner) {
                 $new->merge($new, $runner);
             }

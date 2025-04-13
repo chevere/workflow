@@ -227,7 +227,7 @@ final class Job implements JobInterface
         $intersectKeys = array_intersect(array_keys($arguments), $requiredKeys);
         $countIntersect = count($intersectKeys);
         $missing = array_map(
-            fn (string $item) => $this->formatAsVariable($item),
+            $this->formatAsVariable(...),
             array_diff($requiredKeys, $intersectKeys)
         );
         if ($missing !== []) {
@@ -252,7 +252,7 @@ final class Job implements JobInterface
             || $countProvided > count($this->parameters)
         ) {
             $requiredVars = array_map(
-                fn (string $item) => $this->formatAsVariable($item),
+                $this->formatAsVariable(...),
                 $requiredKeys
             );
             $parameters = implode(', ', $requiredVars);
