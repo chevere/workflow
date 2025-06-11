@@ -24,6 +24,7 @@ use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use Closure;
 use InvalidArgumentException;
 use OverflowException;
 use ReflectionClass;
@@ -96,23 +97,33 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIf(ResponseReferenceInterface|VariableInterface ...$context): JobInterface
+    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable ...$context): JobInterface
     {
         $new = clone $this;
         $new->runIf = new Vector();
         $known = new Vector();
         foreach ($context as $item) {
-            if ($known->contains($item->__toString())) {
+            $itemString = match (true) {
+                $item instanceof ResponseReferenceInterface,
+                $item instanceof VariableInterface => $item->__toString(),
+                $item instanceof Closure => 'callable#' . spl_object_id($item),
+                default => null,
+            };
+            if ($itemString !== null
+                && $known->contains($itemString)
+            ) {
                 throw new OverflowException(
                     (string) message(
                         'Condition `%condition%` is already defined',
-                        condition: $item->__toString()
+                        condition: $itemString
                     )
                 );
             }
             $new->inferDependencies($item);
             $new->runIf = $new->runIf->withPush($item);
-            $known = $known->withPush($item->__toString());
+            if ($itemString !== null) {
+                $known = $known->withPush($itemString);
+            }
         }
 
         return $new;

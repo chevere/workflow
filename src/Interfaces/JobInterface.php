@@ -24,7 +24,7 @@ interface JobInterface
 {
     public function withArguments(mixed ...$argument): self;
 
-    public function withRunIf(ResponseReferenceInterface|VariableInterface ...$context): self;
+    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable ...$context): self;
 
     /**
      * Return an instance with the specified sync flag.

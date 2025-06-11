@@ -30,6 +30,8 @@ use Chevere\Workflow\Runner;
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
 use Exception;
 use OutOfBoundsException;
+use OverflowException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
@@ -254,6 +256,36 @@ final class RunnerTest extends TestCase
         $this->assertSame($jobsKeysSkip, $runner->run()->skip()->toArray());
         $run = run($workflow);
         $this->assertSame($jobsKeysSkip, $runner->run()->skip()->toArray());
+    }
+
+    #[DataProvider('dataProviderRunIfCallable')]
+    public function testRunIfCallable(bool $runIf): void
+    {
+        $callable = fn () => $runIf;
+        $job = async(new TestActionNoParams())
+            ->withRunIf($callable);
+        $workflow = workflow(job1: $job);
+        $run = run($workflow);
+        $this->assertSame(
+            ! $runIf,
+            $run->skip()->contains('job1'),
+        );
+    }
+
+    public function testRunIfCallableOverflow(): void
+    {
+        $this->expectException(OverflowException::class);
+        $callable = fn () => true;
+        async(new TestActionNoParams())
+            ->withRunIf($callable, $callable);
+    }
+
+    public static function dataProviderRunIfCallable(): array
+    {
+        return [
+            [true],
+            [false],
+        ];
     }
 
     public function testActionThrows(): void
