@@ -189,6 +189,9 @@ final class Job implements JobInterface
                 if ($isPositional) {
                     $sliceAt = count($this->parameters) - 1;
                     $variadicKeys = array_slice($argument, $sliceAt);
+                    if ($variadicKeys === []) {
+                        continue;
+                    }
                     $variadicKeys = array_combine(
                         range($sliceAt, $sliceAt + count($variadicKeys) - 1),
                         $variadicKeys
@@ -208,7 +211,6 @@ final class Job implements JobInterface
 
                 break;
             }
-
             if (! array_key_exists($name, $argument)) {
                 $named = strval($name);
                 $name = array_search($name, $this->parameters->keys());
@@ -217,7 +219,6 @@ final class Job implements JobInterface
                 }
                 $name = strval($name);
             }
-
             if (array_key_exists($name, $argument)) {
                 $value = $argument[$name];
                 $values[$name] = $value;
