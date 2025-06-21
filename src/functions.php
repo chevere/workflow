@@ -14,6 +14,11 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Workflow\Conjunctions\AndConjuntion;
+use Chevere\Workflow\Conjunctions\Conjunction;
+use Chevere\Workflow\Conjunctions\NorConjunction;
+use Chevere\Workflow\Conjunctions\OrConjunction;
+use Chevere\Workflow\Interfaces\ConjunctionInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -99,6 +104,36 @@ function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
     }
 
     return $runner->withRunJob($job);
+}
+
+/**
+ * Creates an AND style Conjunction
+ * @param ConjunctionInterface|ResponseReferenceInterface|VariableInterface|callable ...$conditions
+ * @return ConjunctionInterface
+ */
+function cand(ConjunctionInterface|ResponseReferenceInterface|VariableInterface|callable ...$conditions): ConjunctionInterface
+{
+    return new AndConjuntion(...$conditions);
+}
+
+/**
+ * Creates an OR style Conjunction
+ * @param ConjunctionInterface|ResponseReferenceInterface|VariableInterface|callable ...$conditions
+ * @return ConjunctionInterface
+ */
+function cor(ConjunctionInterface|ResponseReferenceInterface|VariableInterface|callable ...$conditions): ConjunctionInterface
+{
+    return new OrConjunction(...$conditions);
+}
+
+/**
+ * Creates a NOR style Conjunction
+ * @param ConjunctionInterface|ResponseReferenceInterface|VariableInterface|callable ...$conditions
+ * @return ConjunctionInterface
+ */
+function cnor(ConjunctionInterface|ResponseReferenceInterface|VariableInterface|callable ...$conditions): ConjunctionInterface
+{
+    return new NorConjunction(...$conditions);
 }
 
 /**

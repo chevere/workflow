@@ -21,6 +21,7 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
+use Chevere\Workflow\Interfaces\ConjunctionInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
@@ -97,7 +98,9 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable ...$context): JobInterface
+    public function withRunIf(
+        ConjunctionInterface|ResponseReferenceInterface|VariableInterface|callable ...$context
+    ): JobInterface
     {
         $new = clone $this;
         $new->runIf = new Vector();
@@ -106,6 +109,7 @@ final class Job implements JobInterface
             $itemString = match (true) {
                 $item instanceof ResponseReferenceInterface,
                 $item instanceof VariableInterface => $item->__toString(),
+                $item instanceof ConjunctionInterface => 'conjunction#' . spl_object_id($item),
                 $item instanceof Closure => 'callable#' . spl_object_id($item),
                 default => null,
             };

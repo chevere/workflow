@@ -14,17 +14,22 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Amp\Parallel\Worker\Execution;
+use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Parameter\Interfaces\CastInterface;
+use Chevere\Workflow\Conjunctions\NorConjunction;
 use Chevere\Workflow\Exceptions\RunnerException;
+use Chevere\Workflow\Interfaces\ConjunctionInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use InvalidArgumentException;
 use OutOfBoundsException;
 use Throwable;
 use function Amp\Future\await;
 use function Amp\Parallel\Worker\submit;
+use function Chevere\Message\message;
 use function Chevere\Parameter\cast;
 
 final class Runner implements RunnerInterface
@@ -104,15 +109,37 @@ final class Runner implements RunnerInterface
         return $new;
     }
 
-    private function getRunIfCondition(VariableInterface|ResponseReferenceInterface|callable $runIf): bool
+    private function getRunIfCondition(
+        ConjunctionInterface|VariableInterface|ResponseReferenceInterface|callable $runIf
+    ): bool
     {
+        if ($runIf instanceof ConjunctionInterface) {
+            $results = [];
+
+            foreach ($runIf->getIterator() as $runIfCondition) {
+                $results[] = $this
+                    ->getRunIfCondition($runIfCondition);
+            }
+
+            $filter = array_filter($results);
+
+            return match ($runIf->conjunction()) {
+                ConjunctionInterface::CONJUNCTION_NOR => empty($filter),
+                ConjunctionInterface::CONJUNCTION_OR => !empty($filter),
+                ConjunctionInterface::CONJUNCTION_AND => ($results == $filter),
+                default => false
+            };
+        }
+
         /** @var boolean */
         return match(true) {
             $runIf instanceof VariableInterface =>
                 $this->run->arguments()->required($runIf->__toString())->bool(),
 
             $runIf instanceof ResponseReferenceInterface =>
-                $this->run->getReturn($runIf->job())->array()[$runIf->key()],
+                ($this->run->workflow()->jobs()->get($runIf->job())->action()::return() instanceof BoolParameterInterface) ?
+                    $this->run->response($runIf->job())->bool() :
+                    $this->run->response($runIf->job())->array()[$runIf->key()],
 
             default =>
                 call_user_func($runIf, $this->run())
@@ -126,30 +153,61 @@ final class Runner implements RunnerInterface
     {
         $arguments = [];
         foreach ($job->arguments() as $name => $value) {
-            $isResponseReference = $value instanceof ResponseReferenceInterface;
-            $isVariable = $value instanceof VariableInterface;
-            if (! ($isResponseReference || $isVariable)) {
-                $arguments[$name] = $value;
+            if ($value instanceof VariableInterface ||
+                $value instanceof ResponseReferenceInterface ||
+                $value instanceof ConjunctionInterface
+            ) {
+                try {
+                    $arguments[$name] = $this
+                        ->processJobArgument($value);
+
+                } catch (Throwable $e) {
+                    throw new RunnerException($name, $job, $e);
+                }
 
                 continue;
             }
-            if ($isVariable) {
-                /** @var VariableInterface $value */
-                $arguments[$name] = $this->run->arguments()
-                    ->get($value->__toString());
 
-                continue;
-            }
-            /** @var ResponseReferenceInterface $value */
-            if ($value->key() !== null) {
-                $arguments[$name] = $this->run->response($value->job())->array()[$value->key()];
-
-                continue;
-            }
-            $arguments[$name] = $this->run->response($value->job())->mixed();
+            $arguments[$name] = $value;
         }
 
         return $arguments;
+    }
+
+    private function processJobArgument(
+        ConjunctionInterface|VariableInterface|ResponseReferenceInterface|callable $value
+    ): mixed
+    {
+        if ($value instanceof ConjunctionInterface) {
+            if ($value->conjunction() !== ConjunctionInterface::CONJUNCTION_OR) {
+                throw new RunnerException('');
+            }
+
+            /** @var ConjunctionInterface|VariableInterface|ResponseReferenceInterface|callable $conditional */
+            foreach ($value->getIterator() as $conditional) {
+                $val = $this
+                    ->processJobArgument($conditional);
+
+                if ($val !== null) {
+                    return $val;
+                }
+            }
+
+            throw new InvalidArgumentException();
+        }
+
+        return match(true) {
+            $value instanceof VariableInterface =>
+                $this->run->arguments()->get($value->__toString()),
+
+            $value instanceof ResponseReferenceInterface =>
+                ($value->key() !== null) ?
+                    $this->run->response($value->job())->array()[$value->key()] :
+                    $this->run->response($value->job())->mixed(),
+
+            default =>
+                call_user_func($value, $this->run())
+        };
     }
 
     private function addJobResponse(string $name, CastInterface $response): void
