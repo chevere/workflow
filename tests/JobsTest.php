@@ -192,7 +192,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<STRING
-            [two]: Reference **one:bar** conflict for parameter **foo** (Expected regex `/^bar$/`, provided `/^.*$/s`)
+            [two]: Response **one:bar** conflict at parameter **foo**: Expected regex `/^bar$/`, provided `/^.*$/s`
             STRING
         );
         new Jobs(
@@ -213,7 +213,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [two]: Reference **zero:key** not found
+            [two]: Response **zero:key** not found
             PLAIN
         );
         new Jobs(
@@ -233,7 +233,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [two]: Reference **one:id** is of type `int`, parameter **foo** expects `string`
+            [two]: Response **one:id** is of type `int`, parameter **foo** expects `string`
             PLAIN
         );
         new Jobs(
@@ -274,7 +274,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Reference **j1:id** must be of type `bool`');
+        $this->expectExceptionMessage('Response **j1:id** must be of type `bool`');
         new Jobs(
             j1: async(new TestActionNoParamsArrayIntResponse()),
             j2: async(new TestActionNoParams())
@@ -359,7 +359,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Reference **job1:missing** not found
+            [job2]: Response **job1:missing** not found
             PLAIN
         );
         new Jobs(
@@ -380,7 +380,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Invalid reference **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
+            [job2]: Invalid response **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
             PLAIN
         );
         new Jobs(
@@ -400,7 +400,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Reference **job1:baz** is of type `float`, parameter **foo** expects `string`
+            [job2]: Response **job1:baz** is of type `float`, parameter **foo** expects `string`
             PLAIN
         );
         new Jobs(

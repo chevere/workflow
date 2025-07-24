@@ -221,23 +221,23 @@ final class Jobs implements JobsInterface
     ): void {
         /** @var MapInterface<ParameterInterface> $map */
         $map = $this->{$collection};
-        $subject = 'Reference';
+        $subject = 'Response';
         $identifier = strval($value);
         if ($value instanceof VariableInterface) {
             $subject = 'Variable';
         } else {
             try {
-                /** @var JobInterface $referenceJob */
-                $referenceJob = $this->map->get($value->job());
+                /** @var JobInterface $responseJob */
+                $responseJob = $this->map->get($value->job());
                 /** @var ParameterInterface $accept */
-                $accept = $referenceJob->action()::return();
+                $accept = $responseJob->action()::return();
                 if ($value->key() !== null) {
                     if (! $accept instanceof ParametersAccessInterface) {
                         throw new LogicException(
                             (string) message(
-                                "Invalid reference **%reference%** as **%job%** doesn't return an object implementing %interface% interface",
+                                "Invalid response **%response%** as **%job%** doesn't return an object implementing %interface% interface",
                                 job: $value->job(),
-                                reference: strval($value),
+                                response: strval($value),
                                 interface: ParametersAccessInterface::class
                             )
                         );
@@ -296,7 +296,7 @@ final class Jobs implements JobsInterface
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException(
                 (string) message(
-                    '%subject% **%key%** conflict for parameter **%parameter%** (%message%).',
+                    '%subject% **%key%** conflict at parameter **%parameter%**: %message%',
                     subject: $subject,
                     key: $identifier,
                     parameter: $argument,
@@ -317,8 +317,8 @@ final class Jobs implements JobsInterface
             if (! $accept instanceof ParametersAccessInterface) {
                 throw new OutOfBoundsException(
                     (string) message(
-                        'Reference **%reference%** job `%job%` response doesn\'t bind to `%parameter%` parameter',
-                        reference: strval($runIf),
+                        'Response **%response%** job `%job%` doesn\'t bind to `%parameter%` parameter',
+                        response: strval($runIf),
                         job: $runIf->job(),
                         parameter: $runIf->key()
                     )
@@ -332,8 +332,8 @@ final class Jobs implements JobsInterface
 
         throw new TypeError(
             (string) message(
-                'Reference **%reference%** must be of type `bool`, `%type%` provided',
-                reference: strval($runIf),
+                'Response **%response%** must be of type `bool`, `%type%` provided',
+                response: strval($runIf),
                 type: $accept->type()->primitive()
             )
         );

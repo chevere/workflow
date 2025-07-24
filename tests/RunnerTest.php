@@ -333,7 +333,7 @@ final class RunnerTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Reference **job1** is of type `string`, parameter **foo** expects `union`
+            [job2]: Response **job1** is of type `string`, parameter **foo** expects `union`
             PLAIN
         );
         run(
