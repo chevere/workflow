@@ -18,6 +18,7 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
+use Chevere\Parameter\Attributes\ReturnAttr;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Parameter\Interfaces\MixedParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
@@ -33,10 +34,12 @@ use InvalidArgumentException;
 use LogicException;
 use OutOfBoundsException;
 use OverflowException;
+use ReflectionMethod;
 use Throwable;
 use TypeError;
 use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
+use function Chevere\Parameter\reflectionToReturn;
 
 final class Jobs implements JobsInterface
 {
@@ -146,6 +149,11 @@ final class Jobs implements JobsInterface
     {
         $action = $item->action();
         $return = $action::return();
+        $reflection = new ReflectionMethod($action, 'main');
+        $attributes = $reflection->getAttributes(ReturnAttr::class);
+        if ($attributes !== []) {
+            $return = reflectionToReturn($reflection);
+        }
         if ($return instanceof ParametersAccessInterface
             && ! ($return instanceof UnionParameterInterface)
         ) {

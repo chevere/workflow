@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
+use Chevere\Tests\src\TestActionIntParamReturnAttr;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
@@ -425,5 +426,21 @@ final class JobsTest extends TestCase
         );
         $runIf = $jobs->get('j2')->runIf()->get(0);
         $this->assertSame($callable, $runIf);
+    }
+
+    public function testWithAttrOverride(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage('[j2]: Response **j1** conflict at parameter **number**: Expected min value `8`, provided `1`');
+        new Jobs(
+            j1: async(
+                new TestActionIntParamReturnAttr(),
+                number: 1,
+            ),
+            j2: async(
+                new TestActionIntParamReturnAttr(),
+                number: response('j1')
+            )
+        );
     }
 }
