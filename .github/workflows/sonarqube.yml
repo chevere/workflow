@@ -1,4 +1,4 @@
-name: SonarCloud
+name: SonarQube Cloud Scan
 on: [push]
 jobs:
   sonarcloud:
@@ -45,7 +45,7 @@ jobs:
         run: |
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' clover.xml
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' junit.xml
-      - name: SonarCloud scan
+      - name: SonarQube cloud scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
