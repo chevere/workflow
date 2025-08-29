@@ -54,4 +54,9 @@ jobs:
       - name: Mutation testing (Infection)
         env:
           INFECTION_BADGE_API_KEY: ${{ secrets.INFECTION_BADGE_API_KEY }}
-        run: infection --coverage=build/logs --min-covered-msi=90 --threads=$(nproc) --logger-github --only-covered
+        run: |
+          if [ "${{ matrix.php }}" = "8.1" ]; then
+            infection --coverage=build/logs --min-covered-msi=90 --threads=$(nproc) --logger-github --only-covered
+          else
+            infection --coverage=build/logs --min-covered-msi=90 --threads=$(nproc) --logger-github
+          fi
