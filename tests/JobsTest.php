@@ -193,7 +193,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<STRING
-            [two]: Response **one:bar** conflict at parameter **foo**: Expected regex `/^bar$/`, provided `/^.*$/s`
+            [two]: Response **one:bar** conflict at parameter **foo**: Expected regex `/^.*$/s`, provided `/^bar$/`
             STRING
         );
         new Jobs(
@@ -431,7 +431,7 @@ final class JobsTest extends TestCase
     public function testWithAttrOverride(): void
     {
         $this->expectException(JobsException::class);
-        $this->expectExceptionMessage('[j2]: Response **j1** conflict at parameter **number**: Expected min value `8`, provided `1`');
+        $this->expectExceptionMessage('[j2]: Response **j1** conflict at parameter **number**: Expected min value `1`, provided `8`');
         new Jobs(
             j1: async(
                 new TestActionIntParamReturnAttr(),

@@ -293,7 +293,7 @@ final class Jobs implements JobsInterface
         }
 
         try {
-            $stored->assertCompatible($parameter);
+            $parameter->assertCompatible($stored);
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException(
                 (string) message(
