@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Action\Action;
+use Chevere\Parameter\Attributes\IntAttr;
+use Chevere\Parameter\Attributes\ReturnAttr;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Tests\src\TestActionIntParamReturnAttr;
 use Chevere\Tests\src\TestActionNoParams;
@@ -441,6 +444,37 @@ final class JobsTest extends TestCase
                 new TestActionIntParamReturnAttr(),
                 number: response('j1')
             )
+        );
+    }
+
+    public function testAttributeDrivenReference(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage('[job2]: Response **job1** conflict at parameter **number**: Expected min value `1`, provided `-1`');
+        new Jobs(
+            job1: sync(
+                new class() extends Action {
+                    #[ReturnAttr(
+                        new IntAttr(min: -1)
+                    )]
+                    protected function main(
+                        bool $isAnnual,
+                        #[IntAttr(min: 0)]
+                        int $recurring_price_month,
+                        #[IntAttr(min: 0)]
+                        int $recurring_price_year,
+                    ): int {
+                        return $isAnnual ? $recurring_price_year : $recurring_price_month;
+                    }
+                },
+                isAnnual: variable('isAnnual'),
+                recurring_price_year: 96,
+                recurring_price_month: 10,
+            ),
+            job2: sync(
+                new TestActionIntParamReturnAttr(),
+                number: response('job1'),
+            ),
         );
     }
 }
