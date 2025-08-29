@@ -18,7 +18,6 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use Chevere\Parameter\Attributes\ReturnAttr;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Parameter\Interfaces\MixedParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
@@ -34,12 +33,11 @@ use InvalidArgumentException;
 use LogicException;
 use OutOfBoundsException;
 use OverflowException;
-use ReflectionMethod;
 use Throwable;
 use TypeError;
+use function Chevere\Action\getReturnParameter;
 use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
-use function Chevere\Parameter\reflectionToReturn;
 
 final class Jobs implements JobsInterface
 {
@@ -148,12 +146,7 @@ final class Jobs implements JobsInterface
     private function storeReferences(string $job, JobInterface $item): void
     {
         $action = $item->action();
-        $return = $action::return();
-        $reflection = new ReflectionMethod($action, 'main');
-        $attributes = $reflection->getAttributes(ReturnAttr::class);
-        if ($attributes !== []) {
-            $return = reflectionToReturn($reflection);
-        }
+        $return = getReturnParameter($action::class);
         if ($return instanceof ParametersAccessInterface
             && ! ($return instanceof UnionParameterInterface)
         ) {
@@ -238,7 +231,7 @@ final class Jobs implements JobsInterface
                 /** @var JobInterface $responseJob */
                 $responseJob = $this->map->get($value->job());
                 /** @var ParameterInterface $accept */
-                $accept = $responseJob->action()::return();
+                $accept = getReturnParameter($responseJob->action()::class);
                 if ($value->key() !== null) {
                     if (! $accept instanceof ParametersAccessInterface) {
                         throw new LogicException(
@@ -320,7 +313,7 @@ final class Jobs implements JobsInterface
             return;
         }
         $action = $this->get($runIf->job())->action();
-        $accept = $action::return();
+        $accept = getReturnParameter($action::class);
         if ($runIf->key() !== null) {
             if (! $accept instanceof ParametersAccessInterface) {
                 throw new OutOfBoundsException(
