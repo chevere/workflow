@@ -20,15 +20,15 @@ use function Chevere\Parameter\string;
 
 class TestActionParamFooResponse1 extends Action
 {
-    public static function return(): ParameterInterface
-    {
-        return arrayp(response1: string());
-    }
-
-    public function main(string $foo): array
+    public function __invoke(string $foo): array
     {
         return [
             'response1' => $foo,
         ];
+    }
+
+    public static function return(): ParameterInterface
+    {
+        return arrayp(response1: string());
     }
 }

@@ -19,13 +19,13 @@ use function Chevere\Parameter\string;
 
 class Greet extends Action
 {
+    public function __invoke(string $username): string
+    {
+        return "Hello, {$username}!";
+    }
+
     public static function return(): StringParameterInterface
     {
         return string('/^Hello, /');
-    }
-
-    protected function main(string $username): string
-    {
-        return "Hello, {$username}!";
     }
 }

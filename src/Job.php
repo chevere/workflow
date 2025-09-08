@@ -273,7 +273,7 @@ final class Job implements JobInterface
             throw new ArgumentCountError(
                 (string) message(
                     '`%symbol%` requires %countRequired% argument(s)%parameters%',
-                    symbol: $this->_::class . '::' . $this->_::mainMethod(),
+                    symbol: $this->_::class . '::__invoke',
                     countRequired: strval(count($requiredKeys)),
                     parameters: $parameters === '' ? '' : " `{$parameters}`"
                 )

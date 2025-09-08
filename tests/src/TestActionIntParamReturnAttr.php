@@ -24,18 +24,18 @@ use function Chevere\Parameter\int;
  */
 final class TestActionIntParamReturnAttr extends Action
 {
-    public static function return(): IntParameterInterface
-    {
-        return int(min: 0);
-    }
-
     #[ReturnAttr(
         new IntAttr(min: 8)
     )]
-    public function main(
+    public function __invoke(
         #[IntAttr(min: 1)]
         int $number
     ): int {
         return 2 * $number;
+    }
+
+    public static function return(): IntParameterInterface
+    {
+        return int(min: 0);
     }
 }

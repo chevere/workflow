@@ -23,7 +23,6 @@ use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OutOfBoundsException;
-use function Chevere\Action\getReturnParameter;
 use function Chevere\Parameter\bool;
 
 final class Workflow implements WorkflowInterface
@@ -92,7 +91,10 @@ final class Workflow implements WorkflowInterface
         $parameters = $action::parameters();
         $positions = array_keys($parameters->keys());
         $lastKey = array_key_last($parameters->keys());
-        $this->provided = $this->provided->withPut($name, getReturnParameter($action::class));
+        $this->provided = $this->provided->withPut(
+            $name,
+            $action->reflection()->return()
+        );
         foreach ($job->arguments() as $id => $value) {
             $id = strval($id);
             if (! $parameters->has($id)) {

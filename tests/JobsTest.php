@@ -457,7 +457,7 @@ final class JobsTest extends TestCase
                     #[ReturnAttr(
                         new IntAttr(min: -1)
                     )]
-                    protected function main(
+                    public function __invoke(
                         bool $isAnnual,
                         #[IntAttr(min: 0)]
                         int $recurring_price_month,

@@ -18,7 +18,7 @@ use RuntimeException;
 
 class FetchUrl extends Action
 {
-    protected function main(string $url): string
+    public function __invoke(string $url): string
     {
         $url .= '?' . bin2hex(random_bytes(16));
         $content = file_get_contents($url);

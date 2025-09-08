@@ -20,19 +20,19 @@ use function Chevere\Parameter\bool;
 
 final class TestActionNoParamsBoolResponses extends Action
 {
+    public function __invoke(): array
+    {
+        return [
+            'true' => true,
+            'false' => false,
+        ];
+    }
+
     public static function return(): ParameterInterface
     {
         return arrayp(
             true: bool(),
             false: bool(),
         );
-    }
-
-    public function main(): array
-    {
-        return [
-            'true' => true,
-            'false' => false,
-        ];
     }
 }

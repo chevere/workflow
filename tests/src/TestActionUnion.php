@@ -17,7 +17,7 @@ use Chevere\Action\Action;
 
 class TestActionUnion extends Action
 {
-    protected function main(
+    public function __invoke(
         int|float $foo,
     ): array {
         return [

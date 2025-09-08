@@ -21,7 +21,7 @@ class TestActionUseWorkflowTrait extends Action
 {
     use WorkflowTrait;
 
-    protected function main(): int
+    public function __invoke(): int
     {
         $this->execute(workflow());
 

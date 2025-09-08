@@ -18,7 +18,7 @@ use Exception;
 
 class TestActionThrows extends Action
 {
-    protected function main(): void
+    public function __invoke(): void
     {
         throw new Exception('Test exception', 666);
     }

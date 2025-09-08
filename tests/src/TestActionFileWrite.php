@@ -19,17 +19,17 @@ use function Chevere\Parameter\null;
 
 final class TestActionFileWrite extends Action
 {
-    public static function return(): ParameterInterface
-    {
-        return null();
-    }
-
-    public function main(string $file): void
+    public function __invoke(string $file): void
     {
         $fp = fopen($file, 'a+');
         fwrite($fp, '^');
         usleep(200000);
         fwrite($fp, '$');
         fclose($fp);
+    }
+
+    public static function return(): ParameterInterface
+    {
+        return null();
     }
 }

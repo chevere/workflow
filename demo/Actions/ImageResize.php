@@ -26,12 +26,7 @@ class ImageResize extends Action
         'poster' => 150,
     ];
 
-    public static function return(): StringParameterInterface
-    {
-        return string();
-    }
-
-    protected function main(
+    public function __invoke(
         #[StringAttr('/\.jpe?g$/')]
         string $file,
         string $fit
@@ -50,5 +45,10 @@ class ImageResize extends Action
         return imagejpeg($image, $target)
             ? $target
             : throw new RuntimeException('Unable to save image');
+    }
+
+    public static function return(): StringParameterInterface
+    {
+        return string();
     }
 }

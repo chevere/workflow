@@ -19,13 +19,13 @@ use function Chevere\Parameter\string;
 
 final class TestActionIntToString extends Action
 {
+    public function __invoke(int $int): string
+    {
+        return (string) $int;
+    }
+
     public static function return(): ParameterInterface
     {
         return string();
-    }
-
-    protected function main(int $int): string
-    {
-        return (string) $int;
     }
 }

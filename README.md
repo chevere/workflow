@@ -75,7 +75,7 @@ use Chevere\Action\Action;
 
 class MyAction extends Action
 {
-    protected function main(string $foo): string
+    public function __invoke(string $foo): string
     {
         return "Hello, {$foo}";
     }
@@ -186,7 +186,7 @@ Job arguments can be passed in three ways:
 ```php
 class SomeAction extends Action
 {
-    protected function main(
+    public function __invoke(
         string $context,
         int $userId,
         mixed ...$bag,

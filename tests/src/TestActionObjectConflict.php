@@ -18,7 +18,7 @@ use stdClass;
 
 class TestActionObjectConflict extends Action
 {
-    public function main(stdClass $path, string $bar): array
+    public function __invoke(stdClass $path, string $bar): array
     {
         return [];
     }

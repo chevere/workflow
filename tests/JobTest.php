@@ -35,8 +35,7 @@ final class JobTest extends TestCase
         $this->expectExceptionMessage(
             '`'
             . TestActionNoParams::class
-            . '::'
-            . TestActionNoParams::mainMethod()
+            . '::__invoke'
             . '` requires 0 argument(s)'
         );
         $action = new TestActionNoParams();
@@ -51,7 +50,7 @@ final class JobTest extends TestCase
         $this->expectException(ArgumentCountError::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            `Chevere\Tests\src\TestActionParam::main` requires 1 argument(s) `[string \$foo]`
+            `Chevere\Tests\src\TestActionParam::__invoke` requires 1 argument(s) `[string \$foo]`
             PLAIN
         );
         $action = new TestActionParam();

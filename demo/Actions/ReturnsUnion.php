@@ -26,13 +26,13 @@ final class ReturnsUnion extends Action
     ) {
     }
 
+    public function __invoke(): string|int
+    {
+        return $this->value;
+    }
+
     public static function return(): ParameterInterface
     {
         return union(string(), int());
-    }
-
-    protected function main(): string|int
-    {
-        return $this->value;
     }
 }

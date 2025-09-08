@@ -22,20 +22,20 @@ use function Chevere\Parameter\string;
 
 class TestActionParamFooResponseBar extends Action
 {
-    public static function return(): ParameterInterface
-    {
-        return arrayp(
-            bar: string('/^bar$/'),
-            baz: float(),
-        );
-    }
-
-    public function main(
+    public function __invoke(
         #[StringAttr('/^bar$/')]
         string $foo
     ): array {
         return [
             'bar' => 'bar',
         ];
+    }
+
+    public static function return(): ParameterInterface
+    {
+        return arrayp(
+            bar: string('/^bar$/'),
+            baz: float(),
+        );
     }
 }

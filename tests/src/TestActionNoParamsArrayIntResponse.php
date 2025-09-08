@@ -20,17 +20,17 @@ use function Chevere\Parameter\int;
 
 final class TestActionNoParamsArrayIntResponse extends Action
 {
+    public function __invoke(): array
+    {
+        return [
+            'id' => 123,
+        ];
+    }
+
     public static function return(): ParameterInterface
     {
         return arrayp(
             id: int()
         );
-    }
-
-    public function main(): array
-    {
-        return [
-            'id' => 123,
-        ];
     }
 }

@@ -21,7 +21,7 @@ use Chevere\Action\Action;
  */
 class TestActionParams extends Action
 {
-    public function main(string $foo, string $bar): array
+    public function __invoke(string $foo, string $bar): array
     {
         return [];
     }

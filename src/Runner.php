@@ -91,7 +91,7 @@ final class Runner implements RunnerInterface
         $action = $job->action();
 
         try {
-            $response = cast($action(...$arguments));
+            $response = cast($action->__invoke(...$arguments));
         } catch (Throwable $e) {
             throw new RunnerException(
                 name: $name,
@@ -107,15 +107,12 @@ final class Runner implements RunnerInterface
     private function getRunIfCondition(VariableInterface|ResponseReferenceInterface|callable $runIf): bool
     {
         /** @var boolean */
-        return match(true) {
-            $runIf instanceof VariableInterface =>
-                $this->run->arguments()->required($runIf->__toString())->bool(),
+        return match (true) {
+            $runIf instanceof VariableInterface => $this->run->arguments()->required($runIf->__toString())->bool(),
 
-            $runIf instanceof ResponseReferenceInterface =>
-                $this->run->getReturn($runIf->job())->array()[$runIf->key()],
+            $runIf instanceof ResponseReferenceInterface => $this->run->getReturn($runIf->job())->array()[$runIf->key()],
 
-            default =>
-                call_user_func($runIf, $this->run())
+            default => call_user_func($runIf, $this->run())
         };
     }
 

@@ -20,12 +20,7 @@ use function Chevere\Parameter\null;
 
 class StoreFile extends Action
 {
-    public static function return(): NullParameterInterface
-    {
-        return null();
-    }
-
-    protected function main(string $file, string $dir): void
+    public function __invoke(string $file, string $dir): void
     {
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
@@ -33,5 +28,10 @@ class StoreFile extends Action
         if (! rename($file, $dir . basename($file))) {
             throw new RuntimeException('Unable to store file');
         }
+    }
+
+    public static function return(): NullParameterInterface
+    {
+        return null();
     }
 }
