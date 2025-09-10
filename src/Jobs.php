@@ -35,7 +35,6 @@ use OutOfBoundsException;
 use OverflowException;
 use Throwable;
 use TypeError;
-use function Chevere\Action\getReturnParameter;
 use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
 
@@ -146,7 +145,7 @@ final class Jobs implements JobsInterface
     private function storeReferences(string $job, JobInterface $item): void
     {
         $action = $item->action();
-        $return = getReturnParameter($action::class);
+        $return = $action::reflection()->return();
         if ($return instanceof ParametersAccessInterface
             && ! ($return instanceof UnionParameterInterface)
         ) {

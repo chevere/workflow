@@ -28,7 +28,6 @@ use Closure;
 use InvalidArgumentException;
 use OverflowException;
 use ReflectionClass;
-use function Chevere\Action\getParameters;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
 
@@ -79,7 +78,7 @@ final class Job implements JobInterface
         $this->isSync = false;
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
-        $this->parameters = getParameters($_::class);
+        $this->parameters = $_::reflection()->parameters();
         $this->arguments = [];
         $this->setArguments(...$argument);
     }
