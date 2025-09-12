@@ -28,7 +28,7 @@ final class TestActionFileWrite extends Action
         fclose($fp);
     }
 
-    public static function return(): ParameterInterface
+    public static function acceptReturn(): ParameterInterface
     {
         return null();
     }

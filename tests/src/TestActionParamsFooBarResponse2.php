@@ -29,7 +29,7 @@ class TestActionParamsFooBarResponse2 extends Action
         ];
     }
 
-    public static function return(): ParameterInterface
+    public static function acceptReturn(): ParameterInterface
     {
         return arrayp(response2: string());
     }

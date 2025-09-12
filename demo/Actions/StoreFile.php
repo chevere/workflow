@@ -30,7 +30,7 @@ class StoreFile extends Action
         }
     }
 
-    public static function return(): NullParameterInterface
+    public static function acceptReturn(): NullParameterInterface
     {
         return null();
     }

@@ -24,7 +24,7 @@ final class TestActionIntToString extends Action
         return (string) $int;
     }
 
-    public static function return(): ParameterInterface
+    public static function acceptReturn(): ParameterInterface
     {
         return string();
     }

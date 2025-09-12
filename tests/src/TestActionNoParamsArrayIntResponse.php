@@ -27,7 +27,7 @@ final class TestActionNoParamsArrayIntResponse extends Action
         ];
     }
 
-    public static function return(): ParameterInterface
+    public static function acceptReturn(): ParameterInterface
     {
         return arrayp(
             id: int()

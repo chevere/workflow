@@ -24,7 +24,7 @@ class Greet extends Action
         return "Hello, {$username}!";
     }
 
-    public static function return(): StringParameterInterface
+    public static function acceptReturn(): StringParameterInterface
     {
         return string('/^Hello, /');
     }

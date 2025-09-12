@@ -47,7 +47,7 @@ class ImageResize extends Action
             : throw new RuntimeException('Unable to save image');
     }
 
-    public static function return(): StringParameterInterface
+    public static function acceptReturn(): StringParameterInterface
     {
         return string();
     }

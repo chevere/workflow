@@ -34,7 +34,7 @@ final class TestActionIntParamReturnAttr extends Action
         return 2 * $number;
     }
 
-    public static function return(): IntParameterInterface
+    public static function acceptReturn(): IntParameterInterface
     {
         return int(min: 0);
     }

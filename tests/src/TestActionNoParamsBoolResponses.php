@@ -28,7 +28,7 @@ final class TestActionNoParamsBoolResponses extends Action
         ];
     }
 
-    public static function return(): ParameterInterface
+    public static function acceptReturn(): ParameterInterface
     {
         return arrayp(
             true: bool(),

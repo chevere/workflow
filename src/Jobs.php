@@ -170,7 +170,7 @@ final class Jobs implements JobsInterface
         foreach ($item->arguments() as $argument => $value) {
             $argument = strval($argument);
             $action = $item->action();
-            $parameters = $action::parameters();
+            $parameters = $action::reflection()->parameters();
             $positions = array_keys($parameters->keys());
             if ($parameters->has($argument)) {
                 $parameter = $parameters->get($argument);
