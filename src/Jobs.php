@@ -230,7 +230,7 @@ final class Jobs implements JobsInterface
                 /** @var JobInterface $responseJob */
                 $responseJob = $this->map->get($value->job());
                 /** @var ParameterInterface $accept */
-                $accept = $responseJob->action()->reflection()->return();
+                $accept = $responseJob->action()::reflection()->return();
                 if ($value->key() !== null) {
                     if (! $accept instanceof ParametersAccessInterface) {
                         throw new LogicException(
@@ -312,7 +312,7 @@ final class Jobs implements JobsInterface
             return;
         }
         $action = $this->get($runIf->job())->action();
-        $accept = $action->reflection()->return();
+        $accept = $action::reflection()->return();
         if ($runIf->key() !== null) {
             if (! $accept instanceof ParametersAccessInterface) {
                 throw new OutOfBoundsException(

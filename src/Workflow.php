@@ -93,7 +93,7 @@ final class Workflow implements WorkflowInterface
         $lastKey = array_key_last($parameters->keys());
         $this->provided = $this->provided->withPut(
             $name,
-            $action->reflection()->return()
+            $action::reflection()->return()
         );
         foreach ($job->arguments() as $id => $value) {
             $id = strval($id);
