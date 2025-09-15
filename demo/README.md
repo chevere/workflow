@@ -4,7 +4,9 @@
 
 Run live example: `php demo/hello-world.php Rodolfo` - [view source](./demo/hello-world.php)
 
-The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its [main method](https://chevere.org/packages/action#main-method) arguments. The `run` function is used to execute the Workflow.
+The basic example Workflow defines a greet for a given username. The job `greet` is a named argument and it takes the `GreetAction` plus its [Invoke method](https://chevere.org/packages/action#invoke-method) arguments.
+
+The `run` function is used to execute the Workflow.
 
 ```php
 use Chevere\Demo\Actions\Greet;
