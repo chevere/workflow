@@ -20,17 +20,17 @@ use Chevere\DataStructure\Vector;
 use Chevere\Message\Interfaces\MessageInterface;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
-use Chevere\Parameter\Interfaces\CastInterface;
+use Chevere\Parameter\Interfaces\TypedInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OverflowException;
 use function Chevere\Message\message;
-use function Chevere\Parameter\cast;
+use function Chevere\Parameter\typed;
 
 final class Run implements RunInterface
 {
     /**
-     * @template-use MapTrait<CastInterface>
+     * @template-use MapTrait<TypedInterface>
      */
     use MapTrait;
 
@@ -64,8 +64,8 @@ final class Run implements RunInterface
     public function toArray(): array
     {
         $return = [];
-        foreach ($this->map as $name => $cast) {
-            $return[$name] = $cast->mixed();
+        foreach ($this->map as $name => $typed) {
+            $return[$name] = $typed->mixed();
         }
 
         return $return;
@@ -91,7 +91,7 @@ final class Run implements RunInterface
         return $this->skip;
     }
 
-    public function withResponse(string $job, CastInterface $response): RunInterface
+    public function withResponse(string $job, TypedInterface $response): RunInterface
     {
         $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
         $new = clone $this;
@@ -115,15 +115,18 @@ final class Run implements RunInterface
         return $new;
     }
 
-    public function response(string $job, string|int ...$key): CastInterface
+    public function response(string $job, string|int ...$key): TypedInterface
     {
-        return cast($this->map->get($job)->mixed(), ...$key);
+        return typed(
+            $this->map->get($job)->mixed(),
+            ...$key
+        );
     }
 
     /**
      * @codeCoverageIgnore
      */
-    public function getReturn(string $job): CastInterface
+    public function getReturn(string $job): TypedInterface
     {
         return $this->response($job);
     }

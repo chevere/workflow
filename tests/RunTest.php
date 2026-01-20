@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
-use Chevere\Parameter\Cast;
+use Chevere\Parameter\Typed;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParams;
@@ -73,8 +73,8 @@ final class RunTest extends TestCase
         ];
         $run = (new Run($workflow, ...$arguments));
         $with = $run
-            ->withResponse('job0', new Cast(['a']))
-            ->withResponse('job1', new Cast(['b']));
+            ->withResponse('job0', new Typed(['a']))
+            ->withResponse('job1', new Typed(['b']));
         $this->assertSame(
             [
                 'job0' => ['a'],
@@ -103,7 +103,7 @@ final class RunTest extends TestCase
         (new Run($workflow, ...$arguments))
             ->withResponse(
                 'not-found',
-                new Cast([])
+                new Typed([])
             );
     }
 
@@ -123,7 +123,7 @@ final class RunTest extends TestCase
         (new Run($workflow))
             ->withResponse(
                 'job0',
-                new Cast('')
+                new Typed('')
             );
     }
 

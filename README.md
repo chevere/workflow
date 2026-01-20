@@ -402,17 +402,15 @@ $run = run($workflow, ...$variables);
 
 ### Access Job response
 
-Use `response` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
+Use `response` to retrieve a job response as a `Typed` object which can be used to get a typed response.
 
 ```php
 $thumbFile = $run->response('thumb')->string();
 ```
 
-🪄 If the response is of type `array` you can shortcut key access casting.
+🪄 If the response is of type `array` you can shortcut key type-safe access.
 
 ```php
-use function Chevere\Parameter\cast;
-
 $id = $run->response('user', 'id')->int();
 ```
 

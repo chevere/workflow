@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Amp\Parallel\Worker\Execution;
-use Chevere\Parameter\Interfaces\CastInterface;
+use Chevere\Parameter\Interfaces\TypedInterface;
 use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
@@ -25,7 +25,7 @@ use OutOfBoundsException;
 use Throwable;
 use function Amp\Future\await;
 use function Amp\Parallel\Worker\submit;
-use function Chevere\Parameter\cast;
+use function Chevere\Parameter\typed;
 
 final class Runner implements RunnerInterface
 {
@@ -91,7 +91,7 @@ final class Runner implements RunnerInterface
         $action = $job->action();
 
         try {
-            $response = cast($action->__invoke(...$arguments));
+            $response = typed($action->__invoke(...$arguments));
         } catch (Throwable $e) {
             throw new RunnerException(
                 name: $name,
@@ -149,7 +149,7 @@ final class Runner implements RunnerInterface
         return $arguments;
     }
 
-    private function addJobResponse(string $name, CastInterface $response): void
+    private function addJobResponse(string $name, TypedInterface $response): void
     {
         $this->run = $this->run->withResponse($name, $response);
     }

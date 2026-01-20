@@ -115,19 +115,19 @@ $run = run(
 );
 ```
 
-Use `response` to retrieve a job response as a `CastArgument` object which can be used to get a typed response.
+Use `response` to retrieve a job response as a `Typed` object which can be used to get a typed response.
 
 ```php
 $thumbFile = $run->response('thumb')->string();
 ```
 
-If the response is of type `array` you can wrap using `cast` as needed.
+If the response is of type `array` you can wrap using `typed` as needed.
 
 ```php
-use function Chevere\Parameter\cast;
+use function Chevere\Parameter\typed;
 
 $id = $run->response('user')->array()['id']; // ? type
-$id = cast($id)->int(); // int type
+$id = typed($id)->int(); // int type
 ```
 
 ## Sync vs Async
