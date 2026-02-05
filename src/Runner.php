@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Amp\Parallel\Worker\Execution;
+use Amp\Future;
 use Chevere\Parameter\Interfaces\TypedInterface;
 use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -23,8 +23,8 @@ use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use OutOfBoundsException;
 use Throwable;
+use function Amp\async;
 use function Amp\Future\await;
-use function Amp\Parallel\Worker\submit;
 use function Chevere\Parameter\typed;
 
 final class Runner implements RunnerInterface
@@ -53,12 +53,7 @@ final class Runner implements RunnerInterface
             }
             $executions = $new->getExecutions($node);
             /** @var RunnerInterface[] $responses */
-            $responses = await(
-                array_map(
-                    fn (Execution $e) => $e->getFuture(),
-                    $executions,
-                )
-            );
+            $responses = await($executions);
             foreach ($responses as $runner) {
                 $new->merge($new, $runner);
             }
@@ -164,18 +159,14 @@ final class Runner implements RunnerInterface
 
     /**
      * @param array<string> $queue
-     * @return array<Execution<mixed, never, never>>
+     * @return array<Future<mixed>>
      */
     private function getExecutions(array $queue): array
     {
         $return = [];
         foreach ($queue as $job) {
-            $return[] = submit(
-                new CallableTask(
-                    'Chevere\\Workflow\\runnerForJob',
-                    $this,
-                    $job,
-                )
+            $return[] = async(
+                fn () => runnerForJob($this, $job)
             );
         }
 

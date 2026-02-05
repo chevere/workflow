@@ -19,7 +19,7 @@ use function Chevere\Workflow\async;
 use function Chevere\Workflow\run;
 use function Chevere\Workflow\workflow;
 
-final class RunnerParallelTest extends TestCase
+final class RunnerAsyncTest extends TestCase
 {
     private string $directory;
 
@@ -47,7 +47,7 @@ final class RunnerParallelTest extends TestCase
         }
     }
 
-    public function testParallelRunner(): void
+    public function testAsyncRunner(): void
     {
         if (file_put_contents($this->file, '') === false) {
             $this->markTestIncomplete('Unable to write to file');

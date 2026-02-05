@@ -268,7 +268,7 @@ workflow(
 * `variable('image')` declares a [Variable](#variable).
 * `response('thumb', 'filename')` and `response('medium', 'filename')` declares a [Response](#response) reference.
 
-The graph for this Workflow says that `thumb`, `medium` and `poster` run non-blocking in parallel. Job `store` runs blocking (another node).
+The graph for this Workflow says that `thumb`, `medium` and `poster` run async non-blocking. Job `store` runs blocking (another node).
 
 ```mermaid
 graph TD;
@@ -507,7 +507,7 @@ Verify the execution order by testing the Workflow graph:
 public function testWorkflowOrder(): void
 {
     $expectedGraph = [
-        ['job1', 'job2'], // parallel jobs
+        ['job1', 'job2'], // async jobs
         ['job3'],         // depends on job1, job2
     ];
     $this->assertSame(

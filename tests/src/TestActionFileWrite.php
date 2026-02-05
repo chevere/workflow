@@ -15,15 +15,19 @@ namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParameterInterface;
+use function Amp\delay;
 use function Chevere\Parameter\null;
 
+/**
+ * A test action that simulates non-blocking I/O using Amp\delay.
+ */
 final class TestActionFileWrite extends Action
 {
     public function __invoke(string $file): void
     {
         $fp = fopen($file, 'a+');
         fwrite($fp, '^');
-        usleep(200000);
+        delay(0.05);
         fwrite($fp, '$');
         fclose($fp);
     }
