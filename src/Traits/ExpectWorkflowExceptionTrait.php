@@ -32,6 +32,8 @@ trait ExpectWorkflowExceptionTrait // @phpstan-ignore-line
      * @param string $job The expected job that will throw exception.
      * @param string $instance The expected job exception instance.
      * @param int $code The expected job exception code.
+     *
+     * @infection-ignore-all
      */
     private function expectWorkflowException(
         Closure $closure,

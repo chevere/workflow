@@ -44,6 +44,26 @@ final class RunnerTest extends TestCase
 {
     use ExpectWorkflowExceptionTrait;
 
+    public function testWithRun(): void
+    {
+        $workflow = workflow();
+        $run = new Run($workflow);
+        $runner = new Runner($run);
+        $with = $runner->withRun();
+        $this->assertEquals($runner, $with);
+        $this->assertNotSame($runner, $with);
+    }
+
+    public function testWithRunJob(): void
+    {
+        $action = new TestActionNoParams();
+        $workflow = workflow(job1: async($action));
+        $run = new Run($workflow);
+        $runner = new Runner($run);
+        $runnerWith = $runner->withRunJob('job1');
+        $this->assertNotSame($runner, $runnerWith);
+    }
+
     public function testRunnerForArguments(): void
     {
         $jobsRunArguments = [
