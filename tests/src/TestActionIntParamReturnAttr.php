@@ -20,12 +20,12 @@ use Chevere\Parameter\Interfaces\IntParameterInterface;
 use function Chevere\Parameter\int;
 
 /**
- * Attribute has higher priority than static::return
+ * Method `acceptReturn()` has higher priority than `ReturnAttr`, which is ignored.
  */
 final class TestActionIntParamReturnAttr extends Action
 {
     #[ReturnAttr(
-        new IntAttr(min: 8)
+        new IntAttr(min: 0)
     )]
     public function __invoke(
         #[IntAttr(min: 1)]
@@ -36,6 +36,6 @@ final class TestActionIntParamReturnAttr extends Action
 
     public static function acceptReturn(): IntParameterInterface
     {
-        return int(min: 0);
+        return int(min: 8);
     }
 }
