@@ -24,7 +24,7 @@ interface JobInterface
 {
     public function withArguments(mixed ...$argument): self;
 
-    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable ...$context): self;
+    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): self;
 
     /**
      * Return an instance with the specified sync flag.
@@ -53,7 +53,7 @@ interface JobInterface
     public function isSync(): bool;
 
     /**
-     * @return VectorInterface<ResponseReferenceInterface|VariableInterface>
+     * @return VectorInterface<ResponseReferenceInterface|VariableInterface|callable|bool>
      */
     public function runIf(): VectorInterface;
 

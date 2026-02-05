@@ -99,10 +99,12 @@ final class Runner implements RunnerInterface
         return $new;
     }
 
-    private function getRunIfCondition(VariableInterface|ResponseReferenceInterface|callable $runIf): bool
-    {
+    private function getRunIfCondition(
+        VariableInterface|ResponseReferenceInterface|callable|bool $runIf
+    ): bool {
         /** @var boolean */
         return match (true) {
+            is_bool($runIf) => $runIf,
             $runIf instanceof VariableInterface => $this->run->arguments()->required($runIf->__toString())->bool(),
 
             $runIf instanceof ResponseReferenceInterface => $this->run->getReturn($runIf->job())->array()[$runIf->key()],

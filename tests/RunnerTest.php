@@ -292,6 +292,19 @@ final class RunnerTest extends TestCase
         );
     }
 
+    #[DataProvider('dataProviderRunIfCallable')]
+    public function testRunIfBool(bool $runIf): void
+    {
+        $job = async(new TestActionNoParams())
+            ->withRunIf($runIf);
+        $workflow = workflow(job1: $job);
+        $run = run($workflow);
+        $this->assertSame(
+            ! $runIf,
+            $run->skip()->contains('job1'),
+        );
+    }
+
     public function testRunIfCallableOverflow(): void
     {
         $this->expectException(OverflowException::class);

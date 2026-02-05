@@ -96,13 +96,14 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable ...$context): JobInterface
+    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): JobInterface
     {
         $new = clone $this;
         $new->runIf = new Vector();
         $known = new Vector();
         foreach ($context as $item) {
             $itemString = match (true) {
+                is_bool($item) => $item === true ? 'bool#true' : 'bool#false',
                 $item instanceof ResponseReferenceInterface,
                 $item instanceof VariableInterface => $item->__toString(),
                 $item instanceof Closure => 'callable#' . spl_object_id($item),

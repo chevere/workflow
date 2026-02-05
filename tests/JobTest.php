@@ -208,6 +208,35 @@ final class JobTest extends TestCase
         $job->withRunIf($reference, $reference);
     }
 
+    public function testWithRunIfCallable(): void
+    {
+        $action = new TestActionNoParams();
+        $job = new Job($action);
+        $closure = function (): bool {
+            return true;
+        };
+        $job = $job->withRunIf($closure);
+        $this->assertSame(
+            [$closure],
+            $job->runIf()->toArray()
+        );
+        $this->expectException(OverflowException::class);
+        $job->withRunIf($closure, $closure);
+    }
+
+    public function testWithRunIfBool(): void
+    {
+        $action = new TestActionNoParams();
+        $job = new Job($action);
+        $job = $job->withRunIf(true);
+        $this->assertSame(
+            [true],
+            $job->runIf()->toArray()
+        );
+        $this->expectException(OverflowException::class);
+        $job->withRunIf(true, true);
+    }
+
     public function testWithMissingArgument(): void
     {
         $this->expectException(ArgumentCountError::class);
