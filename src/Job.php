@@ -58,11 +58,11 @@ final class Job implements JobInterface
      * Creates a Job
      * DO NOT use this method directly, use `sync` or `async` functions instead.
      *
-     * @param ActionInterface $_ The action to run
+     * @param ActionInterface|class-string<ActionInterface> $_ The action to run
      * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
      */
     public function __construct(
-        private ActionInterface $_,
+        private ActionInterface|string $_,
         mixed ...$argument
     ) {
         $debugBacktrace = debug_backtrace(options: 0, limit: 2);
@@ -145,7 +145,7 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function action(): ActionInterface
+    public function action(): ActionInterface|string
     {
         return $this->_;
     }

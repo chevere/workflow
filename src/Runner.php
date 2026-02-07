@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Amp\Future;
+use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Parameter\Interfaces\TypedInterface;
 use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
@@ -84,6 +85,14 @@ final class Runner implements RunnerInterface
         }
         $arguments = $new->getJobArguments($job);
         $action = $job->action();
+        if (is_string($action)) {
+            $dependencies = $this->run->workflow()->jobs()->dependencies()->extract(
+                $action,
+                $this->run->container()
+            );
+            /** @var ActionInterface $action */
+            $action = new $action(...$dependencies);
+        }
 
         try {
             $response = typed($action->__invoke(...$arguments));

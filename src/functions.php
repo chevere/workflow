@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Container\Container;
+use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -44,10 +46,10 @@ function workflow(JobInterface ...$job): WorkflowInterface
 /**
  * Creates a synchronous job for the given action and arguments.
  *
- * @param ActionInterface $_ The action to run
+ * @param ActionInterface|class-string<ActionInterface> $_ The action to run
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function sync(ActionInterface $_, mixed ...$argument): JobInterface
+function sync(ActionInterface|string $_, mixed ...$argument): JobInterface
 {
     return (new Job($_, ...$argument))
         ->withIsSync(true);
@@ -56,10 +58,10 @@ function sync(ActionInterface $_, mixed ...$argument): JobInterface
 /**
  * Creates an asynchronous job for the given action and arguments.
  *
- * @param ActionInterface $_ The action to run
+ * @param ActionInterface|class-string<ActionInterface> $_ The action to run
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function async(ActionInterface $_, mixed ...$argument): JobInterface
+function async(ActionInterface|string $_, mixed ...$argument): JobInterface
 {
     return new Job($_, ...$argument);
 }
@@ -106,9 +108,10 @@ function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
  */
 function run(
     WorkflowInterface $workflow,
+    ContainerInterface $container = new Container(),
     mixed ...$variable,
 ): RunInterface {
-    $run = new Run($workflow, ...$variable);
+    $run = new Run($workflow, $container, ...$variable);
     $runner = new Runner($run);
 
     return $runner->withRun()->run();

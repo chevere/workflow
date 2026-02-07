@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
+use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\DataStructure\Interfaces\StringMappedInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
@@ -40,6 +41,11 @@ interface RunInterface extends StringMappedInterface
      * Provides access to the workflow instance.
      */
     public function workflow(): WorkflowInterface;
+
+    /**
+     * Provides access to the container instance.
+     */
+    public function container(): ContainerInterface;
 
     /**
      * Provides access to the arguments instance.

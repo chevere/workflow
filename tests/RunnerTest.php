@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Container\Container;
+use Chevere\Tests\src\TestActionDependsNoParams;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
@@ -33,6 +35,7 @@ use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\run;
@@ -422,6 +425,23 @@ final class RunnerTest extends TestCase
             ],
             $run->response('job3')->array()
         );
+    }
+
+    public function testRunnerActionClassNameWithContainer(): void
+    {
+        $workflow = workflow(
+            job1: sync(TestActionDependsNoParams::class),
+        );
+        run($workflow, new Container(
+            dependency: new stdClass()
+        ));
+        $this->expectException(OutOfBoundsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Dependency `dependency` not defined in container
+            PLAIN
+        );
+        run($workflow);
     }
 
     /**

@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\Container\Container;
+use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
@@ -50,6 +52,7 @@ final class Run implements RunInterface
      */
     public function __construct(
         private WorkflowInterface $workflow,
+        private ContainerInterface $container = new Container(),
         mixed ...$variable
     ) {
         $this->uuid = uuidv4();
@@ -79,6 +82,11 @@ final class Run implements RunInterface
     public function workflow(): WorkflowInterface
     {
         return $this->workflow;
+    }
+
+    public function container(): ContainerInterface
+    {
+        return $this->container;
     }
 
     public function arguments(): ArgumentsInterface

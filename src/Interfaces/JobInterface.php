@@ -38,7 +38,10 @@ interface JobInterface
 
     public function withDepends(string ...$jobs): self;
 
-    public function action(): ActionInterface;
+    /**
+     * @return ActionInterface|class-string<ActionInterface>
+     */
+    public function action(): ActionInterface|string;
 
     /**
      * @return array<string, mixed>
