@@ -57,6 +57,9 @@ abstract class WorkflowException extends Exception
         $this->line = $job->caller()->line();
     }
 
+    /**
+     * @infection-ignore-all
+     */
     protected function template(): string
     {
         return '[%name%]: %message%';

@@ -184,13 +184,14 @@ final class JobTest extends TestCase
         $action = new TestActionNoParams();
         $job = new Job($action);
         $variable = variable('wea');
-        $job = $job->withRunIf($variable);
+        $with = $job->withRunIf($variable);
+        $this->assertNotSame($job, $with);
         $this->assertSame(
             [$variable],
-            $job->runIf()->toArray()
+            $with->runIf()->toArray()
         );
         $this->expectException(OverflowException::class);
-        $job->withRunIf($variable, $variable);
+        $with->withRunIf($variable, $variable);
     }
 
     public function testWithRunIfReference(): void

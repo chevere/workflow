@@ -35,62 +35,63 @@ final class GraphTest extends TestCase
     {
         $graph = new Graph();
         $this->assertSame([], $graph->toArray());
-        $graph = $graph->withPut('j0', $this->getJob()->withDepends('j1'));
+        $with = $graph->withPut('j0', $this->getJob()->withDepends('j1'));
+        $this->assertNotSame($graph, $with);
         $expected = [
             ['j1'],
             ['j0'],
         ];
-        $this->assertSame($expected, $graph->toArray());
-        $graph = $graph->withPut('j0', $this->getJob()->withDepends('j2'));
+        $this->assertSame($expected, $with->toArray());
+        $with = $with->withPut('j0', $this->getJob()->withDepends('j2'));
         $this->assertSame(
             [
                 ['j1', 'j2'],
                 ['j0'],
             ],
-            $graph->toArray()
+            $with->toArray()
         );
-        $graph = $graph->withPut('j1', $this->getJob());
-        $graph = $graph->withPut('j2', $this->getJob());
+        $with = $with->withPut('j1', $this->getJob());
+        $with = $with->withPut('j2', $this->getJob());
         $this->assertSame(
             [
                 ['j1', 'j2'],
                 ['j0'],
             ],
-            $graph->toArray()
+            $with->toArray()
         );
-        $graph = $graph->withPut('j2', $this->getJob()->withDepends('j0'));
+        $with = $with->withPut('j2', $this->getJob()->withDepends('j0'));
         $this->assertSame(
             [
                 ['j1'],
                 ['j0'],
                 ['j2'],
             ],
-            $graph->toArray()
+            $with->toArray()
         );
-        $graph = $graph->withPut('j1', $this->getJob()->withDepends('j0'));
+        $with = $with->withPut('j1', $this->getJob()->withDepends('j0'));
         $this->assertSame(
             [
                 ['j0'],
                 ['j1', 'j2'],
             ],
-            $graph->toArray()
+            $with->toArray()
         );
-        $graph = $graph->withPut('j0', $this->getJob()->withDepends('j1'));
+        $with = $with->withPut('j0', $this->getJob()->withDepends('j1'));
         $this->assertSame(
             [
                 ['j1'],
                 ['j0'],
                 ['j2'],
             ],
-            $graph->toArray()
+            $with->toArray()
         );
-        $graph = $graph->withPut('j0', $this->getJob()->withDepends('j2'));
+        $with = $with->withPut('j0', $this->getJob()->withDepends('j2'));
         $this->assertSame(
             [
                 ['j1', 'j2'],
                 ['j0'],
             ],
-            $graph->toArray()
+            $with->toArray()
         );
     }
 
