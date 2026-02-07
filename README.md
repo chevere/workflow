@@ -229,15 +229,6 @@ When running the Workflow, these arguments will be matched against the parameter
 
 Use function `async` to create an asynchronous job, which runs non-blocking.
 
-**Important:** When using `async` jobs, your Actions must support [serialization](https://www.php.net/manual/en/function.serialize.php). For Actions that work with non-serializable resources like:
-
-* Database connections
-* File handles
-* Stream resources
-* Network sockets
-
-You must use `sync` jobs instead.
-
 In the example below a Workflow describes an image creation procedure for multiple image sizes.
 
 ```php
