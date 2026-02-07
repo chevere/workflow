@@ -31,6 +31,7 @@ use Chevere\Workflow\Run;
 use Chevere\Workflow\Runner;
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
 use Exception;
+use LogicException;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -432,13 +433,12 @@ final class RunnerTest extends TestCase
         $workflow = workflow(
             job1: sync(TestActionDependsNoParams::class),
         );
-        run($workflow, new Container(
-            dependency: new stdClass()
-        ));
-        $this->expectException(OutOfBoundsException::class);
+        $container = new Container(dependency: new stdClass());
+        run($workflow, $container);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            Dependency `dependency` not defined in container
+            Missing argument `dependency` as previously defined by `Chevere\Tests\src\TestActionDependsNoParams`
             PLAIN
         );
         run($workflow);
