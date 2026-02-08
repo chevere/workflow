@@ -103,15 +103,12 @@ final class Job implements JobInterface
         $known = new Vector();
         foreach ($context as $item) {
             $itemString = match (true) {
-                is_bool($item) => $item === true ? 'bool#true' : 'bool#false',
                 $item instanceof ResponseReferenceInterface,
                 $item instanceof VariableInterface => $item->__toString(),
                 $item instanceof Closure => 'callable#' . spl_object_id($item),
-                default => null,
+                default => $item === true ? 'bool#true' : 'bool#false',
             };
-            if ($itemString !== null
-                && $known->contains($itemString)
-            ) {
+            if ($known->contains($itemString)) {
                 throw new OverflowException(
                     (string) message(
                         'Condition `%condition%` is already defined',
@@ -121,9 +118,7 @@ final class Job implements JobInterface
             }
             $new->inferDependencies($item);
             $new->runIf = $new->runIf->withPush($item);
-            if ($itemString !== null) {
-                $known = $known->withPush($itemString);
-            }
+            $known = $known->withPush($itemString);
         }
 
         return $new;
