@@ -30,6 +30,7 @@ use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
 use TypeError;
+use function Chevere\Parameter\int;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\sync;
@@ -449,6 +450,9 @@ final class JobsTest extends TestCase
 
     public function testAttributeDrivenReference(): void
     {
+        // int(min: -1)->assertCompatible(
+        //     int(min: 8)
+        // );
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage('[job2]: Response **job1** conflict at parameter **number**: Expected min value `1`, provided `-1`');
         new Jobs(
@@ -473,7 +477,7 @@ final class JobsTest extends TestCase
             ),
             job2: sync(
                 new TestActionIntParamReturnAttr(),
-                number: response('job1'),
+                number: response('job1'), // int min -1, TestActionIntParamReturnAttr expects min 8
             ),
         );
     }

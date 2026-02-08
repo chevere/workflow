@@ -60,7 +60,7 @@ The Workflow package provides a set of core functions in the `Chevere\Workflow` 
 
 ### Key concepts
 
-* [Job](#job): Self-contained unit of work defined by [Action](https://chevere.org/packages/action)
+* [Job](#job): Self-contained unit of work defined by Closure|[Action](https://chevere.org/packages/action)
 * [Variable](#variable): Shared workflow-level inputs accessed by multiple jobs
 * [Response](#response): Links between job outputs (`response()`) and inputs
 
@@ -175,7 +175,48 @@ response('job1', 'id');
 
 ## Job
 
-The `Job` class defines an [Action](https://chevere.org/packages/action) that can be executed as part of a workflow.
+The `Job` class defines an [Action](https://chevere.org/packages/action) or `Closure` that can be executed as part of a workflow.
+
+Jobs can be created using:
+
+* **Action classes**: Reusable, testable action classes with parameter validation
+* **Closures**: Inline anonymous functions for simple operations
+
+### Using Closures
+
+Closures provide a lightweight way to define simple job logic directly in your workflow:
+
+```php
+use function Chevere\Workflow\{response, run, sync, variable, workflow};
+
+$workflow = workflow(
+    calculate: sync(
+        function (int $a, int $b): int {
+            return $a + $b;
+        },
+        a: 10,
+        b: variable('value')
+    ),
+    format: sync(
+        fn (int $result): string => "Result: {$result}",
+        result: response('calculate')
+    )
+);
+
+run($workflow, value: 5);
+echo $run->response('format')->string();
+// Result: 15
+```
+
+Closures are ideal for:
+
+* Simple transformations or calculations
+* Prototyping workflows before extracting to Action classes
+* One-off operations that don't need reusability
+
+::: tip 💡 When to use Actions vs Closures
+Use **Actions** for complex logic, reusable operations, or when you need extensive testing. Use **Closures** for simple, inline transformations.
+:::
 
 ### Arguments
 

@@ -22,11 +22,17 @@ require 'loader.php';
 
 $workflow = workflow(
     greet: sync(
-        new MyAction(),
+        MyAction::class,
         foo: variable('super'),
     ),
     capo: sync(
-        new MyAction(),
+        MyAction::class,
+        foo: response('greet'),
+    ),
+    wea: sync(
+        function (string $foo) {
+            return "Wea, {$foo}";
+        },
         foo: response('greet'),
     ),
 );
@@ -38,3 +44,5 @@ echo $hello->response('greet')->string() . PHP_EOL;
 // Hello, Chevere
 echo $hello->response('capo')->string() . PHP_EOL;
 // Hello, Hello, Chevere
+echo $hello->response('wea')->string() . PHP_EOL;
+// Wea, Hello, Chevere

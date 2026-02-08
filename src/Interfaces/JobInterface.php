@@ -16,12 +16,19 @@ namespace Chevere\Workflow\Interfaces;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Caller\Interfaces\CallerInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
+use Chevere\Parameter\Interfaces\ParameterInterface;
+use Chevere\Parameter\Interfaces\ParametersInterface;
+use Closure;
 
 /**
  * Describes the component in charge of defining a job.
  */
 interface JobInterface
 {
+    public function parameters(): ParametersInterface;
+
+    public function return(): ParameterInterface;
+
     public function withArguments(mixed ...$argument): self;
 
     public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): self;
@@ -39,9 +46,9 @@ interface JobInterface
     public function withDepends(string ...$jobs): self;
 
     /**
-     * @return ActionInterface|class-string<ActionInterface>
+     * @return ActionInterface|class-string<ActionInterface>|Closure
      */
-    public function action(): ActionInterface|string;
+    public function action(): ActionInterface|string|Closure;
 
     /**
      * @return array<string, mixed>

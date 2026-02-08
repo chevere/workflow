@@ -22,6 +22,7 @@ use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
+use Closure;
 use Throwable;
 
 // @codeCoverageIgnoreStart
@@ -46,10 +47,10 @@ function workflow(JobInterface ...$job): WorkflowInterface
 /**
  * Creates a synchronous job for the given action and arguments.
  *
- * @param ActionInterface|class-string<ActionInterface> $_ The action to run
+ * @param ActionInterface|class-string<ActionInterface>|Closure $_ The action to run
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function sync(ActionInterface|string $_, mixed ...$argument): JobInterface
+function sync(ActionInterface|string|Closure $_, mixed ...$argument): JobInterface
 {
     return (new Job($_, ...$argument))
         ->withIsSync(true);
@@ -58,10 +59,10 @@ function sync(ActionInterface|string $_, mixed ...$argument): JobInterface
 /**
  * Creates an asynchronous job for the given action and arguments.
  *
- * @param ActionInterface|class-string<ActionInterface> $_ The action to run
+ * @param ActionInterface|class-string<ActionInterface>|Closure $_ The action to run
  * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
  */
-function async(ActionInterface|string $_, mixed ...$argument): JobInterface
+function async(ActionInterface|string|Closure $_, mixed ...$argument): JobInterface
 {
     return new Job($_, ...$argument);
 }

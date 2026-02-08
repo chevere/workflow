@@ -28,8 +28,12 @@ use Closure;
 use InvalidArgumentException;
 use OverflowException;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionMethod;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
+use function Chevere\Parameter\reflectionToParameters;
+use function Chevere\Parameter\reflectionToReturn;
 
 final class Job implements JobInterface
 {
@@ -45,6 +49,8 @@ final class Job implements JobInterface
 
     private ParametersInterface $parameters;
 
+    private ParameterInterface $return;
+
     /**
      * @var VectorInterface<ResponseReferenceInterface|VariableInterface>
      */
@@ -58,11 +64,11 @@ final class Job implements JobInterface
      * Creates a Job
      * DO NOT use this method directly, use `sync` or `async` functions instead.
      *
-     * @param ActionInterface|class-string<ActionInterface> $_ The action to run
+     * @param ActionInterface|class-string<ActionInterface>|Closure $_ The action to run
      * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
      */
     public function __construct(
-        private ActionInterface|string $_,
+        private ActionInterface|string|Closure $_,
         mixed ...$argument
     ) {
         $debugBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -78,7 +84,14 @@ final class Job implements JobInterface
         $this->isSync = false;
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
-        $this->parameters = $_::reflection()->parameters();
+        if ($_ instanceof Closure) {
+            $reflection = new ReflectionMethod($_, '__invoke');
+            $this->parameters = reflectionToParameters($reflection);
+            $this->return = reflectionToReturn($reflection);
+        } else {
+            $this->parameters = $_::reflection()->parameters();
+            $this->return = $_::reflection()->return();
+        }
         $this->arguments = [];
         $this->setArguments(...$argument);
     }
@@ -86,6 +99,16 @@ final class Job implements JobInterface
     public function caller(): CallerInterface
     {
         return $this->caller;
+    }
+
+    public function parameters(): ParametersInterface
+    {
+        return $this->parameters;
+    }
+
+    public function return(): ParameterInterface
+    {
+        return $this->return;
     }
 
     public function withArguments(mixed ...$argument): JobInterface
@@ -140,7 +163,7 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function action(): ActionInterface|string
+    public function action(): ActionInterface|string|Closure
     {
         return $this->_;
     }
@@ -238,11 +261,19 @@ final class Job implements JobInterface
             array_diff($requiredKeys, $intersectKeys)
         );
         if ($missing !== []) {
-            $reflection = new ReflectionClass($this->_);
-            $class = "`{$reflection->getName()}`";
-            if ($reflection->isAnonymous()) {
-                $class = 'anon class in '
-                    . $reflection->getFileName() . ':' . $reflection->getStartLine();
+            if ($this->_ instanceof Closure) {
+                $reflection = new ReflectionFunction($this->_);
+                $fileName = $reflection->getFileName();
+                $startLine = $reflection->getStartLine();
+                $class = "closure @ {$fileName}:{$startLine}";
+            } else {
+                $reflection = new ReflectionClass($this->_);
+                $class = "`{$reflection->getName()}`";
+                if ($reflection->isAnonymous()) {
+                    $fileName = $reflection->getFileName();
+                    $startLine = $reflection->getStartLine();
+                    $class = "anon class @ {$fileName}:{$startLine}";
+                }
             }
 
             throw new ArgumentCountError(

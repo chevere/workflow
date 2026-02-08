@@ -144,8 +144,7 @@ final class Jobs implements JobsInterface
 
     private function storeReferences(string $job, JobInterface $item): void
     {
-        $action = $item->action();
-        $return = $action::reflection()->return();
+        $return = $item->return();
         if ($return instanceof ParametersAccessInterface
             && ! ($return instanceof UnionParameterInterface)
         ) {
@@ -169,8 +168,7 @@ final class Jobs implements JobsInterface
     {
         foreach ($item->arguments() as $argument => $value) {
             $argument = strval($argument);
-            $action = $item->action();
-            $parameters = $action::reflection()->parameters();
+            $parameters = $item->parameters();
             $positions = array_keys($parameters->keys());
             if ($parameters->has($argument)) {
                 $parameter = $parameters->get($argument);
@@ -230,7 +228,7 @@ final class Jobs implements JobsInterface
                 /** @var JobInterface $responseJob */
                 $responseJob = $this->map->get($value->job());
                 /** @var ParameterInterface $accept */
-                $accept = $responseJob->action()::reflection()->return();
+                $accept = $responseJob->return();
                 if ($value->key() !== null) {
                     if (! $accept instanceof ParametersAccessInterface) {
                         throw new LogicException(
@@ -311,10 +309,9 @@ final class Jobs implements JobsInterface
         if (! $runIf instanceof ResponseReferenceInterface) {
             return;
         }
-        $action = $this->get($runIf->job())->action();
-        $accept = $action::reflection()->return();
+        $return = $this->map->get($runIf->job())->return();
         if ($runIf->key() !== null) {
-            if (! $accept instanceof ParametersAccessInterface) {
+            if (! $return instanceof ParametersAccessInterface) {
                 throw new OutOfBoundsException(
                     (string) message(
                         'Response **%response%** job `%job%` doesn\'t bind to `%parameter%` parameter',
@@ -324,9 +321,9 @@ final class Jobs implements JobsInterface
                     )
                 );
             }
-            $accept = $accept->parameters()->get($runIf->key());
+            $return = $return->parameters()->get($runIf->key());
         }
-        if ($accept->type()->primitive() === 'bool') {
+        if ($return->type()->primitive() === 'bool') {
             return;
         }
 
@@ -334,7 +331,7 @@ final class Jobs implements JobsInterface
             (string) message(
                 'Response **%response%** must be of type `bool`, `%type%` provided',
                 response: strval($runIf),
-                type: $accept->type()->primitive()
+                type: $return->type()->primitive()
             )
         );
     }

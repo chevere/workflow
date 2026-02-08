@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
+use Chevere\Parameter\Attributes\IntAttr;
+use Chevere\Parameter\Attributes\ReturnAttr;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
@@ -24,6 +26,9 @@ use InvalidArgumentException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use function Chevere\Parameter\int;
+use function Chevere\Parameter\parameters;
+use function Chevere\Parameter\string;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\variable;
 
@@ -274,5 +279,36 @@ final class JobTest extends TestCase
             baz: 'baz',
             bar: variable('foo')
         );
+    }
+
+    public function testWithClosure(): void
+    {
+        $closureFileLine = __FILE__ . ':' . (__LINE__ + 1);
+        $closure = function (string $foo): int {
+            return strlen($foo);
+        };
+        $job = new Job($closure, foo: 'bar');
+        $this->assertSame($closure, $job->action());
+        $this->assertEquals(int(), $job->return());
+        $this->assertEquals(parameters(foo: string()), $job->parameters());
+        $this->expectException(ArgumentCountError::class);
+        $callerFileLine = __FILE__ . ':' . (__LINE__ + 6);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Missing argument(s) [`string \$foo`] for closure @ {$closureFileLine} in {$callerFileLine}
+            PLAIN
+        );
+        new Job($closure);
+    }
+
+    public function testWithClosureAttributes(): void
+    {
+        $closure = #[ReturnAttr(new IntAttr(min: -1))] function (string $foo): int {
+            return strlen($foo);
+        };
+        $job = new Job($closure, foo: 'bar');
+        $this->assertSame($closure, $job->action());
+        $this->assertEquals(int(min: -1), $job->return());
+        $this->assertEquals(parameters(foo: string()), $job->parameters());
     }
 }
