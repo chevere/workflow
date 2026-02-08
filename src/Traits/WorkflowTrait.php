@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Traits;
 
 use BadMethodCallException;
+use Chevere\Container\Container;
+use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use function Chevere\Workflow\run;
@@ -43,11 +45,14 @@ trait WorkflowTrait // @phpstan-ignore-line
      * Run the given workflow with the provided arguments.
      *
      * ```php
-     * $this->execute($workflow, name: 'value',...);
+     * $this->execute($workflow, $container, name: 'value',...);
      * ```
      */
-    private function execute(WorkflowInterface $workflow, mixed ...$argument): void
-    {
-        $this->run = run($workflow, ...$argument);
+    private function execute(
+        WorkflowInterface $workflow,
+        ContainerInterface $container = new Container(),
+        mixed ...$argument
+    ): void {
+        $this->run = run($workflow, $container, ...$argument);
     }
 }
