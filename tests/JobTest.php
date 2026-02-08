@@ -191,6 +191,11 @@ final class JobTest extends TestCase
             $with->runIf()->toArray()
         );
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Condition `wea` is already defined
+            PLAIN
+        );
         $with->withRunIf($variable, $variable);
     }
 
@@ -206,6 +211,11 @@ final class JobTest extends TestCase
         );
         $this->assertTrue($job->dependencies()->contains('jobN'));
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Condition `jobN:parameter` is already defined
+            PLAIN
+        );
         $job->withRunIf($reference, $reference);
     }
 
@@ -216,12 +226,18 @@ final class JobTest extends TestCase
         $closure = function (): bool {
             return true;
         };
+        $closureId = spl_object_id($closure);
         $job = $job->withRunIf($closure);
         $this->assertSame(
             [$closure],
             $job->runIf()->toArray()
         );
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Condition `callable#{$closureId}` is already defined
+            PLAIN
+        );
         $job->withRunIf($closure, $closure);
     }
 
@@ -235,6 +251,11 @@ final class JobTest extends TestCase
             $job->runIf()->toArray()
         );
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Condition `bool#true` is already defined
+            PLAIN
+        );
         $job->withRunIf(true, true);
     }
 
