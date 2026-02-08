@@ -65,16 +65,16 @@ final class Job implements JobInterface
         private ActionInterface|string $_,
         mixed ...$argument
     ) {
-        $debugBacktrace = debug_backtrace(options: 0, limit: 2);
+        $debugBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $callerFunction = $debugBacktrace[1]['function'] ?? '';
         $index = (int) in_array(
             $callerFunction,
             ['Chevere\Workflow\sync', 'Chevere\Workflow\async']
         );
-        $debugBacktrace = $debugBacktrace[$index];
-        $file = $debugBacktrace['file'] ?? 'unknown';
-        $line = $debugBacktrace['line'] ?? 0;
-        $this->caller = new Caller($file, (int) $line);
+        $callerTrace = $debugBacktrace[$index];
+        $file = $callerTrace['file'] ?? 'unknown';
+        $line = (int) ($callerTrace['line'] ?? 0);
+        $this->caller = new Caller($file, $line);
         $this->isSync = false;
         $this->runIf = new Vector();
         $this->dependencies = new Vector();
