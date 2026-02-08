@@ -86,7 +86,7 @@ final class Runner implements RunnerInterface
         $arguments = $new->getJobArguments($job);
         $action = $job->action();
         if (is_string($action)) {
-            $dependencies = $this->run->workflow()->jobs()->dependencies()->extract(
+            $dependencies = $this->run->workflow()->dependencies()->extract(
                 $action,
                 $this->run->container()
             );

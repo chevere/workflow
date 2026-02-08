@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
-use Chevere\Container\Interfaces\DependenciesInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\StringMappedInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
@@ -53,6 +52,4 @@ interface JobsInterface extends StringMappedInterface
      * @return Iterator<string, JobInterface>
      */
     public function getIterator(): Iterator;
-
-    public function dependencies(): DependenciesInterface;
 }

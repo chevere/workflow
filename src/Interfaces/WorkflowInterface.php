@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
+use Chevere\Container\Interfaces\DependenciesInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Countable;
@@ -24,6 +25,11 @@ use OverflowException;
 interface WorkflowInterface extends Countable
 {
     public function jobs(): JobsInterface;
+
+    /**
+     * Provides access to the dependencies of the workflow.
+     */
+    public function dependencies(): DependenciesInterface;
 
     /**
      * Return an instance with the specified `$job`.

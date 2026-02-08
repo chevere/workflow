@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Container\Dependencies;
-use Chevere\Container\Interfaces\DependenciesInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
@@ -69,8 +67,6 @@ final class Jobs implements JobsInterface
      */
     private VectorInterface $jobDependencies;
 
-    private DependenciesInterface $dependencies;
-
     public function __construct(JobInterface ...$jobs)
     {
         $this->map = new Map();
@@ -78,7 +74,6 @@ final class Jobs implements JobsInterface
         $this->graph = new Graph();
         $this->variables = new Map();
         $this->references = new Map();
-        $this->dependencies = new Dependencies();
         $this->putAdded(...$jobs);
     }
 
@@ -95,11 +90,6 @@ final class Jobs implements JobsInterface
     public function references(): MapInterface
     {
         return $this->references;
-    }
-
-    public function dependencies(): DependenciesInterface
-    {
-        return $this->dependencies;
     }
 
     public function get(string $job): JobInterface
@@ -149,10 +139,6 @@ final class Jobs implements JobsInterface
             $this->storeReferences($name, $item);
             $this->assertDependencies($name);
             $this->graph = $this->graph->withPut($name, $item);
-            if (is_string($item->action())) {
-                $this->dependencies = $this->dependencies
-                    ->withClass($item->action());
-            }
         }
     }
 

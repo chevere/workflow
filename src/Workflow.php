@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\Container\Dependencies;
+use Chevere\Container\Interfaces\DependenciesInterface;
 use Chevere\DataStructure\Map;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
@@ -39,12 +41,15 @@ final class Workflow implements WorkflowInterface
      */
     private Map $provided;
 
+    private DependenciesInterface $dependencies;
+
     public function __construct(
         private JobsInterface $jobs
     ) {
         $this->parameters = new Parameters();
         $this->expected = new Map();
         $this->provided = new Map();
+        $this->dependencies = new Dependencies();
         $this->putAdded(
             ...iterator_to_array(
                 $jobs->getIterator()
@@ -55,6 +60,11 @@ final class Workflow implements WorkflowInterface
     public function jobs(): JobsInterface
     {
         return $this->jobs;
+    }
+
+    public function dependencies(): DependenciesInterface
+    {
+        return $this->dependencies;
     }
 
     public function count(): int
@@ -135,6 +145,10 @@ final class Workflow implements WorkflowInterface
             $name = strval($name);
             $this->putJobConditions($item);
             $this->putParameters($name, $item);
+            if (is_string($item->action())) {
+                $this->dependencies = $this->dependencies
+                    ->withClass($item->action());
+            }
         }
     }
 

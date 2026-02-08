@@ -62,7 +62,9 @@ final class Run implements RunInterface
         );
         $this->map = new Map();
         $this->skip = new Vector();
-        $this->workflow()->jobs()->dependencies()->assert($this->container);
+        $this->container = $this->container
+            ->withAutoInject($this->workflow()->dependencies());
+        $this->workflow()->dependencies()->assert($this->container);
     }
 
     public function toArray(): array

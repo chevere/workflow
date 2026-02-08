@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Container\Container;
+use Chevere\Container\Exceptions\ContainerException;
+use Chevere\Tests\src\TestActionDependsNestedNoParams;
 use Chevere\Tests\src\TestActionDependsNoParams;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
@@ -31,7 +33,6 @@ use Chevere\Workflow\Run;
 use Chevere\Workflow\Runner;
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
 use Exception;
-use LogicException;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -428,17 +429,26 @@ final class RunnerTest extends TestCase
         );
     }
 
-    public function testRunnerActionClassNameWithContainer(): void
+    public function testRunnerActionClassNameWithDependency(): void
     {
+        $this->expectNotToPerformAssertions();
         $workflow = workflow(
             job1: sync(TestActionDependsNoParams::class),
         );
+        run($workflow);
         $container = new Container(dependency: new stdClass());
         run($workflow, $container);
-        $this->expectException(LogicException::class);
+    }
+
+    public function testRunnerActionClassNameMissingDependency(): void
+    {
+        $workflow = workflow(
+            job1: sync(TestActionDependsNestedNoParams::class),
+        );
+        $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            Missing argument `dependency` as previously defined by `Chevere\Tests\src\TestActionDependsNoParams`
+            [nestedDependency]: Failed to resolve dependencies for `Chevere\Tests\src\TestActionDependsNoParams`: Missing required argument(s): `dependency`
             PLAIN
         );
         run($workflow);
