@@ -50,13 +50,13 @@ The Workflow package provides a set of core functions in the `Chevere\Workflow` 
 
 ### Functions
 
-| Function | Purpose                                                    |
-| -------- | :--------------------------------------------------------- |
-| workflow | Creates a new workflow container for organizing named jobs |
-| sync     | Defines a synchronous job that blocks until completion     |
-| async    | Defines an asynchronous job that runs non-blocking         |
-| variable | Declares a workflow-level variable for job inputs          |
-| response | Creates a reference to access previous job outputs         |
+| Function | Purpose                                                |
+| -------- | :----------------------------------------------------- |
+| workflow | Creates a new workflow for organizing named jobs       |
+| sync     | Defines a synchronous job that blocks until completion |
+| async    | Defines an asynchronous job that runs non-blocking     |
+| variable | Declares a workflow-level variable for job inputs      |
+| response | Creates a reference to access previous job outputs     |
 
 ### Key concepts
 
@@ -89,11 +89,11 @@ use function Chevere\Workflow\{workflow,sync,variable,response};
 
 $workflow = workflow(
     greet: sync(
-        new MyAction(),
+        MyAction::class,
         foo: variable('super'),
     ),
     capo: sync(
-        new MyAction(),
+        MyAction::class,
         foo: response('greet'),
     ),
 );
@@ -104,14 +104,16 @@ Run the Workflow:
 ```php
 use function Chevere\Workflow\run;
 
-$hello = run(
-    $workflow,
-    super: 'Chevere',
-);
-echo $hello->response('greet')->string() . PHP_EOL;
+$hello = run($workflow, super: 'Chevere');
+
+// If your Actions require dependencies:
+$hello = run($workflow, $container, super: 'Chevere');
+
 // Hello, Chevere
-echo $hello->response('capo')->string() . PHP_EOL;
+echo $hello->response('greet')->string();
+
 // Hello, Hello, Chevere
+echo $hello->response('capo')->string();
 ```
 
 ## Variable
@@ -126,7 +128,7 @@ variable('myVar');
 
 // Usage in a job
 sync(
-    new MyAction(),
+    MyAction::class,
     parameter: variable('myVar')
 );
 ```
@@ -154,10 +156,10 @@ response('job1');
 // Usage in a Workflow
 workflow(
     job1: sync(
-        new SomeAction(),
+        SomeAction::class,
     ),
     job2: sync(
-        new MyAction(),
+        MyAction::class,
         parameter: response('job1')
     );
 );
@@ -201,11 +203,11 @@ class SomeAction extends Action
 
 $workflow = workflow(
     user: sync(
-        new GetUser(),
+        GetUser::class,
         request: variable('userId')
     ),
     job1: sync(
-        new SomeAction(),
+        SomeAction::class,
         context: 'public',               // As-is value
         userId: variable('userId'),      // Variable
         group: response('user', 'group'),// Response
@@ -236,20 +238,20 @@ use function Chevere\Workflow\{sync,async,response,variable,workflow};
 
 workflow(
     thumb: async(
-        new ImageResize(),
+        ImageResize::class,
         image: variable('image'),
         width: 100,
         height: 100,
         fit: 'thumb'
     ),
     medium: async(
-        new ImageResize(),
+        ImageResize::class,
         image: variable('image'),
         width: 500,
         fit: 'resizeByW'
     ),
     store: sync(
-        new StoreFiles(),
+        StoreFile::class,
         response('thumb', 'filename'),
         response('medium', 'filename'),
     ),
@@ -301,20 +303,20 @@ use function Chevere\Workflow\{sync,response,variable,workflow};
 
 workflow(
     user: sync(
-        new GetUser(),
+        GetUser::class,
         request: variable('payload')
     ),
     validate: sync(
-        new ValidateImage(),
+        ValidateImage::class,
         mime: 'image/png',
         file: variable('file')
     ),
     meta: sync(
-        new GetMeta(),
+        GetMeta::class,
         file: variable('file'),
     ),
     store: sync(
-        new StoreFile(),
+        StoreFile::class,
         file: variable('file'),
         name: response('meta', 'name'),
         user: response('user')
@@ -361,7 +363,7 @@ Method `withRunIf` enables to pass arguments of type [Variable](#variable) or [R
 
 ```php
 sync(
-    new CompressImage(),
+    CompressImage::class,
     file: variable('file')
 )
     ->withRunIf(
@@ -377,18 +379,18 @@ For the code above, all conditions must meet to run the Job and both variable `c
 Use `withDepends` method to explicit declare previous jobs as dependencies. The dependent Job won't run until the dependencies are resolved.
 
 ```php
-job(new SomeAction())
+job(SomeAction::class)
     ->withDepends('myJob');
 ```
 
 ## Running
 
-To run a Workflow use the `run` function by passing a Workflow and its variables (if any).
+To run a Workflow use the `run` function by passing a Workflow, a [container](https://chevere.org/packages/container) (optional) and its variables (if any).
 
 ```php
 use function Chevere\Workflow\run;
 
-$run = run($workflow, ...$variables);
+$run = run($workflow, $container, ...$variables);
 ```
 
 ### Access Job response
@@ -420,7 +422,7 @@ class Something
     {
         $workflow = workflow(
             job1: sync(
-                new MyAction(),
+                MyAction::class,
                 foo: variable('bar')
             )
         );
