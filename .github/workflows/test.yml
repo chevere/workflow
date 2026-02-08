@@ -30,8 +30,6 @@ jobs:
           ini-values: ${{ env.ini-values }}
           coverage: pcov
           tools: ${{ env.tools }}
-        env:
-          fail-fast: true
       - name: Setup problem matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
       - name: Validate composer

@@ -53,7 +53,7 @@
         ],
         "infection": [
             "Composer\\Config::disableProcessTimeout",
-            "infection --only-covered -j10"
+            "infection -j10"
         ],
         "infection-filter": "sh -c 'sh -c \"composer infection -- --filter=$0 --test-framework-options=--filter=$0\"' $1",
         "phpstan": "vendor/bin/phpstan analyze src/ --memory-limit 512M --level 9",
