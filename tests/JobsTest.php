@@ -357,6 +357,18 @@ final class JobsTest extends TestCase
         $jobs->withAdded(j4: $j4);
     }
 
+    public function testWithRunIfCallable(): void
+    {
+        $callable = fn () => true;
+        $jobs = new Jobs(
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams())
+                ->withRunIf($callable),
+        );
+        $runIf = $jobs->get('j2')->runIf()->get(0);
+        $this->assertSame($callable, $runIf);
+    }
+
     public function testWithMissingReference(): void
     {
         // previous: OutOfBoundsException
@@ -417,18 +429,6 @@ final class JobsTest extends TestCase
                 foo: response('job1', 'baz'),
             )
         );
-    }
-
-    public function testWithRunIfCallable(): void
-    {
-        $callable = fn () => true;
-        $jobs = new Jobs(
-            j1: async(new TestActionNoParams()),
-            j2: async(new TestActionNoParams())
-                ->withRunIf($callable),
-        );
-        $runIf = $jobs->get('j2')->runIf()->get(0);
-        $this->assertSame($callable, $runIf);
     }
 
     public function testWithAttrOverride(): void
