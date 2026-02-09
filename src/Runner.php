@@ -99,17 +99,20 @@ final class Runner implements RunnerInterface
         $maxAttempts = $retryPolicy->maxAttempts();
         $delay = $retryPolicy->delay();
         $timeout = $retryPolicy->timeout();
+        $cancellation = $timeout > 0
+            ? new TimeoutCancellation($timeout)
+            : null;
         $lastException = null;
         $response = null;
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             try {
-                if ($timeout > 0) {
+                if ($cancellation !== null) {
                     $response = typed(
                         await(
                             [
                                 async(fn (): mixed => $action->__invoke(...$arguments)),
                             ],
-                            cancellation: new TimeoutCancellation($timeout)
+                            cancellation: $cancellation
                         )[0]
                     );
                 } else {

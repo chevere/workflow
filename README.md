@@ -424,6 +424,35 @@ job(SomeAction::class)
     ->withDepends('myJob');
 ```
 
+### Retry policy
+
+Use `withRetry` method to configure automatic retry behavior for a Job. This is useful for jobs that may fail due to transient errors (network timeouts, temporary service unavailability, etc.).
+
+```php
+job(FetchUrl::class)
+    ->withRetry(
+        timeout: 300,   // Max 300 seconds per job
+        maxAttempts: 5, // Up to 5 attempts
+        delay: 10       // Wait 10 seconds between attempts
+    );
+```
+
+Retry options:
+
+| Parameter   | Type          | Default | Description                                                                           |
+| ----------- | ------------- | ------- | ------------------------------------------------------------------------------------- |
+| timeout     | `int<0, max>` | `0`     | Max execution time for the entire job in seconds, across all attempts (0 = unlimited) |
+| maxAttempts | `int<1, max>` | `1`     | Total number of attempts including the initial one                                    |
+| delay       | `int<0, max>` | `0`     | Delay in seconds between retry attempts (0 = immediate)                               |
+
+When all attempts are exhausted, the `RunnerException` message includes the attempt number:
+
+```
+[jobName]: [3/3] Connection timed out
+```
+
+Delays between retries use Amp's non-blocking `delay`, making it safe for async runtimes like RoadRunner.
+
 ## Running
 
 To run a Workflow use the `run` function by passing a Workflow, a [container](https://chevere.org/packages/container) (optional) and its variables (if any).

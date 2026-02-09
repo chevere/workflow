@@ -105,7 +105,7 @@ interface JobInterface
     public function withDepends(string ...$jobs): self;
 
     /**
-     * @param int<0, max> $timeout Timeout in seconds (0 = unlimited)
+     * @param int<0, max> $timeout Timeout in seconds across all attempts (0 = unlimited)
      * @param int<1, max> $maxAttempts Number of attempts (minimum 1)
      * @param int<0, max> $delay Retry delay in seconds (0 = no delay)
      */
