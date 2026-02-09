@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
-use Chevere\Container\Exceptions\ContainerException;
-use Chevere\Tests\src\TestActionDependsNestedNoParams;
+use Chevere\Container\Container;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParams;
+use Chevere\Tests\src\TestActionRequiresInterface;
 use Chevere\Workflow\Run;
+use LogicException;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
@@ -33,13 +34,12 @@ final class RunTest extends TestCase
 {
     public function testConstruct(): void
     {
-        $workflow = workflow()
-            ->withAddedJob(
-                job: async(
-                    new TestActionParam(),
-                    foo: variable('foo'),
-                )
-            );
+        $workflow = workflow(
+            job: async(
+                new TestActionParam(),
+                foo: variable('foo'),
+            )
+        );
         $arguments = [
             'foo' => 'bar',
         ];
@@ -57,18 +57,17 @@ final class RunTest extends TestCase
 
     public function testWithStepResponse(): void
     {
-        $workflow = workflow()
-            ->withAddedJob(
-                job0: async(
-                    new TestActionParam(),
-                    foo: variable('foo')
-                ),
-                job1: async(
-                    new TestActionParams(),
-                    foo: variable('baz'),
-                    bar: variable('bar')
-                )
-            );
+        $workflow = workflow(
+            job0: async(
+                new TestActionParam(),
+                foo: variable('foo')
+            ),
+            job1: async(
+                new TestActionParams(),
+                foo: variable('baz'),
+                bar: variable('bar')
+            )
+        );
         $arguments = [
             'foo' => 'hola',
             'bar' => 'mundo',
@@ -92,13 +91,12 @@ final class RunTest extends TestCase
 
     public function testWithAddedNotFound(): void
     {
-        $workflow = workflow()
-            ->withAddedJob(
-                job0: async(
-                    new TestActionParam(),
-                    foo: variable('foo')
-                )
-            );
+        $workflow = workflow(
+            job0: async(
+                new TestActionParam(),
+                foo: variable('foo')
+            )
+        );
         $arguments = [
             'foo' => 'hola',
         ];
@@ -112,16 +110,15 @@ final class RunTest extends TestCase
 
     public function testWithAddedMissingArguments(): void
     {
-        $workflow = workflow()
-            ->withAddedJob(
-                job0: async(
-                    new TestActionNoParams()
-                ),
-                job1: async(
-                    new TestActionParam(),
-                    foo: variable('foo')
-                )
-            );
+        $workflow = workflow(
+            job0: async(
+                new TestActionNoParams()
+            ),
+            job1: async(
+                new TestActionParam(),
+                foo: variable('foo')
+            )
+        );
         $this->expectException(ArgumentCountError::class);
         (new Run($workflow))
             ->withResponse(
@@ -156,13 +153,12 @@ final class RunTest extends TestCase
 
     public function testWithResponseWrongType(): void
     {
-        $workflow = workflow()
-            ->withAddedJob(
-                job: async(
-                    new TestActionIntToString(),
-                    int: variable('intValue')
-                )
-            );
+        $workflow = workflow(
+            job: async(
+                new TestActionIntToString(),
+                int: variable('intValue')
+            )
+        );
         $run = new Run($workflow, intValue: 123);
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage(
@@ -176,14 +172,25 @@ final class RunTest extends TestCase
     public function testConstructMissingDependencies(): void
     {
         $workflow = workflow(
-            job1: async(TestActionDependsNestedNoParams::class)
+            job1: async(TestActionRequiresInterface::class)
         );
-        $this->expectException(ContainerException::class);
+        $container = new Container(dependency: new \stdClass());
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage(
-            <<<PLAIN
-            [nestedDependency]: Failed to resolve dependencies for `Chevere\Tests\src\TestActionDependsNoParams`: Missing required argument(s): `dependency`
-            PLAIN
+            'Argument `dependency` provided as `stdClass` is not compatible with `Chevere\Tests\src\TestDependencyInterface` as previously defined by `Chevere\Tests\src\TestActionRequiresInterface`'
         );
-        new Run($workflow);
+        new Run($workflow, $container);
+    }
+
+    public function testWithResponseOnSkippedJob(): void
+    {
+        $workflow = workflow(
+            job1: async(new TestActionNoParams())
+        );
+        $run = new Run($workflow);
+        $with = $run->withSkip('job1');
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Job job1 is skipped');
+        $with->withResponse('job1', []);
     }
 }
