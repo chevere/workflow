@@ -15,6 +15,7 @@ namespace Chevere\Tests;
 
 use Chevere\Container\Container;
 use Chevere\Container\Exceptions\ContainerException;
+use Chevere\Tests\src\TestActionDelays;
 use Chevere\Tests\src\TestActionDependsNestedNoParams;
 use Chevere\Tests\src\TestActionDependsNoParams;
 use Chevere\Tests\src\TestActionIntToString;
@@ -483,6 +484,20 @@ final class RunnerTest extends TestCase
         );
         $third = run($workflow);
         $this->assertTrue($third->response('job1')->bool());
+    }
+
+    public function testJobWithRetryTimeout(): void
+    {
+        $workflow = workflow(
+            job1: sync(new TestActionDelays(), seconds: 2.0)
+                ->withRetry(
+                    timeout: 1,
+                    maxAttempts: 3
+                ),
+        );
+        $this->expectException(RunnerException::class);
+        $this->expectExceptionMessage('[job1]: [1/3] The operation was cancelled');
+        run($workflow);
     }
 
     /**

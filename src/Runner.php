@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Amp\CancelledException;
 use Amp\Future;
 use Amp\TimeoutCancellation;
 use Chevere\Action\Interfaces\ActionInterface;
@@ -104,7 +105,10 @@ final class Runner implements RunnerInterface
             : null;
         $lastException = null;
         $response = null;
+        $currentAttempt = 0;
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            $currentAttempt = $attempt;
+
             try {
                 if ($cancellation !== null) {
                     $response = typed(
@@ -123,6 +127,9 @@ final class Runner implements RunnerInterface
                 break;
             } catch (Throwable $e) {
                 $lastException = $e;
+                if ($e instanceof CancelledException) {
+                    break;
+                }
                 if ($attempt < $maxAttempts && $delay > 0) {
                     delay($delay);
                 }
@@ -133,7 +140,7 @@ final class Runner implements RunnerInterface
                 name: $name,
                 job: $job,
                 throwable: $lastException,
-                attempt: $attempt - 1,
+                attempt: $currentAttempt,
             );
         }
         /** @var TypedInterface $response */
