@@ -57,8 +57,20 @@ interface RunInterface extends StringMappedInterface
      */
     public function skip(): VectorInterface;
 
+    /**
+     * Return an instance with the specified job response.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified job response.
+     */
     public function withResponse(string $job, TypedInterface $response): self;
 
+    /**
+     * Return an instance with the specified job names skipped.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified job names skipped.
+     */
     public function withSkip(string ...$job): self;
 
     /**
