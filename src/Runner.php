@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Amp\Future;
+use Amp\TimeoutCancellation;
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Parameter\Interfaces\TypedInterface;
 use Chevere\Workflow\Exceptions\RunnerException;
@@ -25,6 +26,7 @@ use Chevere\Workflow\Interfaces\VariableInterface;
 use OutOfBoundsException;
 use Throwable;
 use function Amp\async;
+use function Amp\delay;
 use function Amp\Future\await;
 use function Chevere\Parameter\typed;
 
@@ -93,16 +95,45 @@ final class Runner implements RunnerInterface
             /** @var ActionInterface $action */
             $action = new $action(...$dependencies);
         }
+        $retryPolicy = $job->retryPolicy();
+        $maxAttempts = $retryPolicy->maxAttempts();
+        $delay = $retryPolicy->delay();
+        $timeout = $retryPolicy->timeout();
+        $lastException = null;
+        $response = null;
+        for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
+            try {
+                if ($timeout > 0) {
+                    $response = typed(
+                        await(
+                            [
+                                async(fn (): mixed => $action->__invoke(...$arguments)),
+                            ],
+                            cancellation: new TimeoutCancellation($timeout)
+                        )[0]
+                    );
+                } else {
+                    $response = typed($action->__invoke(...$arguments));
+                }
+                $lastException = null;
 
-        try {
-            $response = typed($action->__invoke(...$arguments));
-        } catch (Throwable $e) {
+                break;
+            } catch (Throwable $e) {
+                $lastException = $e;
+                if ($attempt < $maxAttempts && $delay > 0) {
+                    delay($delay);
+                }
+            }
+        }
+        if ($lastException !== null) {
             throw new RunnerException(
                 name: $name,
                 job: $job,
-                throwable: $e,
+                throwable: $lastException,
+                attempt: $attempt - 1,
             );
         }
+        /** @var TypedInterface $response */
         $new->addJobResponse($name, $response);
 
         return $new;
@@ -115,9 +146,7 @@ final class Runner implements RunnerInterface
         return match (true) {
             is_bool($runIf) => $runIf,
             $runIf instanceof VariableInterface => $this->run->arguments()->required($runIf->__toString())->bool(),
-
-            $runIf instanceof ResponseReferenceInterface => $this->run->getReturn($runIf->job())->array()[$runIf->key()],
-
+            $runIf instanceof ResponseReferenceInterface => $this->run->response($runIf->job())->array()[$runIf->key()],
             default => call_user_func($runIf, $this->run())
         };
     }

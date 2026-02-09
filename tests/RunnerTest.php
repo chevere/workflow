@@ -26,7 +26,9 @@ use Chevere\Tests\src\TestActionParamsFooBarResponse2;
 use Chevere\Tests\src\TestActionThrows;
 use Chevere\Tests\src\TestActionUnion;
 use Chevere\Tests\src\TestActionVariadic;
+use Chevere\Tests\src\TestActionWorksOn5thAttempt;
 use Chevere\Workflow\Exceptions\JobsException;
+use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Run;
@@ -452,6 +454,35 @@ final class RunnerTest extends TestCase
             PLAIN
         );
         run($workflow);
+    }
+
+    public function testJobWithRetryFailure(): void
+    {
+        $workflow = workflow(
+            job1: sync(TestActionWorksOn5thAttempt::class)
+                ->withRetry(
+                    maxAttempts: 4
+                ),
+        );
+        $this->expectException(RunnerException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [job1]: [4/4] Attempt 4 failed, required attempt 5
+            PLAIN
+        );
+        run($workflow);
+    }
+
+    public function testJobWithRetrySuccess(): void
+    {
+        $workflow = workflow(
+            job1: sync(TestActionWorksOn5thAttempt::class)
+                ->withRetry(
+                    maxAttempts: 5
+                ),
+        );
+        $third = run($workflow);
+        $this->assertTrue($third->response('job1')->bool());
     }
 
     /**

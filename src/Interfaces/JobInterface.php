@@ -26,14 +26,49 @@ use Closure;
 interface JobInterface
 {
     /**
-     * Provides access to the invocable ActionInterface|Closure parameters for this Job.
+     * Provides access to the invocable ActionInterface|Closure parameters for this job.
      */
     public function parameters(): ParametersInterface;
 
     /**
-     * Provides access to the return type parameter for this Job.
+     * Provides access to the return type parameter for this job.
      */
     public function return(): ParameterInterface;
+
+    /**
+     * @return ActionInterface|class-string<ActionInterface>|Closure
+     */
+    public function action(): ActionInterface|string|Closure;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function arguments(): array;
+
+    /**
+     * @return VectorInterface<string>
+     */
+    public function dependencies(): VectorInterface;
+
+    /**
+     * @return bool True if the job is synchronous (blocking)
+     */
+    public function isSync(): bool;
+
+    /**
+     * @return VectorInterface<ResponseReferenceInterface|VariableInterface|callable|bool>
+     */
+    public function runIf(): VectorInterface;
+
+    /**
+     * Provides access to the caller who created this job.
+     */
+    public function caller(): CallerInterface;
+
+    /**
+     * Provides access to the job retry policy.
+     */
+    public function retryPolicy(): RetryPolicyInterface;
 
     /**
      * Return an instance with the specified arguments.
@@ -70,32 +105,13 @@ interface JobInterface
     public function withDepends(string ...$jobs): self;
 
     /**
-     * @return ActionInterface|class-string<ActionInterface>|Closure
+     * @param int<0, max> $timeout Timeout in seconds (0 = unlimited)
+     * @param int<1, max> $maxAttempts Number of attempts (minimum 1)
+     * @param int<0, max> $delay Retry delay in seconds (0 = no delay)
      */
-    public function action(): ActionInterface|string|Closure;
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function arguments(): array;
-
-    /**
-     * @return VectorInterface<string>
-     */
-    public function dependencies(): VectorInterface;
-
-    /**
-     * @return bool True if the job is synchronous (blocking)
-     */
-    public function isSync(): bool;
-
-    /**
-     * @return VectorInterface<ResponseReferenceInterface|VariableInterface|callable|bool>
-     */
-    public function runIf(): VectorInterface;
-
-    /**
-     * Provides access to the caller who created this Job.
-     */
-    public function caller(): CallerInterface;
+    public function withRetry(
+        int $timeout = 0,
+        int $maxAttempts = 1,
+        int $delay = 0
+    ): self;
 }

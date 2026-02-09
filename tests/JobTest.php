@@ -21,9 +21,12 @@ use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParamStringRegex;
+use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use Chevere\Workflow\Job;
+use Chevere\Workflow\RetryPolicy;
 use InvalidArgumentException;
 use OverflowException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use function Chevere\Parameter\int;
@@ -310,5 +313,62 @@ final class JobTest extends TestCase
         $this->assertSame($closure, $job->action());
         $this->assertEquals(int(min: -1), $job->return());
         $this->assertEquals(parameters(foo: string()), $job->parameters());
+    }
+
+    public function testRetryDefault(): void
+    {
+        $job = new Job(TestActionNoParams::class);
+        $this->assertEquals(new RetryPolicy(), $job->retryPolicy());
+    }
+
+    #[DataProvider('dataProviderRetryDefinedValues')]
+    public function testRetryDefinedValues(RetryPolicyInterface $expected, array $arguments): void
+    {
+        $job = (new Job(TestActionNoParams::class));
+        $with = $job->withRetry(...$arguments);
+        $this->assertNotSame($job, $with);
+        $this->assertEquals($expected, $with->retryPolicy());
+    }
+
+    public static function dataProviderRetryDefinedValues(): array
+    {
+        return [
+            [
+                new RetryPolicy(),
+                [],
+            ],
+            [
+                new RetryPolicy(timeout: 10),
+                [
+                    'timeout' => 10,
+                    'maxAttempts' => 1,
+                    'delay' => 0,
+                ],
+            ],
+            [
+                new RetryPolicy(maxAttempts: 5),
+                [
+                    'timeout' => 0,
+                    'maxAttempts' => 5,
+                    'delay' => 0,
+                ],
+            ],
+            [
+                new RetryPolicy(delay: 3),
+                [
+                    'timeout' => 0,
+                    'maxAttempts' => 1,
+                    'delay' => 3,
+                ],
+            ],
+            [
+                new RetryPolicy(timeout: 10, maxAttempts: 5, delay: 3),
+                [
+                    'timeout' => 10,
+                    'maxAttempts' => 5,
+                    'delay' => 3,
+                ],
+            ],
+        ];
     }
 }

@@ -23,6 +23,7 @@ use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
+use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Closure;
 use InvalidArgumentException;
@@ -60,6 +61,8 @@ final class Job implements JobInterface
 
     private CallerInterface $caller;
 
+    private RetryPolicyInterface $retryPolicy;
+
     /**
      * Creates a Job
      * DO NOT use this method directly, use `sync` or `async` functions instead.
@@ -94,6 +97,7 @@ final class Job implements JobInterface
         }
         $this->arguments = [];
         $this->setArguments(...$argument);
+        $this->retryPolicy = new RetryPolicy();
     }
 
     public function caller(): CallerInterface
@@ -109,6 +113,11 @@ final class Job implements JobInterface
     public function return(): ParameterInterface
     {
         return $this->return;
+    }
+
+    public function retryPolicy(): RetryPolicyInterface
+    {
+        return $this->retryPolicy;
     }
 
     public function withArguments(mixed ...$argument): JobInterface
@@ -159,6 +168,17 @@ final class Job implements JobInterface
     {
         $new = clone $this;
         $new->addDependencies(...$jobs);
+
+        return $new;
+    }
+
+    public function withRetry(
+        int $timeout = 0,
+        int $maxAttempts = 1,
+        int $delay = 0
+    ): JobInterface {
+        $new = clone $this;
+        $new->retryPolicy = new RetryPolicy($timeout, $maxAttempts, $delay);
 
         return $new;
     }
