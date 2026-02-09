@@ -32,7 +32,7 @@ use function Chevere\Parameter\typed;
 final class Run implements RunInterface
 {
     /**
-     * @template-use MapTrait<TypedInterface>
+     * @template-use MapTrait<mixed>
      */
     use MapTrait;
 
@@ -70,8 +70,8 @@ final class Run implements RunInterface
     public function toArray(): array
     {
         $return = [];
-        foreach ($this->map as $name => $typed) {
-            $return[$name] = $typed->mixed();
+        foreach ($this->map as $name => $mixed) {
+            $return[$name] = $mixed;
         }
 
         return $return;
@@ -102,13 +102,11 @@ final class Run implements RunInterface
         return $this->skip;
     }
 
-    public function withResponse(string $job, TypedInterface $response): RunInterface
+    public function withResponse(string $job, mixed $response): RunInterface
     {
         $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
         $new = clone $this;
-        $new->workflow->jobs()->get($job);
-        $new->workflow->getJobResponseParameter($job)
-            ->__invoke($response->mixed());
+        $new->workflow->getJobResponseParameter($job)->__invoke($response);
         $new->map = $new->map->withPut($job, $response);
 
         return $new;
@@ -128,10 +126,7 @@ final class Run implements RunInterface
 
     public function response(string $job, string|int ...$key): TypedInterface
     {
-        return typed(
-            $this->map->get($job)->mixed(),
-            ...$key
-        );
+        return typed($this->map->get($job), ...$key);
     }
 
     /**

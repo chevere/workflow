@@ -63,7 +63,7 @@ interface RunInterface extends StringMappedInterface
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified job response.
      */
-    public function withResponse(string $job, TypedInterface $response): self;
+    public function withResponse(string $job, mixed $response): self;
 
     /**
      * Return an instance with the specified job names skipped.

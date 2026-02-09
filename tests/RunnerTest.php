@@ -500,6 +500,27 @@ final class RunnerTest extends TestCase
         run($workflow);
     }
 
+    public function testJobWithRetryDelay(): void
+    {
+        $delaySeconds = 1;
+        $workflow = workflow(
+            job1: sync(new TestActionWorksOnNAttempt(2))
+                ->withRetry(
+                    maxAttempts: 2,
+                    delay: $delaySeconds
+                ),
+        );
+        $startTime = microtime(true);
+        $run = run($workflow);
+        $endTime = microtime(true);
+        $elapsed = $endTime - $startTime;
+        // 1 retry with 1s delay = 1s minimum
+        $expectedMinDelay = $delaySeconds;
+        $this->assertGreaterThanOrEqual($expectedMinDelay, $elapsed);
+        $this->assertLessThan($expectedMinDelay + 0.5, $elapsed);
+        $this->assertTrue($run->response('job1')->bool());
+    }
+
     /**
      * @param array<string, JobInterface> $jobs
      */

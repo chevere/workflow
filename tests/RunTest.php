@@ -14,7 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
-use Chevere\Parameter\Typed;
+use Chevere\Container\Exceptions\ContainerException;
+use Chevere\Tests\src\TestActionDependsNestedNoParams;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParam;
@@ -75,8 +76,8 @@ final class RunTest extends TestCase
         ];
         $run = (new Run($workflow, ...$arguments));
         $with = $run
-            ->withResponse('job0', new Typed(['a']))
-            ->withResponse('job1', new Typed(['b']));
+            ->withResponse('job0', ['a'])
+            ->withResponse('job1', ['b']);
         $this->assertSame(
             [
                 'job0' => ['a'],
@@ -105,7 +106,7 @@ final class RunTest extends TestCase
         (new Run($workflow, ...$arguments))
             ->withResponse(
                 'not-found',
-                new Typed([])
+                []
             );
     }
 
@@ -125,7 +126,7 @@ final class RunTest extends TestCase
         (new Run($workflow))
             ->withResponse(
                 'job0',
-                new Typed('')
+                ''
             );
     }
 
@@ -169,6 +170,20 @@ final class RunTest extends TestCase
             must be of type Stringable|string, array given
             PLAIN
         );
-        $run->withResponse('job', new Typed(['wrong_type']));
+        $run->withResponse('job', ['wrong_type']);
+    }
+
+    public function testConstructMissingDependencies(): void
+    {
+        $workflow = workflow(
+            job1: async(TestActionDependsNestedNoParams::class)
+        );
+        $this->expectException(ContainerException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [nestedDependency]: Failed to resolve dependencies for `Chevere\Tests\src\TestActionDependsNoParams`: Missing required argument(s): `dependency`
+            PLAIN
+        );
+        new Run($workflow);
     }
 }

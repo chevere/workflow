@@ -17,7 +17,6 @@ use Amp\CancelledException;
 use Amp\Future;
 use Amp\TimeoutCancellation;
 use Chevere\Action\Interfaces\ActionInterface;
-use Chevere\Parameter\Interfaces\TypedInterface;
 use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
@@ -29,7 +28,6 @@ use Throwable;
 use function Amp\async;
 use function Amp\delay;
 use function Amp\Future\await;
-use function Chevere\Parameter\typed;
 
 final class Runner implements RunnerInterface
 {
@@ -111,16 +109,14 @@ final class Runner implements RunnerInterface
 
             try {
                 if ($cancellation !== null) {
-                    $response = typed(
-                        await(
-                            [
-                                async(fn (): mixed => $action->__invoke(...$arguments)),
-                            ],
-                            cancellation: $cancellation
-                        )[0]
-                    );
+                    $response = await(
+                        [
+                            async(fn (): mixed => $action->__invoke(...$arguments)),
+                        ],
+                        cancellation: $cancellation
+                    )[0];
                 } else {
-                    $response = typed($action->__invoke(...$arguments));
+                    $response = $action->__invoke(...$arguments);
                 }
                 $lastException = null;
 
@@ -143,7 +139,6 @@ final class Runner implements RunnerInterface
                 attempt: $currentAttempt,
             );
         }
-        /** @var TypedInterface $response */
         $new->addJobResponse($name, $response);
 
         return $new;
@@ -194,7 +189,7 @@ final class Runner implements RunnerInterface
         return $arguments;
     }
 
-    private function addJobResponse(string $name, TypedInterface $response): void
+    private function addJobResponse(string $name, mixed $response): void
     {
         $this->run = $this->run->withResponse($name, $response);
     }
