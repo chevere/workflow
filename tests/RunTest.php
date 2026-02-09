@@ -15,6 +15,7 @@ namespace Chevere\Tests;
 
 use ArgumentCountError;
 use Chevere\Parameter\Typed;
+use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParams;
@@ -22,6 +23,7 @@ use Chevere\Workflow\Run;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\variable;
 use function Chevere\Workflow\workflow;
@@ -149,5 +151,24 @@ final class RunTest extends TestCase
         $run = new Run(workflow());
         $this->expectException(OutOfBoundsException::class);
         $run->withSkip('job1', 'job2');
+    }
+
+    public function testWithResponseWrongType(): void
+    {
+        $workflow = workflow()
+            ->withAddedJob(
+                job: async(
+                    new TestActionIntToString(),
+                    int: variable('intValue')
+                )
+            );
+        $run = new Run($workflow, intValue: 123);
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            must be of type Stringable|string, array given
+            PLAIN
+        );
+        $run->withResponse('job', new Typed(['wrong_type']));
     }
 }
