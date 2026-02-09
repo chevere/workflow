@@ -16,21 +16,25 @@ namespace Chevere\Tests\src;
 use Chevere\Action\Action;
 use LogicException;
 
-final class TestActionWorksOn5thAttempt extends Action
+final class TestActionWorksOnNAttempt extends Action
 {
-    public const SUCCESS_ON_ATTEMPT = 5;
-
     private static int $attemptCount = 0;
+
+    public function __construct(
+        private int $successOnAttempt
+    ) {
+        self::$attemptCount = 0;
+    }
 
     public function __invoke(): bool
     {
         ++self::$attemptCount;
 
-        if (self::$attemptCount < self::SUCCESS_ON_ATTEMPT) {
+        if (self::$attemptCount < $this->successOnAttempt) {
             $attempts = self::$attemptCount;
 
             throw new LogicException(
-                "Attempt {$attempts} failed, required attempt " . self::SUCCESS_ON_ATTEMPT
+                "Attempt {$attempts} failed, required attempt {$this->successOnAttempt}"
             );
         }
 

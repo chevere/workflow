@@ -29,7 +29,7 @@ final class RunnerException extends WorkflowException
         string $name,
         JobInterface $job,
         Throwable $throwable,
-        int $attempt = 1,
+        int $attempt,
     ) {
         $this->attempt = $attempt;
         $this->maxAttempts = $job->retryPolicy()->maxAttempts();
