@@ -52,8 +52,7 @@ function workflow(JobInterface ...$job): WorkflowInterface
  */
 function sync(ActionInterface|string|Closure $_, mixed ...$argument): JobInterface
 {
-    return (new Job($_, ...$argument))
-        ->withIsSync(true);
+    return (new Job($_, ...$argument))->withIsSync(true);
 }
 
 /**
