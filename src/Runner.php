@@ -103,7 +103,6 @@ final class Runner implements RunnerInterface
             : null;
         $lastException = null;
         $response = null;
-        $currentAttempt = 0;
         for ($attempt = 1; $attempt <= $maxAttempts; $attempt++) {
             $currentAttempt = $attempt;
 
