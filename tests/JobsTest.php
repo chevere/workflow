@@ -393,11 +393,10 @@ final class JobsTest extends TestCase
 
     public function testWithInvalidReference(): void
     {
-        // previous: LogicException
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Invalid response **job1:missing** as **job1** doesn't return an object implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
+            [job2]: Invalid response reference **job1:missing** as job **job1** doesn't define return rules implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
             PLAIN
         );
         new Jobs(

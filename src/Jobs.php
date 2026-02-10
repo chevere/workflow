@@ -233,7 +233,7 @@ final class Jobs implements JobsInterface
                     if (! $accept instanceof ParametersAccessInterface) {
                         throw new LogicException(
                             (string) message(
-                                "Invalid response **%response%** as **%job%** doesn't return an object implementing %interface% interface",
+                                "Invalid response reference **%response%** as job **%job%** doesn't define return rules implementing %interface% interface",
                                 job: $value->job(),
                                 response: strval($value),
                                 interface: ParametersAccessInterface::class
