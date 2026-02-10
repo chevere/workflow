@@ -169,11 +169,10 @@ final class Jobs implements JobsInterface
         foreach ($item->arguments() as $argument => $value) {
             $argument = strval($argument);
             $parameters = $item->parameters();
-            $positions = array_keys($parameters->keys());
             if ($parameters->has($argument)) {
                 $parameter = $parameters->get($argument);
             } else {
-                $find = array_search($argument, $positions);
+                $find = array_search($argument, $parameters->keys());
                 if ($find === false) {
                     continue;
                 }
