@@ -94,13 +94,17 @@ final class Graph implements GraphInterface
         $sync = [];
         $toIndex = 0;
         foreach ($this->getSortAsc() as $job => $dependencies) {
+            $matchCount = 0;
             foreach ($dependencies as $dependency) {
                 if (in_array($dependency, $previous, true)) {
-                    $toIndex++;
-                    $previous = [];
+                    ++$matchCount;
 
                     break;
                 }
+            }
+            if ($matchCount === 1) {
+                $toIndex++;
+                $previous = [];
             }
             $sort[$toIndex][] = $job;
             $previous[] = $job;
