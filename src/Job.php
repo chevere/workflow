@@ -274,12 +274,24 @@ final class Job implements JobInterface
     {
         $countProvided = count($arguments);
         $requiredKeys = $this->parameters->requiredKeys()->toArray();
-        $intersectKeys = array_intersect(array_keys($arguments), $requiredKeys);
-        $countIntersect = count($intersectKeys);
-        $missing = array_map(
-            $this->formatAsVariable(...),
-            array_diff($requiredKeys, $intersectKeys)
-        );
+        $isPositional = array_is_list($arguments);
+        if ($isPositional) {
+            $countRequired = count($requiredKeys);
+            if ($countProvided < $countRequired) {
+                $missing = array_map(
+                    $this->formatAsVariable(...),
+                    array_slice($requiredKeys, $countProvided)
+                );
+            } else {
+                $missing = [];
+            }
+        } else {
+            $intersectKeys = array_intersect(array_keys($arguments), $requiredKeys);
+            $missing = array_map(
+                $this->formatAsVariable(...),
+                array_diff($requiredKeys, $intersectKeys)
+            );
+        }
         if ($missing !== []) {
             if ($this->_ instanceof Closure) {
                 $reflection = new ReflectionFunction($this->_);
@@ -305,23 +317,36 @@ final class Job implements JobInterface
                 )
             );
         }
-        if (count($requiredKeys) > $countProvided
-            || count($requiredKeys) !== $countIntersect
-            || $countProvided > count($this->parameters)
-        ) {
-            $requiredVars = array_map(
-                $this->formatAsVariable(...),
-                $requiredKeys
-            );
-            $parameters = implode(', ', $requiredVars);
-            $parameters = $parameters === '' ? '' : "[{$parameters}]";
+        if (! $isPositional) {
+            $intersectKeys = array_intersect(array_keys($arguments), $requiredKeys);
+            $countIntersect = count($intersectKeys);
+            if (count($requiredKeys) > $countProvided
+                || count($requiredKeys) !== $countIntersect
+                || $countProvided > count($this->parameters)
+            ) {
+                $requiredVars = array_map(
+                    $this->formatAsVariable(...),
+                    $requiredKeys
+                );
+                $parameters = implode(', ', $requiredVars);
+                $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
+                throw new ArgumentCountError(
+                    (string) message(
+                        '`%symbol%` requires %countRequired% argument(s)%parameters%',
+                        symbol: $this->_::class . '::__invoke',
+                        countRequired: strval(count($requiredKeys)),
+                        parameters: $parameters === '' ? '' : " `{$parameters}`"
+                    )
+                );
+            }
+        } elseif ($countProvided > count($this->parameters)) {
             throw new ArgumentCountError(
                 (string) message(
-                    '`%symbol%` requires %countRequired% argument(s)%parameters%',
+                    '`%symbol%` requires %countRequired% argument(s), but %countProvided% provided',
                     symbol: $this->_::class . '::__invoke',
-                    countRequired: strval(count($requiredKeys)),
-                    parameters: $parameters === '' ? '' : " `{$parameters}`"
+                    countRequired: strval(count($this->parameters)),
+                    countProvided: strval($countProvided)
                 )
             );
         }
@@ -329,8 +354,7 @@ final class Job implements JobInterface
 
     private function formatAsVariable(string $name): string
     {
-        return $this->parameters->get($name)->type()->typeHinting()
-            . " \${$name}";
+        return $this->parameters->get($name)->type()->typeHinting() . " \${$name}";
     }
 
     private function assertParameter(string $name, ParameterInterface $parameter, mixed $value): void
@@ -350,8 +374,7 @@ final class Job implements JobInterface
         if ($this->dependencies->contains($argument->job())) {
             return;
         }
-        $this->dependencies = $this->dependencies
-            ->withPush($argument->job());
+        $this->dependencies = $this->dependencies->withPush($argument->job());
     }
 
     private function addDependencies(string ...$jobs): void

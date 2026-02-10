@@ -14,11 +14,23 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
+use Chevere\Parameter\Attributes\ArrayAttr;
+use Chevere\Parameter\Attributes\ReturnAttr;
+use Chevere\Parameter\Attributes\StringAttr;
 
-class TestActionParams extends Action
+class TestActionParamsReturn extends Action
 {
+    #[ReturnAttr(
+        new ArrayAttr(
+            foo: new StringAttr(),
+            bar: new StringAttr()
+        )
+    )]
     public function __invoke(string $foo, string $bar): array
     {
-        return [];
+        return [
+            'foo' => $foo,
+            'bar' => $bar,
+        ];
     }
 }
