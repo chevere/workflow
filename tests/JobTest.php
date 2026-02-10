@@ -91,6 +91,21 @@ final class JobTest extends TestCase
         );
     }
 
+    public function testCaller(): void
+    {
+        $action = TestActionNoParams::class;
+        $job = new Job($action);
+        $fileLine = __FILE__ . ':' . (__LINE__ - 1);
+        $this->assertSame($fileLine, $job->caller()->__toString());
+        $expectedFile = __DIR__ . '/src/TestReturnSyncActionNoParams.php';
+        $expectedLine = 18; // Line where sync() is called
+        $sync = require $expectedFile;
+        $this->assertSame(
+            "{$expectedFile}:{$expectedLine}",
+            $sync->caller()->__toString()
+        );
+    }
+
     public function testRawArguments(): void
     {
         $action = new TestActionParamStringRegex();
@@ -98,8 +113,6 @@ final class JobTest extends TestCase
             'foo' => 'foo',
         ];
         $job = new Job($action, ...$success);
-        $fileLine = __FILE__ . ':' . (__LINE__ - 1);
-        $this->assertSame($fileLine, $job->caller()->__toString());
         $this->assertSame($action, $job->action());
         $this->assertSame($success, $job->arguments());
         $success = [

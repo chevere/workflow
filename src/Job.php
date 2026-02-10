@@ -82,7 +82,7 @@ final class Job implements JobInterface
         );
         $callerTrace = $debugBacktrace[$index];
         $file = $callerTrace['file'] ?? 'unknown';
-        $line = (int) ($callerTrace['line'] ?? 0);
+        $line = $callerTrace['line'] ?? 0;
         $this->caller = new Caller($file, $line);
         $this->isSync = false;
         $this->runIf = new Vector();
