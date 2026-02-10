@@ -18,7 +18,17 @@
 
 ## Summary
 
-A Workflow is a configurable stored procedure that will run one or more jobs. Jobs are independent from each other, but interconnected as you can pass response references between jobs. Jobs supports conditional running based on variables and previous job responses.
+Workflow is a PHP library for building and executing multi-step procedures with automatic dependency resolution. Define independent jobs that can run synchronously or asynchronously, pass data between them using typed responses, and let the engine handle execution order automatically.
+
+**Key features:**
+
+* **Declarative job definitions** - Define what to do, not how to orchestrate it
+* **Automatic dependency graph** - Jobs execute in optimal order based on their dependencies
+* **Sync and async execution** - Mix blocking and non-blocking jobs freely
+* **Type-safe responses** - Access job outputs with full type safety
+* **Conditional execution** - Run jobs based on variables or previous responses
+* **Built-in retry policies** - Handle transient failures automatically
+* **Testable components** - Each job is independently testable
 
 ## Installing
 
@@ -28,652 +38,624 @@ Workflow is available through [Packagist](https://packagist.org/packages/chevere
 composer require chevere/workflow
 ```
 
-## What it does?
+## Quick Start
 
-The Workflow package provides a robust system for defining and executing structured procedures based on the [workflow pattern](https://en.wikipedia.org/wiki/Workflow_pattern). It enables to organize complex logic into a series of interconnected, independent jobs that can be executed in a controlled manner.
+Here's a minimal example to get you started:
 
-By breaking down monolithic procedures into modular workflow jobs, developers gain several advantages:
+```php
+use function Chevere\Workflow\{workflow, sync, variable, run};
 
-* Improved testability of individual components
-* Better code organization and maintainability
-* Reusable job definitions across different workflows
-* Clear visualization of process flows
-* Flexible execution patterns (sync/async)
+// 1. Define a workflow with jobs
+$workflow = workflow(
+    greet: sync(
+        fn(string $name): string => "Hello, {$name}!",
+        name: variable('username')
+    )
+);
 
-::: tip 💡 Workflow introduction
- Read [Workflow for PHP](https://rodolfoberrios.com/2022/04/09/workflow-php/) at Rodolfo's blog for a compressive introduction to this package.
-:::
+// 2. Run with variables
+$result = run($workflow, username: 'World');
 
-## How to use
+// 3. Get typed responses
+echo $result->response('greet')->string();
+// Output: Hello, World!
+```
 
-The Workflow package provides a set of core functions in the `Chevere\Workflow` namespace that allow you to build and manage workflow processes. These functions work together to create flexible, maintainable workflow definitions.
+## Core Concepts
 
-### Functions
+Workflow is built around four main concepts:
 
-| Function | Purpose                                                |
-| -------- | :----------------------------------------------------- |
-| workflow | Creates a new workflow for organizing named jobs       |
-| sync     | Defines a synchronous job that blocks until completion |
-| async    | Defines an asynchronous job that runs non-blocking     |
-| variable | Declares a workflow-level variable for job inputs      |
-| response | Creates a reference to access previous job outputs     |
+| Concept      | Description                                                       |
+| ------------ | ----------------------------------------------------------------- |
+| **Job**      | A unit of work (Action class or Closure) that produces a response |
+| **Variable** | External input provided when running the workflow                 |
+| **Response** | Reference to output from a previous job                           |
+| **Graph**    | Automatic execution order based on job dependencies               |
 
-### Key concepts
+### How It Works
 
-* [Job](#job): Self-contained unit of work defined by Closure|[Action](https://chevere.org/packages/action)
-* [Variable](#variable): Shared workflow-level inputs accessed by multiple jobs
-* [Response](#response): Links between job outputs (`response()`) and inputs
+```mermaid
+graph LR
+    A[Define Jobs] --> B[Build Workflow]
+    B --> C[Run with Variables]
+    C --> D[Engine Resolves Graph]
+    D --> E[Execute Jobs]
+    E --> F[Collect Responses]
+```
 
-## Workflow example
+1. You define jobs using `sync()` or `async()` functions
+2. Jobs declare their inputs: literal values, `variable()` references, or `response()` from other jobs
+3. The engine builds a dependency graph automatically
+4. Jobs execute in optimal order (parallel when possible)
+5. Access typed responses after execution
 
-`php demo/chevere.php`
+## Functions Reference
 
-Create `MyAction` action by extending `Chevere\Action\Action`. You can also `use ActionTrait`.
+| Function     | Purpose                                   |
+| ------------ | ----------------------------------------- |
+| `workflow()` | Create a workflow from named jobs         |
+| `sync()`     | Create a synchronous (blocking) job       |
+| `async()`    | Create an asynchronous (non-blocking) job |
+| `variable()` | Declare a runtime variable                |
+| `response()` | Reference another job's output            |
+| `run()`      | Execute a workflow with variables         |
+
+---
+
+## Jobs
+
+Jobs are the building blocks of a workflow. Each job wraps an executable unit (Action or Closure) and declares its input arguments.
+
+### Creating Jobs with Closures
+
+Use closures for simple, inline operations:
+
+```php
+use function Chevere\Workflow\{workflow, sync, async, variable, response, run};
+
+$workflow = workflow(
+    // Simple calculation
+    add: sync(
+        fn(int $a, int $b): int => $a + $b,
+        a: 10,
+        b: variable('number')
+    ),
+    // Format the result
+    format: sync(
+        fn(int $sum): string => "Sum: {$sum}",
+        sum: response('add')
+    )
+);
+
+$result = run($workflow, number: 5);
+echo $result->response('format')->string(); // Sum: 15
+```
+
+### Creating Jobs with Action Classes
+
+For complex or reusable logic, use [Action](https://chevere.org/packages/action) classes:
 
 ```php
 use Chevere\Action\Action;
 
-class MyAction extends Action
+class FetchUser extends Action
 {
-    public function __invoke(string $foo): string
+    public function __invoke(int $userId): array
     {
-        return "Hello, {$foo}";
+        // Fetch user from database
+        return ['id' => $userId, 'name' => 'John', 'email' => 'john@example.com'];
+    }
+}
+
+class SendEmail extends Action
+{
+    public function __invoke(string $email, string $subject): bool
+    {
+        // Send email logic
+        return true;
     }
 }
 ```
 
-Create Workflow with your `MyAction` Job:
-
 ```php
-use function Chevere\Workflow\{workflow,sync,variable,response};
-
 $workflow = workflow(
-    greet: sync(
-        MyAction::class,
-        foo: variable('super'),
+    user: sync(
+        FetchUser::class,
+        userId: variable('id')
     ),
-    capo: sync(
-        MyAction::class,
-        foo: response('greet'),
-    ),
-);
-```
-
-Run the Workflow:
-
-```php
-use function Chevere\Workflow\run;
-
-$hello = run($workflow, super: 'Chevere');
-
-// If your Actions require dependencies:
-$hello = run($workflow, $container, super: 'Chevere');
-
-// Hello, Chevere
-echo $hello->response('greet')->string();
-
-// Hello, Hello, Chevere
-echo $hello->response('capo')->string();
-```
-
-## Variable
-
-Use function `variable` to declare a Workflow variable that will be injected when running the workflow. Variables allow you to pass external values into your workflow jobs during execution.
-
-```php
-use function Chevere\Workflow\variable;
-
-// Basic variable declaration
-variable('myVar');
-
-// Usage in a job
-sync(
-    MyAction::class,
-    parameter: variable('myVar')
-);
-```
-
-When running the workflow, you must provide values for all declared variables:
-
-```php
-use function Chevere\Workflow\run;
-
-run($workflow, myVar: 'some value');
-```
-
-## Response
-
-Use function `response` to declare a reference to a response returned by a previous Job. This allows you to chain job outputs as inputs to subsequent jobs.
-
-🪄 When using a response it will **auto declare** the referenced Job as a [dependency](#dependencies), ensuring proper execution order.
-
-```php
-use function Chevere\Workflow\response;
-
-// Basic response declaration
-response('job1');
-
-// Usage in a Workflow
-workflow(
-    job1: sync(
-        SomeAction::class,
-    ),
-    job2: sync(
-        MyAction::class,
-        parameter: response('job1')
-    );
-);
-```
-
-References can be also made on a response member identified by `key`.
-
-```php
-use function Chevere\Workflow\response;
-
-response('job1', 'id');
-```
-
-## Job
-
-The `Job` class defines an [Action](https://chevere.org/packages/action) or `Closure` that can be executed as part of a workflow.
-
-Jobs can be created using:
-
-* **Action classes**: Reusable, testable action classes with parameter validation
-* **Closures**: Inline anonymous functions for simple operations
-
-### Using Closures
-
-Closures provide a lightweight way to define simple job logic directly in your workflow:
-
-```php
-use function Chevere\Workflow\{response, run, sync, variable, workflow};
-
-$workflow = workflow(
-    calculate: sync(
-        function (int $a, int $b): int {
-            return $a + $b;
-        },
-        a: 10,
-        b: variable('value')
-    ),
-    format: sync(
-        fn (int $result): string => "Result: {$result}",
-        result: response('calculate')
+    notify: sync(
+        SendEmail::class,
+        email: response('user', 'email'),
+        subject: 'Welcome!'
     )
 );
 
-run($workflow, value: 5);
-echo $run->response('format')->string();
-// Result: 15
+$result = run($workflow, id: 123);
 ```
 
-Closures are ideal for:
+### Sync vs Async Jobs
 
-* Simple transformations or calculations
-* Prototyping workflows before extracting to Action classes
-* One-off operations that don't need reusability
-
-::: tip 💡 When to use Actions vs Closures
-Use **Actions** for complex logic, reusable operations, or when you need extensive testing. Use **Closures** for simple, inline transformations.
-:::
-
-### Arguments
-
-Job arguments can be passed in three ways:
-
-* **As-is values**: Direct values passed to the Action
-* **Variables**: Workflow-level inputs declared using the `variable` function
-* **Responses**: References to previous job outputs declared using the `response` function
+**Synchronous jobs** (`sync`) block execution until complete. Use for operations that must run in sequence:
 
 ```php
-class SomeAction extends Action
-{
-    public function __invoke(
-        string $context,
-        int $userId,
-        mixed ...$bag,
-    ): void
-    {
-        // On runtime:
-        // $context = 'public'
-        // $userId = (( user.id response ))
-        // $bag = ['group' => 'admin', 'mask' => 1024]
-    }
-}
+workflow(
+    first: sync(ActionA::class),  // Runs first
+    second: sync(ActionB::class), // Waits for first
+    third: sync(ActionC::class),  // Waits for second
+);
+// Graph: first → second → third
+```
 
+**Asynchronous jobs** (`async`) run concurrently when they have no dependencies:
+
+```php
+workflow(
+    resize1: async(ResizeImage::class, size: 'thumb'),
+    resize2: async(ResizeImage::class, size: 'medium'),
+    resize3: async(ResizeImage::class, size: 'large'),
+    store: sync(StoreFiles::class, files: response('resize1'), ...)
+);
+// Graph: [resize1, resize2, resize3] → store
+```
+
+### Job Arguments
+
+Jobs accept three types of arguments:
+
+```php
+workflow(
+    example: sync(
+        MyAction::class,
+        literal: 'fixed value',           // Literal value
+        dynamic: variable('userInput'),   // Runtime variable
+        chained: response('otherJob'),    // Previous job output
+    )
+);
+```
+
+---
+
+## Variables
+
+Variables are placeholders for values provided at runtime. Declare them with `variable()`:
+
+```php
 $workflow = workflow(
-    user: sync(
-        GetUser::class,
-        request: variable('userId')
-    ),
     job1: sync(
         SomeAction::class,
-        context: 'public',               // As-is value
-        userId: variable('userId'),      // Variable
-        group: response('user', 'group'),// Response
-        mask: 1024,                      // As-is value
-    );
+        name: variable('userName'),
+        age: variable('userAge')
+    )
 );
 
-run($workflow, userId: 123);
+// Provide values when running
+$result = run($workflow, userName: 'Alice', userAge: 30);
 ```
 
-In the example above:
+All declared variables must be provided when running the workflow.
 
-* The `context` argument is passed as-is with the value `public`.
-* The `userId` argument is dynamically provided as a variable.
-* The `group` argument is dynamically provided as a response from a previous job.
-* The `mask` argument is passed as-is with the value `1024`.
+---
 
-When running the Workflow, these arguments will be matched against the parameters defined in the [main method](https://chevere.org/packages/action.html#main-method) of `SomeAction`.
+## Responses
 
-### Asynchronous
-
-Use function `async` to create an asynchronous job, which runs non-blocking.
-
-In the example below a Workflow describes an image creation procedure for multiple image sizes.
+Use `response()` to pass output from one job to another. This automatically establishes a dependency.
 
 ```php
-use function Chevere\Workflow\{sync,async,response,variable,workflow};
-
-workflow(
-    thumb: async(
-        ImageResize::class,
-        image: variable('image'),
-        width: 100,
-        height: 100,
-        fit: 'thumb'
+$workflow = workflow(
+    fetch: sync(
+        FetchData::class,
+        url: variable('endpoint')
     ),
-    medium: async(
-        ImageResize::class,
-        image: variable('image'),
-        width: 500,
-        fit: 'resizeByW'
+    process: sync(
+        ProcessData::class,
+        data: response('fetch')  // Gets entire response from 'fetch'
     ),
-    store: sync(
-        StoreFile::class,
-        response('thumb', 'filename'),
-        response('medium', 'filename'),
-    ),
+    extract: sync(
+        ExtractField::class,
+        value: response('fetch', 'items')  // Gets 'items' key from response
+    )
 );
 ```
 
-* `variable('image')` declares a [Variable](#variable).
-* `response('thumb', 'filename')` and `response('medium', 'filename')` declares a [Response](#response) reference.
+### Accessing Nested Response Keys
 
-The graph for this Workflow says that `thumb`, `medium` and `poster` run async non-blocking. Job `store` runs blocking (another node).
+When a job returns an array, access specific keys:
+
+```php
+response('user')           // Entire response
+response('user', 'id')     // $response['id']
+response('user', 'profile') // $response['profile']
+```
+
+---
+
+## Execution Graph
+
+The workflow engine automatically builds an execution graph based on job dependencies. Jobs without dependencies run in parallel (when using `async`), while dependent jobs wait for their dependencies.
+
+```php
+$workflow = workflow(
+    // Independent async jobs run in parallel
+    thumb: async(ImageResize::class, size: 'thumb', file: variable('image')),
+    medium: async(ImageResize::class, size: 'medium', file: variable('image')),
+    large: async(ImageResize::class, size: 'large', file: variable('image')),
+    // Sync job waits for all above
+    store: sync(
+        StoreFiles::class,
+        thumb: response('thumb'),
+        medium: response('medium'),
+        large: response('large')
+    )
+);
+
+// View the execution graph
+$graph = $workflow->jobs()->graph()->toArray();
+// [
+//     ['thumb', 'medium', 'large'],  // Level 0: parallel
+//     ['store']                       // Level 1: after dependencies
+// ]
+```
 
 ```mermaid
-graph TD;
-    thumb-->store;
-    medium-->store;
-    poster-->store;
+graph TD
+    thumb --> store
+    medium --> store
+    large --> store
 ```
 
-```php
-$workflow->jobs()->graph()->toArray();
-// contains
-[
-    ['thumb', 'medium', 'poster'],
-    ['store']
-];
-```
+---
 
-To complete the example, here's how to [Run](#running) the Workflow previously defined:
+## Running Workflows
+
+Execute a workflow with the `run()` function:
 
 ```php
 use function Chevere\Workflow\run;
 
-run(
-    workflow: $workflow,
-    arguments: [
-        'image' => '/path/to/file',
-    ]
-);
+// Basic execution
+$result = run($workflow, var1: 'value1', var2: 'value2');
+
+// With dependency injection container
+$result = run($workflow, $container, var1: 'value1');
 ```
 
-### Synchronous
+### Accessing Responses
 
-Use function `sync` to create a synchronous job, which block execution until it gets resolved.
-
-In the example below a Workflow describes an image uploading procedure.
+The run result provides type-safe access to job responses:
 
 ```php
-use function Chevere\Workflow\{sync,response,variable,workflow};
+$result = run($workflow, ...);
 
-workflow(
-    user: sync(
-        GetUser::class,
-        request: variable('payload')
-    ),
-    validate: sync(
-        ValidateImage::class,
-        mime: 'image/png',
+// Get typed responses
+$result->response('jobName')->string();     // string
+$result->response('jobName')->int();        // int
+$result->response('jobName')->float();      // float
+$result->response('jobName')->bool();       // bool
+$result->response('jobName')->array();      // array
+
+// Access array keys directly
+$result->response('jobName', 'key')->string();
+$result->response('jobName', 'nested', 'key')->int();
+```
+
+### Check Skipped Jobs
+
+When using conditional execution, check which jobs were skipped:
+
+```php
+if ($result->skip()->contains('optionalJob')) {
+    // Job was skipped
+}
+```
+
+---
+
+## Conditional Execution
+
+Use `withRunIf()` to run a job only when conditions are met:
+
+```php
+$workflow = workflow(
+    compress: sync(
+        CompressImage::class,
         file: variable('file')
-    ),
-    meta: sync(
-        GetMeta::class,
-        file: variable('file'),
-    ),
-    store: sync(
-        StoreFile::class,
-        file: variable('file'),
-        name: response('meta', 'name'),
-        user: response('user')
-    ),
-);
-```
-
-* `variable('payload')` and `variable('file')` declares a [Variable](#variable).
-* `response('meta', 'name')` and `response('user')` declares a [Response](#response) reference.
-
-The graph for this Workflow says that all jobs run one after each other as all jobs are defined using `sync`.
-
-```mermaid
-graph TD;
-    user-->validate-->meta-->store;
-```
-
-```php
-$workflow->jobs()->graph()->toArray();
-// contains
-[
-    ['user'],
-    ['validate'],
-    ['meta'],
-    ['store']
-];
-```
-
-To complete the example, here's how to [Run](#running) the Workflow previously defined:
-
-```php
-use function Chevere\Workflow\run;
-
-run(
-    $workflow,
-    payload: $_REQUEST,
-    file: '/path/to/file',
-);
-```
-
-### Conditional running
-
-Method `withRunIf` enables to pass arguments of type [Variable](#variable) or [Response](#response) for conditionally running a Job.
-
-```php
-sync(
-    CompressImage::class,
-    file: variable('file')
-)
-    ->withRunIf(
-        variable('compressImage'),
-        response('SomeAction', 'doImageCompress')
+    )->withRunIf(
+        variable('shouldCompress'),           // Must be truthy
+        response('validate', 'isValid')       // Must be truthy
     )
+);
+
+$result = run($workflow,
+    file: '/path/to/image.jpg',
+    shouldCompress: true
+);
 ```
 
-For the code above, all conditions must meet to run the Job and both variable `compressImage` and the reference `SomeAction:doImageCompress` must be `true` to run the job.
+All conditions must be truthy for the job to run. Skipped jobs are tracked in `$result->skip()`.
 
-### Dependencies
+---
 
-Use `withDepends` method to explicit declare previous jobs as dependencies. The dependent Job won't run until the dependencies are resolved.
+## Explicit Dependencies
+
+While `response()` creates implicit dependencies, use `withDepends()` for explicit control:
 
 ```php
-job(SomeAction::class)
-    ->withDepends('myJob');
+$workflow = workflow(
+    setup: sync(SetupAction::class),
+    process: sync(
+        ProcessAction::class,
+        data: variable('input')
+    )->withDepends('setup')  // Wait for setup even without using its response
+);
 ```
 
-### Retry policy
+---
 
-Use `withRetry` method to configure automatic retry behavior for a Job. This is useful for jobs that may fail due to transient errors (network timeouts, temporary service unavailability, etc.).
+## Retry Policy
+
+Configure automatic retries for jobs that may fail transiently:
 
 ```php
-job(FetchUrl::class)
-    ->withRetry(
-        timeout: 300,   // Max 300 seconds per job
-        maxAttempts: 5, // Up to 5 attempts
-        delay: 10       // Wait 10 seconds between attempts
-    );
+$workflow = workflow(
+    fetch: sync(
+        FetchFromApi::class,
+        url: variable('endpoint')
+    )->withRetry(
+        timeout: 300,     // Max 300 seconds total
+        maxAttempts: 5,   // Try up to 5 times
+        delay: 10         // Wait 10 seconds between attempts
+    )
+);
 ```
 
-Retry options:
+| Parameter     | Type          | Default | Description                                   |
+| ------------- | ------------- | ------- | --------------------------------------------- |
+| `timeout`     | `int<0, max>` | `0`     | Max execution time in seconds (0 = unlimited) |
+| `maxAttempts` | `int<1, max>` | `1`     | Total attempts including initial              |
+| `delay`       | `int<0, max>` | `0`     | Seconds between retries (0 = immediate)       |
 
-| Parameter   | Type          | Default | Description                                                                           |
-| ----------- | ------------- | ------- | ------------------------------------------------------------------------------------- |
-| timeout     | `int<0, max>` | `0`     | Max execution time for the entire job in seconds, across all attempts (0 = unlimited) |
-| maxAttempts | `int<1, max>` | `1`     | Total number of attempts including the initial one                                    |
-| delay       | `int<0, max>` | `0`     | Delay in seconds between retry attempts (0 = immediate)                               |
+Retry delays use non-blocking sleep, making them safe for async runtimes.
 
-When all attempts are exhausted, the `RunnerException` message includes the attempt number:
+---
 
-```
-[jobName]: [3/3] Connection timed out
-```
+## Exception Handling
 
-Delays between retries use Amp's non-blocking `delay`, making it safe for async runtimes like RoadRunner.
-
-## Running
-
-To run a Workflow use the `run` function by passing a Workflow, a [container](https://chevere.org/packages/container) (optional) and its variables (if any).
+When a job fails, a `WorkflowException` wraps the original exception:
 
 ```php
-use function Chevere\Workflow\run;
+use Chevere\Workflow\Exceptions\WorkflowException;
 
-$run = run($workflow, $container, ...$variables);
+try {
+    $result = run($workflow, ...);
+} catch (WorkflowException $e) {
+    echo $e->name;        // Name of the failed job
+    echo $e->job;         // Job instance
+    echo $e->throwable;   // Original exception
+}
 ```
 
-### Access Job response
+---
 
-Use `response` to retrieve a job response as a `Typed` object which can be used to get a typed response.
+## Using WorkflowTrait
 
-```php
-$thumbFile = $run->response('thumb')->string();
-```
-
-🪄 If the response is of type `array` you can shortcut key type-safe access.
+For class-based workflow management, use `WorkflowTrait`:
 
 ```php
-$id = $run->response('user', 'id')->int();
-```
+use Chevere\Workflow\Traits\WorkflowTrait;
+use function Chevere\Workflow\{workflow, sync, variable};
 
-### WorkflowTrait
-
-The `WorkflowTrait` provides methods `execute`  and `run` for easing handling a Workflow within a class.
-
-```php
-use Chevere\Workflow\WorkflowTrait;
-
-class Something
+class OrderProcessor
 {
     use WorkflowTrait;
 
-    public function __construct()
+    public function process(int $orderId): void
     {
         $workflow = workflow(
-            job1: sync(
-                MyAction::class,
-                foo: variable('bar')
-            )
+            validate: sync(ValidateOrder::class, id: variable('orderId')),
+            charge: sync(ChargePayment::class, order: response('validate')),
+            fulfill: sync(FulfillOrder::class, order: response('charge'))
         );
-        // Use execute to run the Workflow
-        $this->execute($workflow, bar: 'baz');
+
+        $this->execute($workflow, orderId: $orderId);
+    }
+
+    public function getResult(): string
+    {
+        return $this->run()->response('fulfill')->string();
     }
 }
-
-$some = new Something();
-$bar = $some->run()->response('job1')->string();
 ```
 
-### Exception handling
-
-When running a Workflow, if a Job fails a `WorkflowException` will be thrown. This is an exception wrapper for the job that thrown the exception.
-
-```php
-try {
-    $run = run($workflow, ...$variables);
-} catch (WorkflowException $e) {
-    // Job that thrown the exception
-    $e->name;
-    // Job instance that thrown the exception
-    $e->job;
-    // The exception thrown by the Job
-    $e->throwable;
-}
-
-// If using WorkflowTrait
-try {
-    $this->execute($workflow, ...$variables);
-    $run = $this->run();
-} catch (WorkflowException $e) {
-    // ...
-}
-```
-
-## Demo
-
-See the [demo](demo) directory for a set of examples.
+---
 
 ## Testing
 
-Workflow provides several approaches for testing your implementations. While the Workflow itself doesn't need testing (it's a configuration), you should test:
+### Testing Actions
 
-1. Job actions (unit tests)
-2. Workflow execution order (graph)
-3. Job responses
-4. Exception handling
-
-### Testing Job Actions
-
-The primary testing focus should be on your Action implementations:
+Test your Action classes independently:
 
 ```php
 use PHPUnit\Framework\TestCase;
 
-class MyActionTest extends TestCase
+class FetchUserTest extends TestCase
 {
-    public function testAction(): void
+    public function testFetchUser(): void
     {
-        $action = new MyAction();
-        // 🪄 Chevere automatically validates Action I/O
-        $response = $action(foo: 'bar');
-        $this->assertSame('expected', $response);
+        $action = new FetchUser();
+        $result = $action(userId: 123);
+
+        $this->assertSame(123, $result['id']);
+        $this->assertArrayHasKey('name', $result);
     }
 }
 ```
 
 ### Testing Workflow Graph
 
-Verify the execution order by testing the Workflow graph:
+Verify execution order:
 
 ```php
-public function testWorkflowOrder(): void
+public function testWorkflowGraph(): void
 {
-    $expectedGraph = [
-        ['job1', 'job2'], // async jobs
-        ['job3'],         // depends on job1, job2
-    ];
-    $this->assertSame(
-        $expectedGraph,
-        $workflow->jobs()->graph()->toArray()
+    $workflow = workflow(
+        a: async(ActionA::class),
+        b: async(ActionB::class),
+        c: sync(ActionC::class, x: response('a'), y: response('b'))
     );
+
+    $graph = $workflow->jobs()->graph()->toArray();
+
+    $this->assertSame([['a', 'b'], ['c']], $graph);
 }
 ```
 
-### Testing Job Responses
+### Testing Responses
 
-Test how jobs interact by checking their responses:
+Test complete workflow execution:
 
 ```php
-public function testJobResponses(): void
+public function testWorkflowResponses(): void
 {
-    $run = run($workflow, input: 'test');
-    // Access typed responses
-    $this->assertSame(
-        123,
-        $run->response('job1')->int()
-    );
-    $this->assertSame(
-        'test',
-        $run->response('job2')->string()
-    );
-    // Access array responses
-    $this->assertSame(
-        10.2,
-        $run->response('job3', 'rate')->float()
-    );
+    $result = run($workflow, input: 'test');
+
+    $this->assertSame('expected', $result->response('job1')->string());
+    $this->assertSame(42, $result->response('job2', 'count')->int());
 }
 ```
 
-### Testing Exception Handling
+### Testing Exceptions
 
-Use `ExpectWorkflowExceptionTrait` to test error scenarios:
+Use `ExpectWorkflowExceptionTrait` for error scenarios:
 
 ```php
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
-use function Chevere\Workflow\run;
 
-class WorkflowTest extends TestCase
+class WorkflowExceptionTest extends TestCase
 {
     use ExpectWorkflowExceptionTrait;
 
-    public function testFailingJob(): void
+    public function testJobFailure(): void
     {
         $this->expectWorkflowException(
-            closure: fn () => run($workflow, input: 'invalid'),
-            exception: LogicException::class,
-            job: 'validation',
-            message: 'Invalid input'
+            closure: fn() => run($workflow, input: 'invalid'),
+            exception: InvalidArgumentException::class,
+            job: 'validate',
+            message: 'Invalid input provided'
         );
     }
 }
 ```
 
-## Architecture
+---
 
-The architecture of the Workflow package is designed to provide a clear separation of concerns, making it easier to define, manage, and execute workflows. The following diagram illustrates the core components and their interactions:
+## Real-World Examples
 
-```mermaid
-graph TD
-    subgraph Client Application
-        WF[Workflow Definition]
-        Run[run Function]
-    end
+### Image Processing Pipeline
 
-    subgraph Core Components
-        Jobs[Jobs]
-        Graph[Graph]
-        Job[Job]
-        Action[Action]
-    end
+```php
+$workflow = workflow(
+    // Parallel image resizing
+    thumb: async(
+        ImageResize::class,
+        file: variable('image'),
+        width: 150,
+        height: 150
+    ),
+    medium: async(
+        ImageResize::class,
+        file: variable('image'),
+        width: 800
+    ),
+    // Store after all resizing completes
+    store: sync(
+        StoreFiles::class,
+        thumb: response('thumb'),
+        medium: response('medium'),
+        directory: variable('outputDir')
+    )
+);
 
-    subgraph References
-        Var[Variables]
-        Resp[Responses]
-    end
-
-    subgraph Execution
-        Runner[Workflow Runner]
-        Sync[Sync Executor]
-        Async[Async Executor]
-    end
-
-    WF --> Jobs
-    Jobs --> |define| Graph
-    Jobs --> |manages| Job
-    Job --> |executes| Action
-    Job --> |depends on| Var
-    Job --> |depends on| Resp
-    Run --> Runner
-    Runner --> |uses| Jobs
-    Runner --> |resolves| Graph
-    Runner --> |executes via| Sync
-    Runner --> |executes via| Async
+$result = run($workflow,
+    image: '/uploads/photo.jpg',
+    outputDir: '/processed/'
+);
 ```
+
+### User Registration Flow
+
+```php
+$workflow = workflow(
+    validate: sync(
+        ValidateRegistration::class,
+        email: variable('email'),
+        password: variable('password')
+    ),
+    createUser: sync(
+        CreateUser::class,
+        data: response('validate')
+    ),
+    sendWelcome: async(
+        SendWelcomeEmail::class,
+        user: response('createUser')
+    ),
+    logEvent: async(
+        LogRegistration::class,
+        userId: response('createUser', 'id')
+    )
+);
+```
+
+### Conditional Processing
+
+```php
+$workflow = workflow(
+    analyze: sync(
+        AnalyzeContent::class,
+        content: variable('text')
+    ),
+    translate: sync(
+        TranslateContent::class,
+        text: variable('text'),
+        targetLang: variable('lang')
+    )->withRunIf(
+        variable('needsTranslation')
+    ),
+    publish: sync(
+        PublishContent::class,
+        content: response('analyze'),
+        translated: response('translate')
+    )
+);
+
+$result = run($workflow,
+    text: 'Hello world',
+    lang: 'es',
+    needsTranslation: true
+);
+```
+
+---
+
+## Demo
+
+Run the included examples:
+
+```sh
+php demo/hello-world.php          # Basic workflow
+php demo/chevere.php              # Chained jobs
+php demo/closure.php              # Using closures
+php demo/sync-vs-async.php        # Performance comparison
+php demo/image-resize.php         # Parallel processing
+php demo/run-if.php               # Conditional execution
+```
+
+See the [demo](demo) directory for all examples.
 
 ## Documentation
 
-Documentation is available at [chevere.org/packages/workflow](https://chevere.org/packages/workflow).
+Full documentation is available at [chevere.org/packages/workflow](https://chevere.org/packages/workflow).
+
+For a comprehensive introduction, read [Workflow for PHP](https://rodolfoberrios.com/2022/04/09/workflow-php/) on Rodolfo's blog.
 
 ## License
 
