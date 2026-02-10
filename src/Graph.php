@@ -142,9 +142,6 @@ final class Graph implements GraphInterface
      */
     private function getSortJobs(array $sort, array $sync): array
     {
-        if (count($this->syncJobs) === 0) {
-            return $sort;
-        }
         $aux = 0;
         $vector = new Vector(...$sort);
         foreach ($sync as $job => $index) {
