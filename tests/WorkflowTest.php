@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Tests\src\TestActionAppendString;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
@@ -118,5 +119,35 @@ final class WorkflowTest extends TestCase
         );
         $run = run($workflow);
         $this->assertSame('1234', $run->response('toString')->string());
+    }
+
+    public function testWithAddedJobUpdatesProvided(): void
+    {
+        $workflow = new Workflow(
+            new Jobs(job1: async(new TestActionNoParams()))
+        );
+        $workflow = $workflow->withAddedJob(
+            job2: async(new TestActionParamFooResponseBar(), foo: 'bar')
+        );
+        $parameter = $workflow->getJobResponseParameter('job2');
+        $this->assertInstanceOf(ParameterInterface::class, $parameter);
+    }
+
+    public function testWithAddedJobWithRunIf(): void
+    {
+        $workflow = new Workflow(
+            new Jobs(
+                job1: async(new TestActionNoParams())
+            )
+        );
+        $workflow = $workflow->withAddedJob(
+            job2: async(
+                new TestActionParamFooResponseBar(),
+                foo: 'bar'
+            )->withRunIf(
+                variable('condition')
+            )
+        );
+        $this->assertTrue($workflow->parameters()->has('condition'));
     }
 }

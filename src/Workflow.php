@@ -182,8 +182,7 @@ final class Workflow implements WorkflowInterface
         } catch (OutOfBoundsException) {
             $expected = [];
         }
-        $expected[] = $value->key()
-            ?? $value->job();
+        $expected[] = $value->key() ?? $value->job();
         $this->expected = $this->expected
             ->withPut($value->job(), $expected);
     }
