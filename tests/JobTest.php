@@ -297,7 +297,7 @@ final class JobTest extends TestCase
         );
     }
 
-    public function testWithClosure(): void
+    public function testWithClosureWithReturnType(): void
     {
         $closureFileLine = __FILE__ . ':' . (__LINE__ + 1);
         $closure = function (string $foo): int {
@@ -315,6 +315,22 @@ final class JobTest extends TestCase
             PLAIN
         );
         new Job($closure);
+    }
+
+    public function testWithClosureWithoutReturnType(): void
+    {
+        $closure = function () {
+            return 100;
+        };
+        $job = new Job($closure);
+        $this->assertEquals('mixed', $job->return()->type()->typeHinting());
+    }
+
+    public function testWithClosureWithVoidReturnType(): void
+    {
+        $closure = function (): void {};
+        $job = new Job($closure);
+        $this->assertEquals('null', $job->return()->type()->typeHinting());
     }
 
     public function testWithClosureAttributes(): void
