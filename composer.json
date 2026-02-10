@@ -1,6 +1,6 @@
 {
     "name": "chevere/workflow",
-    "description": "Workflow procedures for PHP",
+    "description": "Declarative workflow engine for PHP with automatic dependency resolution, sync/async job execution, and type-safe response chaining.",
     "homepage": "https://chevere.org",
     "type": "library",
     "license": "Apache-2.0",
