@@ -74,15 +74,6 @@ Workflow is built around four main concepts:
 
 ### How It Works
 
-```mermaid
-graph LR
-    A[Define Jobs] --> B[Build Workflow]
-    B --> C[Run with Variables]
-    C --> D[Engine Resolves Graph]
-    D --> E[Execute Jobs]
-    E --> F[Collect Responses]
-```
-
 1. You define jobs using `sync()` or `async()` functions
 2. Jobs declare their inputs: literal values, `variable()` references, or `response()` from other jobs
 3. The engine builds a dependency graph automatically
@@ -653,7 +644,7 @@ See the [demo](demo) directory for all examples.
 
 ## Documentation
 
-Full documentation is available at [chevere.org/packages/workflow](https://chevere.org/packages/workflow).
+Documentation is available at [chevere.org/packages/workflow](https://chevere.org/packages/workflow).
 
 For a comprehensive introduction, read [Workflow for PHP](https://rodolfoberrios.com/2022/04/09/workflow-php/) on Rodolfo's blog.
 
