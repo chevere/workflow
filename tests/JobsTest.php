@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Attributes\IntAttr;
-use Chevere\Parameter\Attributes\ReturnAttr;
+use Chevere\Parameter\Attributes\PInt;
+use Chevere\Parameter\Attributes\PReturn;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
-use Chevere\Tests\src\TestActionIntParamReturnAttr;
+use Chevere\Tests\src\TestActionIntParamPReturn;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
@@ -437,11 +437,11 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('[j2]: Response **j1** conflict at parameter **number**: Expected min value `1`, provided `8`');
         new Jobs(
             j1: async(
-                new TestActionIntParamReturnAttr(),
+                new TestActionIntParamPReturn(),
                 number: 1,
             ),
             j2: async(
-                new TestActionIntParamReturnAttr(),
+                new TestActionIntParamPReturn(),
                 number: response('j1')
             )
         );
@@ -449,22 +449,19 @@ final class JobsTest extends TestCase
 
     public function testAttributeDrivenReference(): void
     {
-        // int(min: -1)->assertCompatible(
-        //     int(min: 8)
-        // );
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage('[job2]: Response **job1** conflict at parameter **number**: Expected min value `1`, provided `-1`');
         new Jobs(
             job1: sync(
                 new class() extends Action {
-                    #[ReturnAttr(
-                        new IntAttr(min: -1)
+                    #[PReturn(
+                        new PInt(min: -1)
                     )]
                     public function __invoke(
                         bool $isAnnual,
-                        #[IntAttr(min: 0)]
+                        #[PInt(min: 0)]
                         int $recurring_price_month,
-                        #[IntAttr(min: 0)]
+                        #[PInt(min: 0)]
                         int $recurring_price_year,
                     ): int {
                         return $isAnnual ? $recurring_price_year : $recurring_price_month;
@@ -475,8 +472,8 @@ final class JobsTest extends TestCase
                 recurring_price_month: 10,
             ),
             job2: sync(
-                new TestActionIntParamReturnAttr(),
-                number: response('job1'), // int min -1, TestActionIntParamReturnAttr expects min 8
+                new TestActionIntParamPReturn(),
+                number: response('job1'), // int min -1, TestActionIntParamPReturn $number expects min 1
             ),
         );
     }

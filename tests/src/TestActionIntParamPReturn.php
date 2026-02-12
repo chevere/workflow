@@ -14,21 +14,21 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Attributes\IntAttr;
-use Chevere\Parameter\Attributes\ReturnAttr;
+use Chevere\Parameter\Attributes\PInt;
+use Chevere\Parameter\Attributes\PReturn;
 use Chevere\Parameter\Interfaces\IntParameterInterface;
 use function Chevere\Parameter\int;
 
 /**
- * Method `acceptReturn()` has higher priority than `ReturnAttr`, which is ignored.
+ * Method `acceptReturn()` has higher priority than `PReturn`, which is ignored.
  */
-final class TestActionIntParamReturnAttr extends Action
+final class TestActionIntParamPReturn extends Action
 {
-    #[ReturnAttr(
-        new IntAttr(min: 0)
+    #[PReturn(
+        new PInt(min: 0)
     )]
     public function __invoke(
-        #[IntAttr(min: 1)]
+        #[PInt(min: 1)]
         int $number
     ): int {
         return 2 * $number;

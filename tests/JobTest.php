@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
-use Chevere\Parameter\Attributes\IntAttr;
-use Chevere\Parameter\Attributes\ReturnAttr;
+use Chevere\Parameter\Attributes\PInt;
+use Chevere\Parameter\Attributes\PReturn;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
@@ -335,7 +335,7 @@ final class JobTest extends TestCase
 
     public function testWithClosureAttributes(): void
     {
-        $closure = #[ReturnAttr(new IntAttr(min: -1))] function (string $foo): int {
+        $closure = #[PReturn(new PInt(min: -1))] function (string $foo): int {
             return strlen($foo);
         };
         $job = new Job($closure, foo: 'bar');
