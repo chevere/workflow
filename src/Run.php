@@ -71,6 +71,7 @@ final class Run implements RunInterface
     {
         $return = [];
         foreach ($this->map as $name => $mixed) {
+            /** @var string $name */
             $return[$name] = $mixed;
         }
 
