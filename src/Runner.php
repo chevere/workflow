@@ -94,6 +94,10 @@ final class Runner implements RunnerInterface
             /** @var ActionInterface $action */
             $action = new $action(...$dependencies);
         }
+        if ($action instanceof ActionInterface) {
+            $action->assert();
+        }
+        $arguments = $job->parameters()->__invoke(...$arguments)->toArray();
         $retryPolicy = $job->retryPolicy();
         $maxAttempts = $retryPolicy->maxAttempts();
         $delay = $retryPolicy->delay();

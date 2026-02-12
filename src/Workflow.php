@@ -86,15 +86,6 @@ final class Workflow implements WorkflowInterface
         return $this->parameters;
     }
 
-    /**
-     * @throws OutOfBoundsException
-     */
-    public function getJobResponseParameter(string $job): ParameterInterface
-    {
-        /** @var ParameterInterface */
-        return $this->provided->get($job);
-    }
-
     private function putParameters(string $name, JobInterface $job): void
     {
         $parameters = $job->parameters();

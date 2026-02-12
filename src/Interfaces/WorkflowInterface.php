@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Container\Interfaces\DependenciesInterface;
-use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Countable;
 use OverflowException;
@@ -42,9 +41,4 @@ interface WorkflowInterface extends Countable
     public function withAddedJob(JobInterface ...$job): self;
 
     public function parameters(): ParametersInterface;
-
-    /**
-     * Provides access to the expected return parameter for the given `$job`.
-     */
-    public function getJobResponseParameter(string $job): ParameterInterface;
 }
