@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Attributes\PString;
+use Chevere\Parameter\Attributes\_string;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\float;
@@ -23,7 +23,7 @@ use function Chevere\Parameter\string;
 class TestActionParamFooResponseBar extends Action
 {
     public function __invoke(
-        #[PString('/^bar$/')]
+        #[_string('/^bar$/')]
         string $foo
     ): array {
         return [

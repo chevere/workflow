@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Demo\Actions;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Attributes\PString;
+use Chevere\Parameter\Attributes\_string;
 use Chevere\Parameter\Interfaces\StringParameterInterface;
 use RuntimeException;
 use function Chevere\Parameter\string;
@@ -27,7 +27,7 @@ class ImageResize extends Action
     ];
 
     public function __invoke(
-        #[PString('/\.jpe?g$/')]
+        #[_string('/\.jpe?g$/')]
         string $file,
         string $fit
     ): string {

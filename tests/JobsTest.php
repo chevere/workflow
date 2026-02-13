@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Attributes\PInt;
-use Chevere\Parameter\Attributes\PReturn;
+use Chevere\Parameter\Attributes\_int;
+use Chevere\Parameter\Attributes\_return;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
-use Chevere\Tests\src\TestActionIntParamPReturn;
+use Chevere\Tests\src\TestActionIntParam_return;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
@@ -437,11 +437,11 @@ final class JobsTest extends TestCase
         $this->expectExceptionMessage('[j2]: Response **j1** conflict at parameter **number**: Expected min value `1`, provided `8`');
         new Jobs(
             j1: async(
-                new TestActionIntParamPReturn(),
+                new TestActionIntParam_return(),
                 number: 1,
             ),
             j2: async(
-                new TestActionIntParamPReturn(),
+                new TestActionIntParam_return(),
                 number: response('j1')
             )
         );
@@ -454,14 +454,14 @@ final class JobsTest extends TestCase
         new Jobs(
             job1: sync(
                 new class() extends Action {
-                    #[PReturn(
-                        new PInt(min: -1)
+                    #[_return(
+                        new _int(min: -1)
                     )]
                     public function __invoke(
                         bool $isAnnual,
-                        #[PInt(min: 0)]
+                        #[_int(min: 0)]
                         int $recurring_price_month,
-                        #[PInt(min: 0)]
+                        #[_int(min: 0)]
                         int $recurring_price_year,
                     ): int {
                         return $isAnnual ? $recurring_price_year : $recurring_price_month;
@@ -472,8 +472,8 @@ final class JobsTest extends TestCase
                 recurring_price_month: 10,
             ),
             job2: sync(
-                new TestActionIntParamPReturn(),
-                number: response('job1'), // int min -1, TestActionIntParamPReturn $number expects min 1
+                new TestActionIntParam_return(),
+                number: response('job1'), // int min -1, TestActionIntParam_return $number expects min 1
             ),
         );
     }

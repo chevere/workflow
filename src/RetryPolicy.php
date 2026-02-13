@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\Parameter\Attributes\PInt;
+use Chevere\Parameter\Attributes\_int;
 use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use function Chevere\Parameter\Attributes\assertArguments;
 
@@ -25,11 +25,11 @@ final class RetryPolicy implements RetryPolicyInterface
      * @param int<0, max> $delay
      */
     public function __construct(
-        #[PInt(min: 0)]
+        #[_int(min: 0)]
         private int $timeout = 0,
-        #[PInt(min: 1)]
+        #[_int(min: 1)]
         private int $maxAttempts = 1,
-        #[PInt(min: 0)]
+        #[_int(min: 0)]
         private int $delay = 0
     ) {
         assertArguments();

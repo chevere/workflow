@@ -14,12 +14,12 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use Chevere\Parameter\Attributes\PString;
+use Chevere\Parameter\Attributes\_string;
 
 class TestActionParamStringRegex extends Action
 {
     public function __invoke(
-        #[PString('/^foo|bar$/')]
+        #[_string('/^foo|bar$/')]
         string $foo
     ): array {
         return [];
