@@ -204,6 +204,8 @@ workflow(
 );
 ```
 
+Jobs can define I/O rules via [chevere/parameter](https://chevere.org/packages/parameter). Workflow derives parameter and return definitions from the closure signature or Action reflection, and validates inputs and responses at runtime.
+
 ---
 
 ## Variables
