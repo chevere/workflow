@@ -14,30 +14,39 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
+use Chevere\Parameter\Attributes\_arrayp;
+use Chevere\Parameter\Attributes\_int;
+use Chevere\Parameter\Attributes\_return;
 use LogicException;
 
 final class TestActionWorksOnNAttempt extends Action
 {
-    private static int $attemptCount = 0;
+    private int $attemptCount = 0;
 
     public function __construct(
         private int $successOnAttempt
     ) {
-        self::$attemptCount = 0;
     }
 
-    public function __invoke(): bool
+    #[_return(
+        new _arrayp(
+            attempt: new _int(),
+        )
+    )]
+    public function __invoke(): array
     {
-        ++self::$attemptCount;
+        ++$this->attemptCount;
 
-        if (self::$attemptCount < $this->successOnAttempt) {
-            $attempts = self::$attemptCount;
+        if ($this->attemptCount < $this->successOnAttempt) {
+            $attempts = $this->attemptCount;
 
             throw new LogicException(
                 "Attempt {$attempts} failed, required attempt {$this->successOnAttempt}"
             );
         }
 
-        return true;
+        return [
+            'attempt' => $this->attemptCount,
+        ];
     }
 }

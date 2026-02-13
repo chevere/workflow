@@ -36,6 +36,7 @@ use Chevere\Workflow\Run;
 use Chevere\Workflow\Runner;
 use Chevere\Workflow\Traits\ExpectWorkflowExceptionTrait;
 use Exception;
+use LogicException;
 use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -483,7 +484,9 @@ final class RunnerTest extends TestCase
                 ),
         );
         $third = run($workflow);
-        $this->assertTrue($third->response('job1')->bool());
+        $this->assertSame([
+            'attempt' => 5,
+        ], $third->response('job1')->array());
     }
 
     public function testJobWithRetryTimeout(): void
@@ -518,7 +521,39 @@ final class RunnerTest extends TestCase
         $expectedMinDelay = $delaySeconds;
         $this->assertGreaterThanOrEqual($expectedMinDelay, $elapsed);
         $this->assertLessThan($expectedMinDelay + 0.5, $elapsed);
-        $this->assertTrue($run->response('job1')->bool());
+        $this->assertSame([
+            'attempt' => 2,
+        ], $run->response('job1')->array());
+    }
+
+    public function testJobsDependsOnAsyncRetriedJobWithTimeout(): void
+    {
+        $this->expectNotToPerformAssertions();
+        $workflow = workflow(
+            job1: async(new TestActionWorksOnNAttempt(2))
+                ->withRetry(
+                    timeout: 100,
+                    maxAttempts: 2,
+                ),
+            job2: async(new TestActionWorksOnNAttempt(3))
+                ->withRetry(
+                    timeout: 100,
+                    maxAttempts: 3,
+                ),
+            job3: sync(
+                function (int $res1, int $res2) {
+                    if ($res1 !== 2) {
+                        throw new LogicException("Expected attempt 2, got {$res1}");
+                    }
+                    if ($res2 !== 3) {
+                        throw new LogicException("Expected attempt 3, got {$res2}");
+                    }
+                },
+                res1: response('job1', 'attempt'),
+                res2: response('job2', 'attempt'),
+            )
+        );
+        run($workflow);
     }
 
     /**
