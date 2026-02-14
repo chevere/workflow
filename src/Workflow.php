@@ -15,6 +15,7 @@ namespace Chevere\Workflow;
 
 use Chevere\Container\Dependencies;
 use Chevere\Container\Interfaces\DependenciesInterface;
+use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Map;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
@@ -34,7 +35,7 @@ final class Workflow implements WorkflowInterface
     /**
      * @var Map<string[]>
      */
-    private Map $expected;
+    private Map $referenced;
 
     /**
      * @var Map<ParameterInterface>
@@ -47,7 +48,7 @@ final class Workflow implements WorkflowInterface
         private JobsInterface $jobs
     ) {
         $this->parameters = new Parameters();
-        $this->expected = new Map();
+        $this->referenced = new Map();
         $this->provided = new Map();
         $this->dependencies = new Dependencies();
         $this->putAdded(
@@ -60,6 +61,14 @@ final class Workflow implements WorkflowInterface
     public function jobs(): JobsInterface
     {
         return $this->jobs;
+    }
+
+    /**
+     * @return MapInterface<string[]>
+     */
+    public function referenced(): MapInterface
+    {
+        return $this->referenced;
     }
 
     public function dependencies(): DependenciesInterface
@@ -169,12 +178,12 @@ final class Workflow implements WorkflowInterface
         /** @var ResponseReferenceInterface $value */
         try {
             /** @var array<string> $expected */
-            $expected = $this->expected->get($value->job());
+            $expected = $this->referenced->get($value->job());
         } catch (OutOfBoundsException) {
             $expected = [];
         }
         $expected[] = $value->key() ?? $value->job();
-        $this->expected = $this->expected
+        $this->referenced = $this->referenced
             ->withPut($value->job(), $expected);
     }
 }

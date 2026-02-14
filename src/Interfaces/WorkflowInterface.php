@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Workflow\Interfaces;
 
 use Chevere\Container\Interfaces\DependenciesInterface;
+use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Countable;
 use OverflowException;
@@ -26,8 +27,32 @@ interface WorkflowInterface extends Countable
     public function jobs(): JobsInterface;
 
     /**
-     * Provides access to the dependencies of the workflow.
+     * Provides a map of response identifiers referenced from each *producer* job.
+     *
+     * Shape:
+     * - key: `string` — producer job name (e.g. `"job1"`).
+     * - value: `string[]` — ordered list of identifiers other jobs reference from that
+     *   producer. Each identifier is either a response *key* (when a consumer
+     *   references `response('job', 'key')`) or the producer job name itself
+     *   (when a consumer references `response('job')` meaning the whole response).
+     *
+     * Notes:
+     * - Entries are appended in processing order and duplicates are possible.
+     * - This map answers "which response identifiers are referenced from job X?" —
+     *   to find "which jobs reference job X?" inspect `jobs()->get($name)->dependencies()`
+     *   or build a reverse mapping from job dependencies.
+     *
+     * Example:
+     * ```php
+     * // job2 uses response('job1', 'response1')
+     * // job3 uses response('job1')
+     * $workflow->referenced()->get('job1'); // ['response1', 'job1']
+     * ```
+     *
+     * @return MapInterface<string[]>
      */
+    public function referenced(): MapInterface;
+
     public function dependencies(): DependenciesInterface;
 
     /**

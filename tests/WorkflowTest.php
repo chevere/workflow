@@ -16,7 +16,10 @@ namespace Chevere\Tests;
 use Chevere\Tests\src\TestActionAppendString;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
+use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
+use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
+use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Workflow;
 use OverflowException;
@@ -106,6 +109,47 @@ final class WorkflowTest extends TestCase
         $this->assertContains('job1', $workflow->jobs()->get('job2')->dependencies());
         $run = run($workflow);
         $this->assertSame('test!!', $run->response('job2')->string());
+    }
+
+    public function testExpectedRecordsResponseKeyWhenReferenceHasKey(): void
+    {
+        $jobs = new Jobs(
+            job1: async(
+                new TestActionParamFooResponse1(),
+                foo: 'foo'
+            ),
+            job2: async(
+                new TestActionAppendString(),
+                string: response('job1', 'response1')
+            ),
+            job3: async(
+                new TestActionAppendString(),
+                string: response('job1')
+            )
+        );
+        $workflow = new Workflow($jobs);
+        $this->assertSame(
+            ['response1', 'job1'],
+            $workflow->referenced()->get('job1')
+        );
+    }
+
+    public function testVariadicArgumentsAreRecorded(): void
+    {
+        $workflow = new Workflow(
+            new Jobs(
+                job2: async(
+                    new TestActionNoParamsArrayIntResponse(),
+                ),
+                job1: async(
+                    new TestActionVariadic(),
+                    bar1: variable('intVariable'),
+                    bar2: response('job2', 'id'),
+                ),
+            )
+        );
+        $this->assertTrue($workflow->parameters()->has('intVariable'));
+        $this->assertSame(['id'], $workflow->referenced()->get('job2'));
     }
 
     public function testIntToString(): void
