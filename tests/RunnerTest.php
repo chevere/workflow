@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Action\Exceptions\ActionException;
 use Chevere\Container\Container;
 use Chevere\Container\Exceptions\ContainerException;
 use Chevere\Tests\src\TestActionDelays;
 use Chevere\Tests\src\TestActionDependsNestedNoParams;
 use Chevere\Tests\src\TestActionDependsNoParams;
 use Chevere\Tests\src\TestActionIntToString;
+use Chevere\Tests\src\TestActionInvalidAssert;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
@@ -554,6 +556,15 @@ final class RunnerTest extends TestCase
             )
         );
         run($workflow);
+    }
+
+    public function testWithRunJobAssertsAction(): void
+    {
+        $workflow = workflow(job1: async(TestActionInvalidAssert::class));
+        $run = new Run($workflow);
+        $runner = new Runner($run);
+        $this->expectException(ActionException::class);
+        $runner->withRunJob('job1');
     }
 
     /**
