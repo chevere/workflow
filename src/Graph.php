@@ -118,14 +118,14 @@ final class Graph implements GraphInterface
 
     /**
      * @return array<string, VectorInterface<string>>
+     * @infection-ignore-all
      */
     private function getSortAsc(): array
     {
         $array = $this->map->toArray();
-        uasort($array, function (VectorInterface $a, VectorInterface $b) {
+        uasort($array, function (VectorInterface $a, VectorInterface $b): int {
             return match (true) {
                 $b->contains(...$a->toArray()) => -1,
-                // @infection-ignore-all
                 $a->contains(...$b->toArray()) => 1,
                 default => 0
             };
