@@ -148,6 +148,40 @@ final class GraphTest extends TestCase
         );
     }
 
+    public function testSyncToggleRemovesSyncFlag(): void
+    {
+        $graph = new Graph();
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('j1', $this->getJob());
+        $this->assertSame(
+            [
+                ['j0'],
+                ['j1'],
+            ],
+            $graph->toArray()
+        );
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(false));
+        $this->assertSame(
+            [
+                ['j0', 'j1'],
+            ],
+            $graph->toArray()
+        );
+    }
+
+    public function testWithPutSyncDoesNotDuplicate(): void
+    {
+        $graph = new Graph();
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
+        $this->assertSame(
+            [
+                ['j0'],
+            ],
+            $graph->toArray()
+        );
+    }
+
     public function testWithPutWea(): void
     {
         $graph = new Graph();

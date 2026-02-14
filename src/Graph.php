@@ -61,8 +61,13 @@ final class Graph implements GraphInterface
         }
         $new->handleDependencyUpdate($name, $vector);
         $new->map = $new->map->withPut($name, $vector);
+        $found = $new->syncJobs->find($name);
         if ($job->isSync()) {
-            $new->syncJobs = $new->syncJobs->withPush($name);
+            if ($found === null) {
+                $new->syncJobs = $new->syncJobs->withPush($name);
+            }
+        } elseif ($found !== null) {
+            $new->syncJobs = $new->syncJobs->withRemove($found);
         }
 
         return $new;
