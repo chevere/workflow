@@ -76,11 +76,11 @@ final class Job implements JobInterface
     ) {
         $debugBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $callerFunction = $debugBacktrace[1]['function'] ?? '';
-        $index = (int) in_array(
+        $index = in_array(
             $callerFunction,
             ['Chevere\Workflow\sync', 'Chevere\Workflow\async']
         );
-        $callerTrace = $debugBacktrace[$index];
+        $callerTrace = $debugBacktrace[intval($index)];
         $file = $callerTrace['file'] ?? 'unknown';
         $line = $callerTrace['line'] ?? 0;
         $this->caller = new Caller($file, $line);
@@ -212,11 +212,6 @@ final class Job implements JobInterface
     {
         if (! $this->parameters->isVariadic()) {
             $this->assertArgumentsCount($argument);
-        }
-        if (count($this->parameters) === 0) {
-            $this->arguments = $argument; // @phpstan-ignore-line
-
-            return;
         }
         $values = [];
         $isPositional = array_is_list($argument);
