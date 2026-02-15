@@ -340,27 +340,25 @@ final class Jobs implements JobsInterface
         if (! $runIf instanceof VariableInterface) {
             return;
         }
-        if (! $this->variables->has($runIf->__toString())) {
-            $this->variables = $this->variables
-                ->withPut(
-                    $runIf->__toString(),
-                    bool(),
+        if ($this->variables->has($runIf->__toString())) {
+            /** @var ParameterInterface $parameter */
+            $parameter = $this->variables->get($runIf->__toString());
+            if (! ($parameter instanceof BoolParameterInterface)) {
+                throw new TypeError(
+                    (string) message(
+                        'Variable **%variable%** (previously declared as `%type%`) is not of type `bool` at Job **%job%**',
+                        variable: $runIf->__toString(),
+                        type: $parameter->type()->primitive(),
+                        job: $name,
+                    )
                 );
-
-            return;
+            }
         }
-        /** @var ParameterInterface $parameter */
-        $parameter = $this->variables->get($runIf->__toString());
-        if (! ($parameter instanceof BoolParameterInterface)) {
-            throw new TypeError(
-                (string) message(
-                    'Variable **%variable%** (previously declared as `%type%`) is not of type `bool` at Job **%job%**',
-                    variable: $runIf->__toString(),
-                    type: $parameter->type()->primitive(),
-                    job: $name,
-                )
+        $this->variables = $this->variables
+            ->withPut(
+                $runIf->__toString(),
+                bool(),
             );
-        }
     }
 
     private function assertDependencies(string $job): void
