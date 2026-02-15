@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use ArgumentCountError;
+use Chevere\Action\Action;
 use Chevere\Parameter\Attributes\_int;
 use Chevere\Parameter\Attributes\_return;
 use Chevere\Tests\src\TestActionNoParams;
@@ -341,6 +342,27 @@ final class JobTest extends TestCase
             PLAIN
         );
         new Job($closure);
+    }
+
+    public function testWithAnonymousClassMissingArgument(): void
+    {
+        $anonClassFileLine = __FILE__ . ':' . (__LINE__ + 1);
+        $anon = new class() extends Action {
+            public function __invoke(string $foo): array
+            {
+                return [];
+            }
+        };
+        $job = new Job($anon, foo: 'bar');
+        $this->assertSame($anon, $job->action());
+        $this->expectException(ArgumentCountError::class);
+        $callerFileLine = __FILE__ . ':' . (__LINE__ + 6);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Missing argument(s) [`string \$foo`] for anon class @ {$anonClassFileLine} in {$callerFileLine}
+            PLAIN
+        );
+        new Job($anon);
     }
 
     public function testWithClosureWithoutReturnType(): void
