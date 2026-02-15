@@ -156,6 +156,21 @@ final class JobTest extends TestCase
         $this->assertContains('job1', $job->dependencies());
     }
 
+    public function testDependenciesUnique(): void
+    {
+        $job = new Job(
+            function (string $foo, string $bar): void {
+            },
+            foo: response('job1'),
+            bar: response('job1', 'a')
+        );
+
+        $this->assertSame(
+            ['job1'],
+            $job->dependencies()->toArray()
+        );
+    }
+
     public function testWithIsSync(): void
     {
         $action = new TestActionNoParams();
