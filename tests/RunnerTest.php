@@ -13,9 +13,14 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Action\Action;
 use Chevere\Action\Exceptions\ActionException;
 use Chevere\Container\Container;
 use Chevere\Container\Exceptions\ContainerException;
+use Chevere\Parameter\Attributes\_float;
+use Chevere\Parameter\Attributes\_int;
+use Chevere\Parameter\Attributes\_return;
+use Chevere\Parameter\Attributes\_union;
 use Chevere\Tests\src\TestActionDelays;
 use Chevere\Tests\src\TestActionDependsNestedNoParams;
 use Chevere\Tests\src\TestActionDependsNoParams;
@@ -371,13 +376,44 @@ final class RunnerTest extends TestCase
         );
     }
 
+    public function testActionUnionMultipleAlternatives(): void
+    {
+        $run = run(
+            workflow(
+                job1: sync(
+                    #[_return(new _union(new _int(), new _float()))]
+                    function (): int|float {
+                        return 123;
+                    }
+                ),
+                job2: sync(
+                    new class() extends Action {
+                        public function __invoke(float|int $foo): array
+                        {
+                            return [
+                                'foo' => $foo,
+                            ];
+                        }
+                    },
+                    foo: response('job1')
+                ),
+            ),
+        );
+        $this->assertSame(
+            [
+                'foo' => $run->response('job1')->int(),
+            ],
+            $run->response('job2')->array()
+        );
+    }
+
     public function testActionUnionConflict(): void
     {
         // previous: TypeError
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1** is of type `string`, parameter **foo** expects `union`
+            [job2]: Response **job1** is of type `string`, parameter **foo** expects `string`, `float`
             PLAIN
         );
         run(

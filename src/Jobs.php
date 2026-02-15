@@ -247,55 +247,70 @@ final class Jobs implements JobsInterface
                 );
             }
         }
-        if (! $map->has($identifier)) {
-            $map = $map->withPut($identifier, $parameter);
-            $this->{$collection} = $map;
+        if ($map->has($identifier)) {
+            /** @var ParameterInterface $stored */
+            $stored = $map->get($identifier);
+            if ($parameter instanceof UnionParameterInterface) {
+                $errors = [];
+                $expected = [];
+                $count = count($parameter->parameters());
+                foreach ($parameter->parameters() as $tryParameter) {
+                    $expected[] = $stored->type()->typeHinting();
 
-            return;
-        }
-        /** @var ParameterInterface $stored */
-        $stored = $map->get($identifier);
-        if ($parameter instanceof UnionParameterInterface) {
-            foreach ($parameter->parameters() as $tryParameter) {
-                try {
-                    $stored->assertCompatible($tryParameter);
-                    $parameter = $tryParameter;
-
-                    break;
-                } catch (TypeError $e) {
+                    try {
+                        $stored->assertCompatible($tryParameter);
+                        $parameter = $tryParameter;
+                    } catch (TypeError $e) {
+                        $errors[] = $stored->type()->typeHinting();
+                    }
+                }
+                if (count($errors) === $count) {
+                    throw new TypeError(
+                        (string) message(
+                            '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
+                            parameter: $argument,
+                            type: $stored->type()->primitive(),
+                            expected: '`' . implode('`, `', $expected) . '`',
+                            subject: $subject,
+                            key: $identifier
+                        )
+                    );
                 }
             }
-        }
-        if ($stored instanceof MixedParameterInterface
-            || $parameter instanceof MixedParameterInterface
-        ) {
-            return; // @codeCoverageIgnore
-        }
-        if ($stored::class !== $parameter::class) {
-            throw new TypeError(
-                (string) message(
-                    '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects `%expected%`',
-                    parameter: $argument,
-                    type: $stored->type()->primitive(),
-                    expected: $parameter->type()->primitive(),
-                    subject: $subject,
-                    key: $identifier
-                )
-            );
-        }
+            if ($stored instanceof MixedParameterInterface
+                || $parameter instanceof MixedParameterInterface
+            ) {
+                return; // @codeCoverageIgnore
+            }
+            if ($stored::class !== $parameter::class) {
+                throw new TypeError(
+                    (string) message(
+                        '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects `%expected%`',
+                        parameter: $argument,
+                        type: $stored->type()->primitive(),
+                        expected: $parameter->type()->primitive(),
+                        subject: $subject,
+                        key: $identifier
+                    )
+                );
+            }
 
-        try {
-            $parameter->assertCompatible($stored);
-        } catch (InvalidArgumentException $e) {
-            throw new InvalidArgumentException(
-                (string) message(
-                    '%subject% **%key%** conflict at parameter **%parameter%**: %message%',
-                    subject: $subject,
-                    key: $identifier,
-                    parameter: $argument,
-                    message: $e->getMessage()
-                )
-            );
+            try {
+                $parameter->assertCompatible($stored);
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidArgumentException(
+                    (string) message(
+                        '%subject% **%key%** conflict at parameter **%parameter%**: %message%',
+                        subject: $subject,
+                        key: $identifier,
+                        parameter: $argument,
+                        message: $e->getMessage()
+                    )
+                );
+            }
+        } else {
+            $map = $map->withPut($identifier, $parameter);
+            $this->{$collection} = $map;
         }
     }
 
