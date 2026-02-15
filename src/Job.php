@@ -241,22 +241,21 @@ final class Job implements JobInterface
                     $this->inferDependencies($value);
                     $this->assertParameter($name, $parameter, $value);
                 }
-
-                break;
-            }
-            if (! array_key_exists($name, $argument)) {
-                $named = strval($name);
-                $name = array_search($name, $this->parameters->keys());
-                if ($name === false) {
-                    continue;
+            } else {
+                if (! array_key_exists($name, $argument)) {
+                    $named = strval($name);
+                    $name = array_search($name, $this->parameters->keys());
+                    if ($name === false) {
+                        continue;
+                    }
+                    $name = strval($name);
                 }
-                $name = strval($name);
-            }
-            if (array_key_exists($name, $argument)) {
-                $value = $argument[$name];
-                $values[$name] = $value;
-                $this->inferDependencies($value);
-                $this->assertParameter($named ?? $name, $parameter, $value);
+                if (array_key_exists($name, $argument)) {
+                    $value = $argument[$name];
+                    $values[$name] = $value;
+                    $this->inferDependencies($value);
+                    $this->assertParameter($named ?? $name, $parameter, $value);
+                }
             }
         }
         $this->arguments = $values;
