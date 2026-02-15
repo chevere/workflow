@@ -341,6 +341,20 @@ final class JobTest extends TestCase
         $this->assertEquals('mixed', $job->return()->type()->typeHinting());
     }
 
+    public function testClosureVariadicDependenciesAreRecorded(): void
+    {
+        $closure = function (string ...$bars): void {
+        };
+        $expected = [
+            'bar1' => response('job1'),
+            'bar2' => response('job1', 'id'),
+        ];
+
+        $job = new Job($closure, ...$expected);
+        $this->assertSame($expected, $job->arguments());
+        $this->assertSame(['job1'], $job->dependencies()->toArray());
+    }
+
     public function testWithClosureWithVoidReturnType(): void
     {
         $closure = function (): void {};
