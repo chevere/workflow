@@ -435,6 +435,39 @@ final class RunnerTest extends TestCase
         );
     }
 
+    public function testActionVariadicNamedFooIsPreserved(): void
+    {
+        $run = run(
+            workflow(
+                job1: sync(
+                    new TestActionIntToString(),
+                    int: variable('intVariable'),
+                ),
+                job2: sync(
+                    new TestActionNoParamsArrayIntResponse(),
+                ),
+                job3: sync(
+                    new TestActionVariadic(),
+                    foo: 'custom',
+                    bar1: variable('intVariable'),
+                    bar2: response('job2', 'id'),
+                ),
+            ),
+            intVariable: 321
+        );
+
+        $this->assertSame(
+            [
+                'foo' => 'custom',
+                'bar' => [
+                    'bar1' => 321,
+                    'bar2' => 123,
+                ],
+            ],
+            $run->response('job3')->array()
+        );
+    }
+
     public function testRunnerActionClassNameWithDependency(): void
     {
         $this->expectNotToPerformAssertions();
