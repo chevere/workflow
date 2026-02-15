@@ -252,16 +252,13 @@ final class Jobs implements JobsInterface
             $stored = $map->get($identifier);
             if ($parameter instanceof UnionParameterInterface) {
                 $errors = [];
-                $expected = [];
                 $count = count($parameter->parameters());
                 foreach ($parameter->parameters() as $tryParameter) {
-                    $expected[] = $stored->type()->typeHinting();
-
                     try {
                         $stored->assertCompatible($tryParameter);
                         $parameter = $tryParameter;
                     } catch (TypeError $e) {
-                        $errors[] = $stored->type()->typeHinting();
+                        $errors[] = $tryParameter->type()->typeHinting();
                     }
                 }
                 if (count($errors) === $count) {
@@ -270,7 +267,7 @@ final class Jobs implements JobsInterface
                             '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
                             parameter: $argument,
                             type: $stored->type()->primitive(),
-                            expected: '`' . implode('`, `', $expected) . '`',
+                            expected: '`' . implode('`, `', $errors) . '`',
                             subject: $subject,
                             key: $identifier
                         )

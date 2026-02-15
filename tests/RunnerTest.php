@@ -409,21 +409,20 @@ final class RunnerTest extends TestCase
 
     public function testActionUnionConflict(): void
     {
-        // previous: TypeError
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1** is of type `string`, parameter **foo** expects `string`, `float`
+            [job2]: Response **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
             PLAIN
         );
         run(
             workflow(
                 job1: sync(
-                    new TestActionIntToString(),
+                    TestActionIntToString::class,
                     int: 123,
                 ),
                 job2: sync(
-                    new TestActionUnion(),
+                    TestActionUnion::class,
                     foo: response('job1')
                 ),
             ),
