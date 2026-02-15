@@ -82,6 +82,16 @@ final class JobTest extends TestCase
         new Job($action);
     }
 
+    public function testArgumentCountErrorTooManyPositional(): void
+    {
+        $this->expectException(ArgumentCountError::class);
+        $this->expectExceptionMessage(
+            '`' . TestActionParam::class . '::__invoke` requires 1 argument(s), but 2 provided'
+        );
+        $action = new TestActionParam();
+        new Job($action, 'foo', 'extra');
+    }
+
     public function testWithArgumentCountError(): void
     {
         $action = new TestActionNoParams();
