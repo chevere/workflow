@@ -149,7 +149,10 @@ final class WorkflowTest extends TestCase
             )
         );
         $this->assertTrue($workflow->parameters()->has('intVariable'));
-        $this->assertSame(['id'], $workflow->referenced()->get('job2'));
+        $this->assertSame(
+            ['id'],
+            $workflow->referenced()->get('job2')
+        );
     }
 
     public function testIntToString(): void
