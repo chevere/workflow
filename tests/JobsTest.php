@@ -297,6 +297,34 @@ final class JobsTest extends TestCase
         ));
     }
 
+    public function testMixedParameterAcceptsReferenceType(): void
+    {
+        $jobs = new Jobs(
+            job1: async(TestActionNoParamsArrayIntResponse::class),
+            job2: async(
+                function (mixed $foo): array {
+                    return [];
+                },
+                foo: response('job1', 'id')
+            )
+        );
+        $this->assertTrue(
+            $jobs->references()->has(response('job1', 'id')->__toString())
+        );
+    }
+
+    public function testStoredMixedAcceptsTypedReference(): void
+    {
+        $jobs = new Jobs(
+            job1: async(function (): mixed { return 123; }),
+            job2: async(function (int $foo): array { return []; }, foo: response('job1')),
+        );
+
+        $this->assertTrue(
+            $jobs->references()->has(response('job1')->__toString())
+        );
+    }
+
     public function testVariadicNamedArgumentsRegisterJobsReferencesAndVariables(): void
     {
         $jobs = new Jobs(
