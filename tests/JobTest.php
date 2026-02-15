@@ -395,6 +395,25 @@ final class JobTest extends TestCase
         new Job(TestActionVariadic::class, bar1: 'not-an-int');
     }
 
+    public function testVariadicPositionalArgumentsAreRecorded(): void
+    {
+        $job = new Job(TestActionVariadic::class, 'custom', 1, 2);
+        $this->assertSame(
+            [
+                'custom',
+                1,
+                2,
+            ],
+            $job->arguments()
+        );
+    }
+
+    public function testVariadicPositionalParameterValidation(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new Job(TestActionVariadic::class, 'custom', 'not-an-int');
+    }
+
     public function testWithClosureWithVoidReturnType(): void
     {
         $closure = function (): void {};

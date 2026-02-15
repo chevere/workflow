@@ -435,6 +435,39 @@ final class RunnerTest extends TestCase
         );
     }
 
+    public function testActionVariadicPositional(): void
+    {
+        $run = run(
+            workflow(
+                job1: sync(
+                    new TestActionIntToString(),
+                    int: variable('intVariable'),
+                ),
+                job2: sync(
+                    new TestActionNoParamsArrayIntResponse(),
+                ),
+                job3: sync(
+                    new TestActionVariadic(),
+                    'custom',
+                    variable('intVariable'),
+                    response('job2', 'id'),
+                ),
+            ),
+            intVariable: 321
+        );
+
+        $this->assertSame(
+            [
+                'foo' => 'custom',
+                'bar' => [
+                    321,
+                    123,
+                ],
+            ],
+            $run->response('job3')->array()
+        );
+    }
+
     public function testActionVariadicNamedFooIsPreserved(): void
     {
         $run = run(

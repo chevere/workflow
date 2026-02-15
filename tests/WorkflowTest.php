@@ -155,6 +155,28 @@ final class WorkflowTest extends TestCase
         );
     }
 
+    public function testVariadicPositionalArgumentsAreRecorded(): void
+    {
+        $workflow = new Workflow(
+            new Jobs(
+                job2: async(
+                    new TestActionNoParamsArrayIntResponse(),
+                ),
+                job1: async(
+                    new TestActionVariadic(),
+                    'custom',
+                    variable('intVariable'),
+                    response('job2', 'id'),
+                ),
+            )
+        );
+        $this->assertTrue($workflow->parameters()->has('intVariable'));
+        $this->assertSame(
+            ['id'],
+            $workflow->referenced()->get('job2')
+        );
+    }
+
     public function testIntToString(): void
     {
         $workflow = workflow(
