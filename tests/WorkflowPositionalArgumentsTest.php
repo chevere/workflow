@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
+use Chevere\Parameter\Interfaces\StringParameterInterface;
 use Chevere\Tests\src\TestActionParamsReturn;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
@@ -54,6 +55,24 @@ final class WorkflowPositionalArgumentsTest extends TestCase
         );
     }
 
+    public function testPositionalVariableIsRegisteredWithCorrectParameterType(): void
+    {
+        $workflow = workflow(
+            job1: async(
+                function (string $foo, int $bar): array {
+                    return [];
+                },
+                variable('vv'), // $foo
+                123             // $bar
+            )
+        );
+        $this->assertTrue($workflow->parameters()->has('vv'));
+        $this->assertInstanceOf(
+            StringParameterInterface::class,
+            $workflow->parameters()->get('vv')
+        );
+    }
+
     public function testPositionalArgumentsWithResponse(): void
     {
         $job1 = async(TestActionParamsReturn::class, 'a', 'b');
@@ -91,19 +110,4 @@ final class WorkflowPositionalArgumentsTest extends TestCase
             $run->response('job2')->array()
         );
     }
-
-    // public function testPositionalArgumentsWithSecondAsVariable(): void
-    // {
-    //     $var = variable('second');
-    //     $job = async(TestActionParamsReturn::class, 'first', $var);
-    //     $workflow = workflow(job1: $job);
-    //     $run = run($workflow, second: 'secondValue');
-    //     $this->assertSame(
-    //         [
-    //             'foo' => 'first',
-    //             'bar' => 'secondValue',
-    //         ],
-    //         $run->response('job1')->array()
-    //     );
-    // }
 }
