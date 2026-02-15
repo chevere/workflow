@@ -21,6 +21,7 @@ use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParamStringRegex;
+use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\RetryPolicy;
@@ -341,7 +342,7 @@ final class JobTest extends TestCase
         $this->assertEquals('mixed', $job->return()->type()->typeHinting());
     }
 
-    public function testClosureVariadicDependenciesAreRecorded(): void
+    public function testVariadicDependencies(): void
     {
         $closure = function (string ...$bars): void {
         };
@@ -353,6 +354,13 @@ final class JobTest extends TestCase
         $job = new Job($closure, ...$expected);
         $this->assertSame($expected, $job->arguments());
         $this->assertSame(['job1'], $job->dependencies()->toArray());
+    }
+
+    public function testVariadicParameterValidation(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/^Argument \[bar\]: .*must be of type int/');
+        new Job(TestActionVariadic::class, bar1: 'not-an-int');
     }
 
     public function testWithClosureWithVoidReturnType(): void
