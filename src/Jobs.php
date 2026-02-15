@@ -397,22 +397,20 @@ final class Jobs implements JobsInterface
                     )
                 );
             }
+        } else {
+            $this->variables = $this->variables
+                ->withPut(
+                    $runIf->__toString(),
+                    bool(),
+                );
         }
-        $this->variables = $this->variables
-            ->withPut(
-                $runIf->__toString(),
-                bool(),
-            );
     }
 
     private function assertDependencies(string $job): void
     {
         $dependencies = $this->jobDependencies->toArray();
         if (! $this->jobs->contains(...$dependencies)) {
-            $missing = array_diff(
-                $dependencies,
-                $this->jobs->toArray()
-            );
+            $missing = array_diff($dependencies, $this->jobs->toArray());
 
             throw new OutOfBoundsException(
                 (string) message(
