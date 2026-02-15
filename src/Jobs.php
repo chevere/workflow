@@ -164,26 +164,32 @@ final class Jobs implements JobsInterface
         }
     }
 
-    private function handleArguments(string $job, JobInterface $item): void
+    private function handleArguments(string $name, JobInterface $job): void
     {
-        foreach ($item->arguments() as $argument => $value) {
+        foreach ($job->arguments() as $argument => $value) {
             $argument = strval($argument);
-            $parameters = $item->parameters();
+            $parameters = $job->parameters();
+            $parameter = null;
             if ($parameters->has($argument)) {
                 $parameter = $parameters->get($argument);
             } else {
-                $find = array_search($argument, $parameters->keys());
-                if ($find === false) {
-                    continue;
+                if (ctype_digit($argument)) {
+                    $keys = $parameters->keys();
+                    $index = intval($argument);
+                    if (array_key_exists($index, $keys)) {
+                        $argument = $keys[$index];
+                        $parameter = $parameters->get($argument);
+                    }
                 }
-                $argument = $parameters->keys()[$find];
-            }
-            if ($parameters->has($argument)) {
-                $parameter = $parameters->get($argument);
-            } elseif ($parameters->isVariadic()) {
-                $lastKey = array_key_last($parameters->keys());
-                $lastName = $parameters->keys()[$lastKey];
-                $parameter = $parameters->get($lastName);
+                if ($parameter === null && $parameters->isVariadic()) {
+                    $lastKey = array_key_last($parameters->keys());
+                    $lastName = $parameters->keys()[$lastKey];
+                    $argument = $lastName;
+                    $parameter = $parameters->get($lastName);
+                }
+                // if ($parameter === null) {
+                //     continue;
+                // }
             }
             $collection = match (true) {
                 $value instanceof VariableInterface => 'variables',
@@ -195,17 +201,10 @@ final class Jobs implements JobsInterface
             }
 
             try {
-                /**
-                 * @var VariableInterface|ResponseReferenceInterface $value
-                 * @phpstan-ignore-next-line
-                 */
+                /** @var VariableInterface|ResponseReferenceInterface $value */
                 $this->mapParameter($argument, $collection, $parameter, $value);
             } catch (Throwable $e) {
-                throw new JobsException(
-                    name: $job,
-                    job: $item,
-                    throwable: $e
-                );
+                throw new JobsException(name: $name, job: $job, throwable: $e);
             }
         }
     }

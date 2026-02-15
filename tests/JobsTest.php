@@ -24,6 +24,8 @@ use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Tests\src\TestActionParams;
+use Chevere\Tests\src\TestActionParamsReturn;
+use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Workflow\Exceptions\JobsException;
 use Chevere\Workflow\Jobs;
 use OutOfBoundsException;
@@ -251,6 +253,63 @@ final class JobsTest extends TestCase
                 bar: response('one', 'id')
             )
         );
+    }
+
+    public function testWithPositionalReferenceTypeMismatch(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [two]: Response **one:id** is of type `int`, parameter **foo** expects `string`
+            PLAIN
+        );
+
+        new Jobs(
+            one: async(new TestActionNoParamsArrayIntResponse()),
+            two: async(new TestActionParams(), response('one', 'id'), 'c')
+        );
+    }
+
+    public function testVariadicNumericIndexDoesNotOverrideIndexedParameter(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [two]: Response **one:id** is of type `int`, parameter **foo** expects `string`
+            PLAIN
+        );
+
+        new Jobs(
+            one: async(new TestActionNoParamsArrayIntResponse()),
+            two: async(new TestActionVariadic(), response('one', 'id'))
+        );
+    }
+
+    public function testWithPositionalReferenceMapping(): void
+    {
+        $jobs = new Jobs(
+            one: async(new TestActionParamsReturn(), 'a', 'b'),
+            two: async(new TestActionParams(), response('one', 'foo'), 'c')
+        );
+
+        $this->assertTrue($jobs->references()->has(
+            response('one', 'foo')->__toString()
+        ));
+    }
+
+    public function testVariadicNamedArgumentsRegisterJobsReferencesAndVariables(): void
+    {
+        $jobs = new Jobs(
+            job2: async(new TestActionNoParamsArrayIntResponse()),
+            job1: async(
+                new TestActionVariadic(),
+                bar1: variable('intVariable'),
+                bar2: response('job2', 'id')
+            )
+        );
+
+        $this->assertTrue($jobs->variables()->has('intVariable'));
+        $this->assertTrue($jobs->references()->has(response('job2', 'id')->__toString()));
     }
 
     public function testWithRunIfUndeclaredJob(): void
