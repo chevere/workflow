@@ -187,16 +187,13 @@ final class Jobs implements JobsInterface
                     $argument = $lastName;
                     $parameter = $parameters->get($lastName);
                 }
-                // if ($parameter === null) {
-                //     continue;
-                // }
             }
             $collection = match (true) {
                 $value instanceof VariableInterface => 'variables',
                 $value instanceof ResponseReferenceInterface => 'references',
                 default => false
             };
-            if (! $collection) {
+            if (! $collection || $parameter === null) {
                 continue;
             }
 
