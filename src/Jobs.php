@@ -253,25 +253,61 @@ final class Jobs implements JobsInterface
             if ($parameter instanceof UnionParameterInterface) {
                 $errors = [];
                 $count = count($parameter->parameters());
-                foreach ($parameter->parameters() as $tryParameter) {
-                    try {
-                        $stored->assertCompatible($tryParameter);
-                        $parameter = $tryParameter;
-                    } catch (TypeError $e) {
-                        $errors[] = $tryParameter->type()->typeHinting();
+                if ($stored instanceof UnionParameterInterface) {
+                    $found = false;
+                    foreach ($parameter->parameters() as $tryParameter) {
+                        $matched = false;
+                        foreach ($stored->parameters() as $storedParam) {
+                            try {
+                                $storedParam->assertCompatible($tryParameter);
+                                $stored = $storedParam;
+                                $parameter = $tryParameter;
+                                $found = true;
+                                $matched = true;
+
+                                break;
+                            } catch (TypeError $e) {
+                            }
+                        }
+                        if (! $matched) {
+                            $errors[] = $tryParameter->type()->typeHinting();
+                        } else {
+                            break;
+                        }
                     }
-                }
-                if (count($errors) === $count) {
-                    throw new TypeError(
-                        (string) message(
-                            '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
-                            parameter: $argument,
-                            type: $stored->type()->primitive(),
-                            expected: '`' . implode('`, `', $errors) . '`',
-                            subject: $subject,
-                            key: $identifier
-                        )
-                    );
+                    if (! $found) {
+                        throw new TypeError(
+                            (string) message(
+                                '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
+                                parameter: $argument,
+                                type: $stored->type()->typeHinting(),
+                                expected: '`' . implode('`, `', $errors) . '`',
+                                subject: $subject,
+                                key: $identifier
+                            )
+                        );
+                    }
+                } else {
+                    foreach ($parameter->parameters() as $tryParameter) {
+                        try {
+                            $stored->assertCompatible($tryParameter);
+                            $parameter = $tryParameter;
+                        } catch (TypeError $e) {
+                            $errors[] = $tryParameter->type()->typeHinting();
+                        }
+                    }
+                    if (count($errors) === $count) {
+                        throw new TypeError(
+                            (string) message(
+                                '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
+                                parameter: $argument,
+                                type: $stored->type()->primitive(),
+                                expected: '`' . implode('`, `', $errors) . '`',
+                                subject: $subject,
+                                key: $identifier
+                            )
+                        );
+                    }
                 }
             }
             if ($stored instanceof MixedParameterInterface

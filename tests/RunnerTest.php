@@ -35,7 +35,6 @@ use Chevere\Tests\src\TestActionThrows;
 use Chevere\Tests\src\TestActionUnion;
 use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Tests\src\TestActionWorksOnNAttempt;
-use Chevere\Workflow\Exceptions\JobsException;
 use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -404,28 +403,6 @@ final class RunnerTest extends TestCase
                 'foo' => $run->response('job1')->int(),
             ],
             $run->response('job2')->array()
-        );
-    }
-
-    public function testActionUnionConflict(): void
-    {
-        $this->expectException(JobsException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            [job2]: Response **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
-            PLAIN
-        );
-        run(
-            workflow(
-                job1: sync(
-                    TestActionIntToString::class,
-                    int: 123,
-                ),
-                job2: sync(
-                    TestActionUnion::class,
-                    foo: response('job1')
-                ),
-            ),
         );
     }
 

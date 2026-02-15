@@ -14,10 +14,14 @@ declare(strict_types=1);
 namespace Chevere\Tests;
 
 use Chevere\Action\Action;
+use Chevere\Parameter\Attributes\_bool;
 use Chevere\Parameter\Attributes\_int;
 use Chevere\Parameter\Attributes\_return;
+use Chevere\Parameter\Attributes\_string;
+use Chevere\Parameter\Attributes\_union;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Tests\src\TestActionIntParam_return;
+use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
@@ -25,6 +29,7 @@ use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Tests\src\TestActionParams;
 use Chevere\Tests\src\TestActionParamsReturn;
+use Chevere\Tests\src\TestActionUnion;
 use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Workflow\Exceptions\JobsException;
 use Chevere\Workflow\Jobs;
@@ -561,6 +566,80 @@ final class JobsTest extends TestCase
             job2: sync(
                 new TestActionIntParam_return(),
                 number: response('job1'), // int min -1, TestActionIntParam_return $number expects min 1
+            ),
+        );
+    }
+
+    public function testActionUnionConflict(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [job2]: Response **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
+            PLAIN
+        );
+        new Jobs(
+            job1: sync(
+                TestActionIntToString::class,
+                int: 123,
+            ),
+            job2: sync(
+                TestActionUnion::class,
+                foo: response('job1')
+            ),
+        );
+    }
+
+    public function testActionUnionStoredNotUnionConflict(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [job2]: Response **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
+            PLAIN
+        );
+        new Jobs(
+            job1: sync(
+                TestActionIntToString::class,
+                int: 123,
+            ),
+            job2: sync(
+                new class() extends Action {
+                    public function __invoke(int|float $foo): array
+                    {
+                        return [
+                            'foo' => $foo,
+                        ];
+                    }
+                },
+                foo: response('job1')
+            ),
+        );
+    }
+
+    public function testUnionVsUnionNoOverlapThrows(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [job2]: Response **job1** is of type `string|bool`, parameter **foo** expects one of: `int`, `float`
+            PLAIN
+        );
+        new Jobs(
+            job1: sync(
+                #[_return(new _union(new _string(), new _bool()))]
+                function (): string|bool { return 'x'; }
+            ),
+            job2: sync(
+                new class() extends Action {
+                    public function __invoke(int|float $foo): array
+                    {
+                        return [
+                            'foo' => $foo,
+                        ];
+                    }
+                },
+                foo: response('job1')
             ),
         );
     }
