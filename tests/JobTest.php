@@ -267,7 +267,7 @@ final class JobTest extends TestCase
         $job->withRunIf($reference, $reference);
     }
 
-    public function testWithRunIfCallable(): void
+    public function testWithRunIfClosure(): void
     {
         $action = new TestActionNoParams();
         $job = new Job($action);
@@ -347,7 +347,7 @@ final class JobTest extends TestCase
         $job->withRunIfNot($reference, $reference);
     }
 
-    public function testWithRunIfNotCallable(): void
+    public function testWithRunIfNotClosure(): void
     {
         $action = new TestActionNoParams();
         $job = new Job($action);

@@ -345,38 +345,41 @@ if ($result->skip()->contains('optionalJob')) {
 
 ## Conditional Execution
 
-Use `withRunIf()` to run a job only when conditions are met:
+Control whether a job runs using `withRunIf()` (run when conditions are met) or `withRunIfNot()` (skip when conditions are met). Both methods accept the same kinds of conditions and are evaluated at run-time.
+
+### Accepted condition types
+
+* `boolean` literal — evaluated directly
+* `variable('name')` — runtime argument coerced to boolean
+* `response('job')` or `response('job', 'key')` — uses another job's output
+* `Closure` — invokes a closure passing the current `RunInterface` context
+
+---
 
 ```php
+use function Chevere\Workflow\{workflow, sync, variable, run, response};
+
 $workflow = workflow(
+    isTooBig: sync(
+        fn(string $path, int $maxBytes): bool => filesize($path) > $maxBytes,
+        path: variable('file'),
+        maxBytes: variable('maxBytes')
+    ),
     compress: sync(
         CompressImage::class,
         file: variable('file')
     )->withRunIf(
-        variable('shouldCompress'),           // Must be truthy
-        response('validate', 'isValid')       // Must be truthy
+        true,                       // literal
+        variable('shouldCompress'), // workflow variable
+        response('isTooBig'),       // job response value
+        fn(RunInterface $run) => $run->variable('shouldCompress')->bool(), // closure condition variable
+        fn(RunInterface $run) => $run->response('isTooBig')->bool(), // closure condition using response
     )
 );
-
 $result = run($workflow,
     file: '/path/to/image.jpg',
-    shouldCompress: true
-);
-```
-
-All conditions must be truthy for the job to run. Skipped jobs are tracked in `$result->skip()`.
-
-You can express the inverse condition with `withRunIfNot()` — the job will be skipped when *any* `runIfNot` condition evaluates to true:
-
-```php
-$workflow = workflow(
-    greet: sync(
-        Greet::class,
-        username: variable('username')
-    )->withRunIfNot(
-        variable('skipGreeting'),         // skip when truthy
-        response('validate', 'isBlocked') // skip when response is truthy
-    )
+    shouldCompress: true,
+    maxBytes: 1_000_000
 );
 ```
 
@@ -388,8 +391,8 @@ While `response()` creates implicit dependencies, use `withDepends()` for explic
 
 ```php
 $workflow = workflow(
-    setup: sync(SetupAction::class),
-    process: sync(
+    setup: async(SetupAction::class),
+    process: async(
         ProcessAction::class,
         data: variable('input')
     )->withDepends('setup')  // Wait for setup even without using its response

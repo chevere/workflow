@@ -450,16 +450,16 @@ final class JobsTest extends TestCase
         $jobs->withAdded(j4: $j4);
     }
 
-    public function testWithRunIfCallable(): void
+    public function testWithRunIfClosure(): void
     {
-        $callable = fn () => true;
+        $closure = fn () => true;
         $jobs = new Jobs(
             j1: async(new TestActionNoParams()),
             j2: async(new TestActionNoParams())
-                ->withRunIf($callable),
+                ->withRunIf($closure),
         );
         $runIf = $jobs->get('j2')->runIf()->get(0);
-        $this->assertSame($callable, $runIf);
+        $this->assertSame($closure, $runIf);
     }
 
     public function testWithRunIfNotUndeclaredJob(): void
@@ -567,16 +567,16 @@ final class JobsTest extends TestCase
         $jobs->withAdded(j4: $j4);
     }
 
-    public function testWithRunIfNotCallable(): void
+    public function testWithRunIfNotClosure(): void
     {
-        $callable = fn () => true;
+        $closure = fn () => true;
         $jobs = new Jobs(
             j1: async(new TestActionNoParams()),
             j2: async(new TestActionNoParams())
-                ->withRunIfNot($callable),
+                ->withRunIfNot($closure),
         );
         $runIf = $jobs->get('j2')->runIfNot()->get(0);
-        $this->assertSame($callable, $runIf);
+        $this->assertSame($closure, $runIf);
     }
 
     public function testWithMissingReference(): void

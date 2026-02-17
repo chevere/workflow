@@ -377,9 +377,9 @@ final class RunnerTest extends TestCase
     #[DataProvider('dataProviderRunIfCallable')]
     public function testRunIfCallable(bool $runIf): void
     {
-        $callable = fn () => $runIf;
+        $closure = fn () => $runIf;
         $job = async(new TestActionNoParams())
-            ->withRunIf($callable);
+            ->withRunIf($closure);
         $workflow = workflow(job1: $job);
         $run = run($workflow);
         $this->assertSame(
@@ -404,9 +404,9 @@ final class RunnerTest extends TestCase
     #[DataProvider('dataProviderRunIfCallable')]
     public function testRunIfNotCallable(bool $runIf): void
     {
-        $callable = fn () => $runIf;
+        $closure = fn () => $runIf;
         $job = async(new TestActionNoParams())
-            ->withRunIfNot($callable);
+            ->withRunIfNot($closure);
         $workflow = workflow(job1: $job);
         $run = run($workflow);
         $this->assertSame(
@@ -431,9 +431,9 @@ final class RunnerTest extends TestCase
     public function testRunIfNotCallableOverflow(): void
     {
         $this->expectException(OverflowException::class);
-        $callable = fn () => true;
+        $closure = fn () => true;
         async(new TestActionNoParams())
-            ->withRunIfNot($callable, $callable);
+            ->withRunIfNot($closure, $closure);
     }
 
     public function testRunIfCallableOverflow(): void
