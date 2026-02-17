@@ -161,7 +161,9 @@ final class Runner implements RunnerInterface
         return match (true) {
             is_bool($runIf) => $runIf,
             $runIf instanceof VariableInterface => $this->run->arguments()->required($runIf->__toString())->bool(),
-            $runIf instanceof ResponseReferenceInterface => $this->run->response($runIf->job())->array()[$runIf->key()],
+            $runIf instanceof ResponseReferenceInterface => $runIf->key() !== null
+                ? $this->run->response($runIf->job())->array()[$runIf->key()]
+                : $this->run->response($runIf->job())->bool(),
             default => call_user_func($runIf, $this->run())
         };
     }

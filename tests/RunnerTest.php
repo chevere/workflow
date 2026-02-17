@@ -17,6 +17,7 @@ use Chevere\Action\Action;
 use Chevere\Action\Exceptions\ActionException;
 use Chevere\Container\Container;
 use Chevere\Container\Exceptions\ContainerException;
+use Chevere\Parameter\Attributes\_bool;
 use Chevere\Parameter\Attributes\_float;
 use Chevere\Parameter\Attributes\_int;
 use Chevere\Parameter\Attributes\_return;
@@ -345,6 +346,32 @@ final class RunnerTest extends TestCase
         $this->assertSame($jobsKeysSkip, $runner->run()->skip()->toArray());
         $run = run($workflow);
         $this->assertSame($jobsKeysSkip, $run->skip()->toArray());
+    }
+
+    public function testRunIfReferenceNoKey(): void
+    {
+        $job1 = sync(#[_return(new _bool())] function (): bool {
+            return true;
+        });
+        $job2 = async(new TestActionNoParams())->withRunIf(response('job1'));
+        $workflow = workflow(
+            job1: $job1,
+            job2: $job2
+        );
+        $run = new Run($workflow);
+        $runner = new Runner($run);
+        foreach ($workflow->jobs()->keys() as $name) {
+            $runner = $runner->withRunJob($name);
+        }
+        $this->assertFalse($runner->run()->skip()->contains('job2'));
+        $run = run($workflow);
+        $this->assertFalse($run->skip()->contains('job2'));
+        $job1False = sync(#[_return(new _bool())] function (): bool {
+            return false;
+        });
+        $workflow2 = workflow(job1: $job1False, job2: $job2);
+        $run2 = run($workflow2);
+        $this->assertTrue($run2->skip()->contains('job2'));
     }
 
     #[DataProvider('dataProviderRunIfCallable')]
