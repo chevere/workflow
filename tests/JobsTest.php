@@ -493,7 +493,9 @@ final class JobsTest extends TestCase
         );
         new Jobs(
             job1: async(
-                new TestActionNoParams(),
+                function (): mixed {
+                    return [];
+                },
             ),
             job2: async(
                 new TestActionParamFooResponseBar(),
