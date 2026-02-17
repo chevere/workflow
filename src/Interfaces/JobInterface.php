@@ -61,6 +61,11 @@ interface JobInterface
     public function runIf(): VectorInterface;
 
     /**
+     * @return VectorInterface<ResponseReferenceInterface|VariableInterface|callable|bool>
+     */
+    public function runIfNot(): VectorInterface;
+
+    /**
      * Provides access to the caller who created this job.
      */
     public function caller(): CallerInterface;
@@ -85,6 +90,14 @@ interface JobInterface
      * an instance that contains the specified run-if condition.
      */
     public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): self;
+
+    /**
+     * Return an instance with the specified run-if-not condition.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified run-if-not condition.
+     */
+    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): self;
 
     /**
      * Return an instance with the specified sync flag.

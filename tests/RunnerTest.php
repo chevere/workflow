@@ -258,6 +258,37 @@ final class RunnerTest extends TestCase
         $runner->run()->response('job1');
     }
 
+    public function testWithRunIfNotVariable(): void
+    {
+        $name = 'variable';
+        $job = async(new TestActionNoParams())
+            ->withRunIfNot(variable($name));
+        $workflow = workflow(job1: $job);
+        $arguments = [
+            $name => true,
+        ];
+        $run = new Run($workflow, ...$arguments);
+        $runner = new Runner($run);
+        $runner = $runner->withRunJob('job1');
+        $this->assertSame($workflow->jobs()->keys(), $runner->run()->skip()->toArray());
+        $arguments = [
+            $name => false,
+        ];
+        $run = new Run($workflow, ...$arguments);
+        $runner = new Runner($run);
+        $runner = $runner->withRunJob('job1');
+        $action = $job->action();
+        $this->assertSame(
+            $action->__invoke(),
+            $runner->run()->response('job1')->array()
+        );
+        $run = run($workflow, ...$arguments);
+        $this->assertSame(
+            $action->__invoke(),
+            $run->response('job1')->array()
+        );
+    }
+
     public function testRunIfReference(): void
     {
         $job1 = async(new TestActionNoParamsBoolResponses());
@@ -293,6 +324,29 @@ final class RunnerTest extends TestCase
         $this->assertSame($jobsKeysSkip, $runner->run()->skip()->toArray());
     }
 
+    public function testRunIfNotReference(): void
+    {
+        $job1 = async(new TestActionNoParamsBoolResponses());
+        $job2 = async(new TestActionNoParamsBoolResponses());
+        $job3 = async(new TestActionNoParamsArrayIntResponse());
+        $job4 = async(new TestActionNoParamsArrayIntResponse());
+        $workflow = workflow(
+            job1: $job1,
+            job2: $job2->withRunIfNot(response('job1', 'true')),
+            job3: $job3->withRunIfNot(response('job1', 'true')),
+            job4: $job4->withDepends('job3')
+        );
+        $run = new Run($workflow);
+        $runner = new Runner($run);
+        foreach ($workflow->jobs()->keys() as $name) {
+            $runner = $runner->withRunJob($name);
+        }
+        $jobsKeysSkip = ['job2', 'job3', 'job4'];
+        $this->assertSame($jobsKeysSkip, $runner->run()->skip()->toArray());
+        $run = run($workflow);
+        $this->assertSame($jobsKeysSkip, $run->skip()->toArray());
+    }
+
     #[DataProvider('dataProviderRunIfCallable')]
     public function testRunIfCallable(bool $runIf): void
     {
@@ -318,6 +372,41 @@ final class RunnerTest extends TestCase
             ! $runIf,
             $run->skip()->contains('job1'),
         );
+    }
+
+    #[DataProvider('dataProviderRunIfCallable')]
+    public function testRunIfNotCallable(bool $runIf): void
+    {
+        $callable = fn () => $runIf;
+        $job = async(new TestActionNoParams())
+            ->withRunIfNot($callable);
+        $workflow = workflow(job1: $job);
+        $run = run($workflow);
+        $this->assertSame(
+            $runIf,
+            $run->skip()->contains('job1'),
+        );
+    }
+
+    #[DataProvider('dataProviderRunIfCallable')]
+    public function testRunIfNotBool(bool $runIf): void
+    {
+        $job = async(new TestActionNoParams())
+            ->withRunIfNot($runIf);
+        $workflow = workflow(job1: $job);
+        $run = run($workflow);
+        $this->assertSame(
+            $runIf,
+            $run->skip()->contains('job1'),
+        );
+    }
+
+    public function testRunIfNotCallableOverflow(): void
+    {
+        $this->expectException(OverflowException::class);
+        $callable = fn () => true;
+        async(new TestActionNoParams())
+            ->withRunIfNot($callable, $callable);
     }
 
     public function testRunIfCallableOverflow(): void

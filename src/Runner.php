@@ -75,6 +75,13 @@ final class Runner implements RunnerInterface
                 return $new;
             }
         }
+        foreach ($job->runIfNot() as $runIfNot) {
+            if ($new->getRunIfCondition($runIfNot) === true) {
+                $new->addJobSkip($name);
+
+                return $new;
+            }
+        }
         foreach ($job->dependencies() as $dependency) {
             try {
                 $new->run()->response($dependency);

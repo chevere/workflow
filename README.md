@@ -366,6 +366,20 @@ $result = run($workflow,
 
 All conditions must be truthy for the job to run. Skipped jobs are tracked in `$result->skip()`.
 
+You can express the inverse condition with `withRunIfNot()` — the job will be skipped when *any* `runIfNot` condition evaluates to true:
+
+```php
+$workflow = workflow(
+    greet: sync(
+        Greet::class,
+        username: variable('username')
+    )->withRunIfNot(
+        variable('skipGreeting'),         // skip when truthy
+        response('validate', 'isBlocked') // skip when response is truthy
+    )
+);
+```
+
 ---
 
 ## Explicit Dependencies

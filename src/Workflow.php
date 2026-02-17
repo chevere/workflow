@@ -148,6 +148,9 @@ final class Workflow implements WorkflowInterface
         foreach ($job->runIf() as $value) {
             $this->putVariableReference($value, $parameter);
         }
+        foreach ($job->runIfNot() as $value) {
+            $this->putVariableReference($value, $parameter);
+        }
     }
 
     private function putVariableReference(

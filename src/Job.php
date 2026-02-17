@@ -57,6 +57,11 @@ final class Job implements JobInterface
      */
     private VectorInterface $runIf;
 
+    /**
+     * @var VectorInterface<ResponseReferenceInterface|VariableInterface>
+     */
+    private VectorInterface $runIfNot;
+
     private bool $isSync;
 
     private CallerInterface $caller;
@@ -86,6 +91,7 @@ final class Job implements JobInterface
         $this->caller = new Caller($file, $line);
         $this->isSync = false;
         $this->runIf = new Vector();
+        $this->runIfNot = new Vector();
         $this->dependencies = new Vector();
         if ($_ instanceof Closure) {
             $reflection = new ReflectionMethod($_, '__invoke');
@@ -156,6 +162,34 @@ final class Job implements JobInterface
         return $new;
     }
 
+    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): JobInterface
+    {
+        $new = clone $this;
+        $new->runIfNot = new Vector();
+        $known = new Vector();
+        foreach ($context as $item) {
+            $itemString = match (true) {
+                $item instanceof ResponseReferenceInterface,
+                $item instanceof VariableInterface => $item->__toString(),
+                $item instanceof Closure => 'callable#' . spl_object_id($item),
+                default => $item === true ? 'bool#true' : 'bool#false',
+            };
+            if ($known->contains($itemString)) {
+                throw new OverflowException(
+                    (string) message(
+                        'Condition `%condition%` is already defined',
+                        condition: $itemString
+                    )
+                );
+            }
+            $new->inferDependencies($item);
+            $new->runIfNot = $new->runIfNot->withPush($item);
+            $known = $known->withPush($itemString);
+        }
+
+        return $new;
+    }
+
     public function withIsSync(bool $flag = true): JobInterface
     {
         $new = clone $this;
@@ -201,6 +235,11 @@ final class Job implements JobInterface
     public function runIf(): VectorInterface
     {
         return $this->runIf;
+    }
+
+    public function runIfNot(): VectorInterface
+    {
+        return $this->runIfNot;
     }
 
     public function isSync(): bool

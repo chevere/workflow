@@ -136,6 +136,10 @@ final class Jobs implements JobsInterface
                 $this->handleRunIfReference($runIf);
                 $this->handleRunIfVariable($name, $runIf);
             }
+            foreach ($item->runIfNot() as $runIfNot) {
+                $this->handleRunIfReference($runIfNot);
+                $this->handleRunIfVariable($name, $runIfNot);
+            }
             $this->storeReferences($name, $item);
             $this->assertDependencies($name);
             $this->graph = $this->graph->withPut($name, $item);

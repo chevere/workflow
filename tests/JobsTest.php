@@ -462,6 +462,123 @@ final class JobsTest extends TestCase
         $this->assertSame($callable, $runIf);
     }
 
+    public function testWithRunIfNotUndeclaredJob(): void
+    {
+        $this->expectException(OutOfBoundsException::class);
+        new Jobs(
+            j1: async(new TestActionNoParams())
+                ->withRunIfNot(
+                    response('job', 'parameter')
+                ),
+        );
+    }
+
+    public function testWithRunIfNotUndeclaredJobResponseKey(): void
+    {
+        $this->expectException(OutOfBoundsException::class);
+        new Jobs(
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams())
+                ->withRunIfNot(
+                    response('j1', '404')
+                ),
+        );
+    }
+
+    public function testWithRunIfNotInvalidJobKeyType(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Response **j1:id** must be of type `bool`');
+        new Jobs(
+            j1: async(new TestActionNoParamsArrayIntResponse()),
+            j2: async(new TestActionNoParams())
+                ->withRunIfNot(
+                    response('j1', 'id')
+                ),
+        );
+    }
+
+    public function testWithRunIfNotInvalidVariableType(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Variable **theFoo** (previously declared as `string`) is not of type `bool` at Job **j2**');
+        new Jobs(
+            j1: async(
+                new TestActionParams(),
+                foo: variable('theFoo'),
+                bar: 'bar'
+            )
+                ->withRunIf(
+                    variable('true')
+                ),
+            j2: async(
+                new TestActionNoParams()
+            )
+                ->withRunIfNot(
+                    variable('true'),
+                    variable('theFoo')
+                ),
+        );
+    }
+
+    public function testWithRunIfNotVariable(): void
+    {
+        $name = 'the_variable';
+        $jobs = new Jobs(
+            j1: async(
+                new TestActionNoParams(),
+            )
+                ->withRunIfNot(
+                    variable($name)
+                ),
+        );
+        $this->assertTrue($jobs->variables()->has($name));
+        $this->assertInstanceOf(BoolParameterInterface::class, $jobs->variables()->get($name));
+    }
+
+    public function testWithRunIfNotReference(): void
+    {
+        $true = response('j1', 'true');
+        $false = response('j1', 'false');
+        $jobs = new Jobs(
+            j1: async(
+                new TestActionNoParamsBoolResponses(),
+            ),
+            j2: async(
+                new TestActionNoParamsBoolResponses(),
+            )->withRunIfNot($true, $false),
+            j3: async(
+                new TestActionNoParams(),
+            )->withRunIfNot($false, $true),
+        );
+        $this->assertSame(
+            [
+                ['j1'],
+                ['j2', 'j3'],
+            ],
+            $jobs->graph()->toArray()
+        );
+        $this->assertTrue(
+            $jobs->references()->has($true->__toString(), $false->__toString())
+        );
+        $j4 = async(new TestActionNoParams())
+            ->withRunIfNot(response('j5', 'missing'));
+        $this->expectException(OutOfBoundsException::class);
+        $jobs->withAdded(j4: $j4);
+    }
+
+    public function testWithRunIfNotCallable(): void
+    {
+        $callable = fn () => true;
+        $jobs = new Jobs(
+            j1: async(new TestActionNoParams()),
+            j2: async(new TestActionNoParams())
+                ->withRunIfNot($callable),
+        );
+        $runIf = $jobs->get('j2')->runIfNot()->get(0);
+        $this->assertSame($callable, $runIf);
+    }
+
     public function testWithMissingReference(): void
     {
         // previous: OutOfBoundsException
