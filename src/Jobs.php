@@ -299,7 +299,7 @@ final class Jobs implements JobsInterface
                     if (count($errors) === $count) {
                         throw new TypeError(
                             (string) message(
-                                '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
+                                '%subject% from **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
                                 parameter: $argument,
                                 type: $stored->type()->primitive(),
                                 expected: '`' . implode('`, `', $errors) . '`',

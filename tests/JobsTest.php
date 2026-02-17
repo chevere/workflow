@@ -575,7 +575,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
+            [job2]: Response from **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
             PLAIN
         );
         new Jobs(
@@ -595,7 +595,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
+            [job2]: Response from **job1** is of type `string`, parameter **foo** expects one of: `int`, `float`
             PLAIN
         );
         new Jobs(
