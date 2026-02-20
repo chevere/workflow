@@ -32,12 +32,12 @@ final class Graph implements GraphInterface
     /**
      * @var VectorInterface<string>
      */
-    private VectorInterface $syncJobs;
+    private VectorInterface $jobs;
 
     public function __construct()
     {
         $this->map = new Map();
-        $this->syncJobs = new Vector();
+        $this->jobs = new Vector();
     }
 
     public function withPut(
@@ -61,13 +61,13 @@ final class Graph implements GraphInterface
         }
         $new->handleDependencyUpdate($name, $vector);
         $new->map = $new->map->withPut($name, $vector);
-        $found = $new->syncJobs->find($name);
+        $found = $new->jobs->find($name);
         if ($job->isSync()) {
             if ($found === null) {
-                $new->syncJobs = $new->syncJobs->withPush($name);
+                $new->jobs = $new->jobs->withPush($name);
             }
         } elseif ($found !== null) {
-            $new->syncJobs = $new->syncJobs->withRemove($found);
+            $new->jobs = $new->jobs->withRemove($found);
         }
 
         return $new;
@@ -113,7 +113,7 @@ final class Graph implements GraphInterface
             }
             $sort[$toIndex][] = $job;
             $previous[] = $job;
-            if ($this->syncJobs->find($job) !== null) {
+            if ($this->jobs->find($job) !== null) {
                 $sync[$job] = $toIndex;
             }
         }
