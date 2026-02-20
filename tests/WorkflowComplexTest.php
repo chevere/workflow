@@ -28,7 +28,7 @@ final class WorkflowComplexTest extends TestCase
     {
         $workflow = workflow(
             appAssertDomainAvailable: sync(
-                fn (): null => null,
+                fn () => null,
             ),
             user: sync(
                 #[_return(
@@ -57,7 +57,7 @@ final class WorkflowComplexTest extends TestCase
                 currency_code: response('plan', 'currency_code')
             ),
             refreshUserSharedCache: sync(
-                fn (): null => null,
+                fn () => null,
             ),
             appCreate: sync(
                 fn (int $sub_id): int => 1,
@@ -96,7 +96,7 @@ final class WorkflowComplexTest extends TestCase
             jobPushServerAppCreate: sync(
                 fn (
                     mixed $arguments = [],
-                ): null => null,
+                ) => null,
                 arguments: response('serverAppCreateArgs'),
             ),
             emailAppContext: sync(
@@ -119,7 +119,7 @@ final class WorkflowComplexTest extends TestCase
             jobPushEmailApp: sync(
                 fn (
                     mixed $arguments = [],
-                ): null => null,
+                ) => null,
                 arguments: response('emailAppArgs'),
             ),
         );
