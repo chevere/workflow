@@ -186,6 +186,7 @@ final class Jobs implements JobsInterface
                     }
                 }
                 if ($parameter === null && $parameters->isVariadic()) {
+                    /** @var string|int $lastKey */
                     $lastKey = array_key_last($parameters->keys());
                     $lastName = $parameters->keys()[$lastKey];
                     $argument = $lastName;

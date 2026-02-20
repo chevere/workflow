@@ -97,14 +97,12 @@ final class Workflow implements WorkflowInterface
 
     private function putParameters(string $name, JobInterface $job): void
     {
+        $this->provided = $this->provided->withPut($name, $job->return());
         $parameters = $job->parameters();
         $positions = array_keys($parameters->keys());
         $lastKey = array_key_last($parameters->keys());
-        $this->provided = $this->provided->withPut(
-            $name,
-            $job->return()
-        );
         foreach ($job->arguments() as $id => $value) {
+            /** @var string|int $lastKey */
             $id = strval($id);
             if (! $parameters->has($id)) {
                 $search = array_search($id, $positions);

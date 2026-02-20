@@ -255,7 +255,7 @@ final class Job implements JobInterface
         $values = [];
         $isPositional = array_is_list($argument);
         $lastKey = array_key_last($this->parameters->keys());
-        $lastName = $this->parameters->keys()[$lastKey] ?? null;
+        $lastName = $lastKey !== null ? $this->parameters->keys()[$lastKey] : null;
         foreach ($this->parameters as $name => $parameter) {
             if ($name === $lastName && $this->parameters->isVariadic()) {
                 if ($isPositional) {
