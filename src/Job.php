@@ -137,27 +137,7 @@ final class Job implements JobInterface
     public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): JobInterface
     {
         $new = clone $this;
-        $new->runIf = new Vector();
-        $known = new Vector();
-        foreach ($context as $item) {
-            $itemString = match (true) {
-                $item instanceof ResponseReferenceInterface,
-                $item instanceof VariableInterface => $item->__toString(),
-                $item instanceof Closure => 'callable#' . spl_object_id($item),
-                default => $item === true ? 'bool#true' : 'bool#false',
-            };
-            if ($known->contains($itemString)) {
-                throw new OverflowException(
-                    (string) message(
-                        'Condition `%condition%` is already defined',
-                        condition: $itemString
-                    )
-                );
-            }
-            $new->inferDependencies($item);
-            $new->runIf = $new->runIf->withPush($item);
-            $known = $known->withPush($itemString);
-        }
+        $new->pushRunConditional('runIf', ...$context);
 
         return $new;
     }
@@ -165,29 +145,36 @@ final class Job implements JobInterface
     public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): JobInterface
     {
         $new = clone $this;
-        $new->runIfNot = new Vector();
+        $new->pushRunConditional('runIfNot', ...$context);
+
+        return $new;
+    }
+
+    public function pushRunConditional(
+        string $collection,
+        ResponseReferenceInterface|VariableInterface|callable|bool ...$context
+    ): void {
+        $this->{$collection} = new Vector();
         $known = new Vector();
-        foreach ($context as $item) {
-            $itemString = match (true) {
-                $item instanceof ResponseReferenceInterface,
-                $item instanceof VariableInterface => $item->__toString(),
-                $item instanceof Closure => 'callable#' . spl_object_id($item),
-                default => $item === true ? 'bool#true' : 'bool#false',
+        foreach ($context as $condition) {
+            $item = match (true) {
+                $condition instanceof ResponseReferenceInterface,
+                $condition instanceof VariableInterface => $condition->__toString(),
+                $condition instanceof Closure => 'callable#' . spl_object_id($condition),
+                default => $condition === true ? 'bool#true' : 'bool#false',
             };
-            if ($known->contains($itemString)) {
+            if ($known->contains($item)) {
                 throw new OverflowException(
                     (string) message(
                         'Condition `%condition%` is already defined',
-                        condition: $itemString
+                        condition: $item
                     )
                 );
             }
-            $new->inferDependencies($item);
-            $new->runIfNot = $new->runIfNot->withPush($item);
-            $known = $known->withPush($itemString);
+            $this->inferDependencies($condition);
+            $this->{$collection} = $this->{$collection}->withPush($condition);
+            $known = $known->withPush($item);
         }
-
-        return $new;
     }
 
     public function withIsSync(bool $flag = true): JobInterface
