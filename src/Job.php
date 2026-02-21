@@ -150,33 +150,6 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function pushRunConditional(
-        string $collection,
-        ResponseReferenceInterface|VariableInterface|callable|bool ...$context
-    ): void {
-        $this->{$collection} = new Vector();
-        $known = new Vector();
-        foreach ($context as $condition) {
-            $item = match (true) {
-                $condition instanceof ResponseReferenceInterface,
-                $condition instanceof VariableInterface => $condition->__toString(),
-                $condition instanceof Closure => 'callable#' . spl_object_id($condition),
-                default => $condition === true ? 'bool#true' : 'bool#false',
-            };
-            if ($known->contains($item)) {
-                throw new OverflowException(
-                    (string) message(
-                        'Condition `%condition%` is already defined',
-                        condition: $item
-                    )
-                );
-            }
-            $this->inferDependencies($condition);
-            $this->{$collection} = $this->{$collection}->withPush($condition);
-            $known = $known->withPush($item);
-        }
-    }
-
     public function withIsSync(bool $flag = true): JobInterface
     {
         $new = clone $this;
@@ -232,6 +205,33 @@ final class Job implements JobInterface
     public function isSync(): bool
     {
         return $this->isSync;
+    }
+
+    private function pushRunConditional(
+        string $collection,
+        ResponseReferenceInterface|VariableInterface|callable|bool ...$context
+    ): void {
+        $this->{$collection} = new Vector();
+        $known = new Vector();
+        foreach ($context as $condition) {
+            $item = match (true) {
+                $condition instanceof ResponseReferenceInterface,
+                $condition instanceof VariableInterface => $condition->__toString(),
+                $condition instanceof Closure => 'callable#' . spl_object_id($condition),
+                default => $condition === true ? 'bool#true' : 'bool#false',
+            };
+            if ($known->contains($item)) {
+                throw new OverflowException(
+                    (string) message(
+                        'Condition `%condition%` is already defined',
+                        condition: $item
+                    )
+                );
+            }
+            $this->inferDependencies($condition);
+            $this->{$collection} = $this->{$collection}->withPush($condition);
+            $known = $known->withPush($item);
+        }
     }
 
     private function setArguments(mixed ...$argument): void
