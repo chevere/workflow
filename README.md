@@ -65,12 +65,12 @@ echo $result->response('greet')->string();
 
 Workflow is built around four main concepts:
 
-| Concept      | Description                                                       |
-| ------------ | ----------------------------------------------------------------- |
-| **Job**      | A unit of work (Action class or Closure) that produces a response |
-| **Variable** | External input provided when running the workflow                 |
-| **Response** | Reference to output from a previous job                           |
-| **Graph**    | Automatic execution order based on job dependencies               |
+| Concept      | Description                                         |
+| ------------ | --------------------------------------------------- |
+| **Job**      | A unit of work that produces a response             |
+| **Variable** | External input provided when running the workflow   |
+| **Response** | Reference to output from a previous job             |
+| **Graph**    | Automatic execution order based on job dependencies |
 
 ### How It Works
 
@@ -95,7 +95,7 @@ Workflow is built around four main concepts:
 
 ## Jobs
 
-Jobs are the building blocks of a workflow. Each job wraps an executable unit (Action or Closure) and declares its input arguments.
+Jobs are the building blocks of a workflow. Each job wraps an executable unit ([Action](https://chevere.org/packages/action), [Closure](https://www.php.net/manual/en/class.closure.php) or any PHP [callable](https://www.php.net/manual/en/language.types.callable.php)) and declares its input arguments.
 
 ### Creating Jobs with Closures
 

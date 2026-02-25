@@ -69,16 +69,33 @@ final class Job implements JobInterface
     private RetryPolicyInterface $retryPolicy;
 
     /**
-     * Creates a Job
-     * DO NOT use this method directly, use `sync` or `async` functions instead.
+     * @var ActionInterface|class-string<ActionInterface>|Closure
+     */
+    private ActionInterface|string|Closure $_;
+
+    /**
+     * @internal DO NOT use this method directly, use `sync()` or `async()` functions instead.
      *
-     * @param ActionInterface|class-string<ActionInterface>|Closure $_ The action to run
+     * @param ActionInterface|class-string<ActionInterface>|callable $_ The action to run
      * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
      */
     public function __construct(
-        private ActionInterface|string|Closure $_,
+        ActionInterface|string|callable $_,
         mixed ...$argument
     ) {
+        if (is_callable($_)
+            && ! ($_ instanceof Closure)
+            && ! ($_ instanceof ActionInterface)
+        ) {
+            if (is_string($_)) {
+                if (! class_exists($_) || ! is_subclass_of($_, ActionInterface::class, true)) {
+                    $_ = Closure::fromCallable($_);
+                }
+            } else {
+                $_ = Closure::fromCallable($_);
+            }
+        }
+        $this->_ = $_;
         $debugBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $callerFunction = $debugBacktrace[1]['function'] ?? '';
         $index = in_array(
@@ -93,13 +110,13 @@ final class Job implements JobInterface
         $this->runIf = new Vector();
         $this->runIfNot = new Vector();
         $this->dependencies = new Vector();
-        if ($_ instanceof Closure) {
-            $reflection = new ReflectionMethod($_, '__invoke');
+        if ($this->_ instanceof Closure) {
+            $reflection = new ReflectionMethod($this->_, '__invoke');
             $this->parameters = reflectionToParameters($reflection);
             $this->return = reflectionToReturn($reflection);
         } else {
-            $this->parameters = $_::reflection()->parameters();
-            $this->return = $_::reflection()->return();
+            $this->parameters = $this->_::reflection()->parameters();
+            $this->return = $this->_::reflection()->return();
         }
         $this->arguments = [];
         $this->setArguments(...$argument);

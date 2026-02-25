@@ -26,6 +26,7 @@ use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\RetryPolicy;
+use Closure;
 use InvalidArgumentException;
 use OverflowException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -423,6 +424,29 @@ final class JobTest extends TestCase
         );
         new Job($closure);
     }
+
+    // public function testWithCallableMethod(): void
+    // {
+    //     $class = new class() {
+    //         public function callableMethod(string $foo): string
+    //         {
+    //             return $foo;
+    //         }
+    //     };
+    //     $callable = [$class, 'callableMethod'];
+    //     $job = new Job($callable, foo: 'bar');
+    //     $this->assertInstanceOf(Closure::class, $job->action());
+    //     $this->assertEquals(parameters(foo: string()), $job->parameters());
+    //     $this->assertEquals(string(), $job->return());
+    // }
+
+    // public function testWithFunctionNameCallable(): void
+    // {
+    //     $job = new Job('strlen', 'hello');
+    //     $this->assertInstanceOf(Closure::class, $job->action());
+    //     $this->assertEquals(int(), $job->return());
+    //     $this->assertCount(1, $job->parameters());
+    // }
 
     public function testWithAnonymousClassMissingArgument(): void
     {
