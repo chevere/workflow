@@ -204,7 +204,13 @@ workflow(
 );
 ```
 
-Jobs can define I/O rules via [chevere/parameter](https://chevere.org/packages/parameter). Workflow derives parameter and return definitions from the closure signature or Action reflection, and validates inputs and responses at runtime.
+Jobs can define I/O rules via [chevere/parameter](https://chevere.org/packages/parameter). Workflow derives parameter and return definitions from the callable signature or Action reflection and validates inputs and responses at runtime.
+
+### Integration with Chevere
+
+Workflow works seamlessly with the `chevere/parameter` and `chevere/action` packages. When you declare parameter rules with `chevere/parameter` (types, ranges, or custom validators), those rules travel with the job definitions and are applied automatically at runtime. Workflow performs the validation layer for you before invoking jobs so callers don't need to repeat input or response checks. The same integration applies to `chevere/action` Action classes: parameter and return definitions are derived from action signatures and validated by Workflow.
+
+These integrations are optional extras. You do not have to use `chevere/parameter` or `chevere/action` to use Workflow, but opting in gives stronger guarantees and reduces validation boilerplate across jobs.
 
 ---
 
