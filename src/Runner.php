@@ -17,6 +17,7 @@ use Amp\CancelledException;
 use Amp\Future;
 use Amp\TimeoutCancellation;
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Parameter\Interfaces\ObjectParameterInterface;
 use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
@@ -191,7 +192,11 @@ final class Runner implements RunnerInterface
             }
             /** @var ResponseReferenceInterface $value */
             if ($value->key() !== null) {
-                $arguments[$name] = $this->run->response($value->job())->array()[$value->key()];
+                $response = $this->run->response($value->job());
+                $referenceReturn = $this->run->workflow()->jobs()->get($value->job())->return();
+                $arguments[$name] = $referenceReturn instanceof ObjectParameterInterface
+                    ? $response->object()->{$value->key()}
+                    : $response->array()[$value->key()];
 
                 continue;
             }

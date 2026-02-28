@@ -36,6 +36,7 @@ use Chevere\Tests\src\TestActionThrows;
 use Chevere\Tests\src\TestActionUnion;
 use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Tests\src\TestActionWorksOnNAttempt;
+use Chevere\Tests\src\TestEntity;
 use Chevere\Workflow\Exceptions\RunnerException;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
@@ -759,6 +760,28 @@ final class RunnerTest extends TestCase
         $runner = new Runner($run);
         $this->expectException(ActionException::class);
         $runner->withRunJob('job1');
+    }
+
+    public function testJobWithObjectResponse(): void
+    {
+        $workflow = workflow(
+            job1: sync(
+                function (): TestEntity {
+                    return new TestEntity(id: 123);
+                }
+            ),
+            job2: sync(
+                function (#[_int(min: 1)] int $id): int {
+                    return $id;
+                },
+                id: response('job1', 'id')
+            ),
+        );
+        $run = run($workflow);
+        $this->assertSame(
+            123,
+            $run->response('job2')->int()
+        );
     }
 
     /**
