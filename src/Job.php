@@ -122,7 +122,7 @@ final class Job implements JobInterface
         if ($this->_ instanceof Closure) {
             $reflection ??= $isClosure
                 ? new ReflectionFunction($this->_)
-                : new ReflectionClass($this->_)->getMethod('__invoke');
+                : (new ReflectionClass($this->_))->getMethod('__invoke');
             $this->parameters = reflectionToParameters($reflection);
             $this->return = reflectionToReturn($reflection);
         } else {
