@@ -31,6 +31,7 @@ use Chevere\Tests\src\TestActionParams;
 use Chevere\Tests\src\TestActionParamsReturn;
 use Chevere\Tests\src\TestActionUnion;
 use Chevere\Tests\src\TestActionVariadic;
+use Chevere\Tests\src\TestEntity;
 use Chevere\Workflow\Exceptions\JobsException;
 use Chevere\Workflow\Jobs;
 use OutOfBoundsException;
@@ -585,7 +586,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1:missing** not found
+            [job2]: Invalid response reference **job1:missing** as job **job1** doesn't define such response key
             PLAIN
         );
         new Jobs(
@@ -605,7 +606,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Invalid response reference **job1:missing** as job **job1** doesn't define return rules implementing Chevere\Parameter\Interfaces\ParametersAccessInterface interface
+            [job2]: Invalid response reference **job1:missing** as job **job1** doesn't define such response key
             PLAIN
         );
         new Jobs(
@@ -762,4 +763,20 @@ final class JobsTest extends TestCase
             ),
         );
     }
+
+    // public function testReferenceObjectProperty(): void
+    // {
+    //     new Jobs(
+    //         job1: sync(
+    //             function (): TestEntity {
+    //                 return new TestEntity(id: 123);
+    //             }
+    //         ),
+    //         job2: sync(
+    //             function (string $id = 'aa'): void {
+    //             },
+    //             id: response('job1', 'id')
+    //         ),
+    //     );
+    // }
 }

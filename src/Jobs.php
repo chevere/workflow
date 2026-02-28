@@ -20,6 +20,7 @@ use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Parameter\Interfaces\MixedParameterInterface;
+use Chevere\Parameter\Interfaces\ObjectParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersAccessInterface;
 use Chevere\Parameter\Interfaces\UnionParameterInterface;
@@ -33,6 +34,8 @@ use InvalidArgumentException;
 use LogicException;
 use OutOfBoundsException;
 use OverflowException;
+use ReflectionClass;
+use ReflectionException;
 use Throwable;
 use TypeError;
 use function Chevere\Message\message;
@@ -230,17 +233,48 @@ final class Jobs implements JobsInterface
                 /** @var ParameterInterface $accept */
                 $accept = $responseJob->return();
                 if ($value->key() !== null) {
-                    if (! $accept instanceof ParametersAccessInterface) {
+                    $found = false;
+                    if ($accept instanceof ObjectParameterInterface) {
+                        /** @var class-string $className */
+                        $className = $accept->className();
+
+                        try {
+                            $reflection = (new ReflectionClass($className))->getProperty($value->key());
+                        } catch (ReflectionException) {
+                            throw new LogicException(
+                                (string) message(
+                                    "Invalid response reference **%response%** as job **%job%** doesn't define such property",
+                                    job: $value->job(),
+                                    response: strval($value),
+                                    interface: ParametersAccessInterface::class
+                                )
+                            );
+                        }
+                        if (! $reflection->isPublic()) {
+                            throw new LogicException(
+                                (string) message(
+                                    'Response **%response%** job `%job%` property `%property%` is not public',
+                                    response: strval($value),
+                                    job: $value->job(),
+                                    property: $value->key()
+                                )
+                            );
+                        }
+                        $found = true;
+                    }
+                    if ($accept instanceof ParametersAccessInterface && $accept->parameters()->has($value->key())) {
+                        $found = true;
+                    }
+                    if (! $found) {
                         throw new LogicException(
                             (string) message(
-                                "Invalid response reference **%response%** as job **%job%** doesn't define return rules implementing %interface% interface",
+                                "Invalid response reference **%response%** as job **%job%** doesn't define such response key",
                                 job: $value->job(),
                                 response: strval($value),
                                 interface: ParametersAccessInterface::class
                             )
                         );
                     }
-                    $accept->parameters()->get($value->key());
                 }
             } catch (OutOfBoundsException) {
                 throw new OutOfBoundsException(
