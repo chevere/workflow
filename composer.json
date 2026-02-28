@@ -18,10 +18,11 @@
         "chevere/caller": "^1.0.0",
         "chevere/container": "^1.0.0",
         "chevere/data-structure": "^1.1.0",
-        "chevere/parameter": "^2.0.0",
+        "chevere/parameter": "2.0.x-dev as 2.0.0",
         "chevere/regex": "^1.0.2"
     },
     "require-dev": {
+        "chevere/var-dump": "^2.0.8",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.5",
         "symplify/easy-coding-standard": "^13.0"
