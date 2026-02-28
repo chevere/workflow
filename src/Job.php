@@ -95,13 +95,15 @@ final class Job implements JobInterface
                 }
             } else {
                 if (is_array($_)) {
+                    // @phpstan-ignore-next-line
                     $reflection = new ReflectionClass($_[0])->getMethod($_[1]);
-                } else {
+                } elseif (is_object($_)) {
                     $reflection = new ReflectionObject($_)->getMethod('__invoke');
                 }
                 $_ = Closure::fromCallable($_);
             }
         }
+        // @phpstan-ignore-next-line
         $this->_ = $_;
         $debugBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $callerFunction = $debugBacktrace[1]['function'] ?? '';
@@ -119,8 +121,8 @@ final class Job implements JobInterface
         $this->dependencies = new Vector();
         if ($this->_ instanceof Closure) {
             $reflection ??= $isClosure
-                ? new ReflectionFunction($_)
-                : new ReflectionClass($_)->getMethod('__invoke');
+                ? new ReflectionFunction($this->_)
+                : new ReflectionClass($this->_)->getMethod('__invoke');
             $this->parameters = reflectionToParameters($reflection);
             $this->return = reflectionToReturn($reflection);
         } else {
