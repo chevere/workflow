@@ -764,19 +764,47 @@ final class JobsTest extends TestCase
         );
     }
 
-    // public function testReferenceObjectProperty(): void
-    // {
-    //     new Jobs(
-    //         job1: sync(
-    //             function (): TestEntity {
-    //                 return new TestEntity(id: 123);
-    //             }
-    //         ),
-    //         job2: sync(
-    //             function (string $id = 'aa'): void {
-    //             },
-    //             id: response('job1', 'id')
-    //         ),
-    //     );
-    // }
+    public function testIncompatibleReferenceObjectProperty(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [job2]: Response **job1:id** is of type `int`, parameter **id** expects `string`
+            PLAIN
+        );
+        new Jobs(
+            job1: sync(
+                function (): TestEntity {
+                    return new TestEntity(id: 123);
+                }
+            ),
+            job2: sync(
+                function (string $id): void {
+                },
+                id: response('job1', 'id')
+            ),
+        );
+    }
+
+    public function testIncompatibleAttributeReferenceObjectProperty(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [job2]: Response **job1:id** conflict at parameter **id**: Expected min value `5`, provided `1`
+            PLAIN
+        );
+        new Jobs(
+            job1: sync(
+                function (): TestEntity {
+                    return new TestEntity(id: 123);
+                }
+            ),
+            job2: sync(
+                function (#[_int(min: 5)] int $id): void {
+                },
+                id: response('job1', 'id')
+            ),
+        );
+    }
 }

@@ -123,8 +123,9 @@ final class WorkflowTest extends TestCase
                 string: response('job1', 'response1')
             ),
             job3: async(
-                new TestActionAppendString(),
-                string: response('job1')
+                function (array $arg) {
+                },
+                arg: response('job1')
             )
         );
         $workflow = new Workflow($jobs);

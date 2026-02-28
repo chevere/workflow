@@ -36,10 +36,12 @@ use OutOfBoundsException;
 use OverflowException;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionProperty;
 use Throwable;
 use TypeError;
 use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
+use function Chevere\Parameter\reflectionPropertyToParameter;
 
 final class Jobs implements JobsInterface
 {
@@ -152,9 +154,22 @@ final class Jobs implements JobsInterface
     private function storeReferences(string $job, JobInterface $item): void
     {
         $return = $item->return();
-        if ($return instanceof ParametersAccessInterface
-            && ! ($return instanceof UnionParameterInterface)
-        ) {
+        $this->references = $this->references
+            ->withPut(
+                strval(response($job)),
+                $return,
+            );
+        if ($return instanceof ObjectParameterInterface) {
+            $properties = (new ReflectionClass($return->className()))->getProperties(ReflectionProperty::IS_PUBLIC);
+            foreach ($properties as $property) {
+                $this->references = $this->references
+                    ->withPut(
+                        strval(response($job, $property->getName())),
+                        reflectionPropertyToParameter($property),
+                    );
+            }
+        }
+        if ($return instanceof ParametersAccessInterface && ! ($return instanceof UnionParameterInterface)) {
             foreach ($return->parameters() as $key => $parameter) {
                 $this->references = $this->references
                     ->withPut(
@@ -162,12 +177,6 @@ final class Jobs implements JobsInterface
                         $parameter,
                     );
             }
-        } else {
-            $this->references = $this->references
-                ->withPut(
-                    strval(response($job)),
-                    $return,
-                );
         }
     }
 
