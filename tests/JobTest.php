@@ -23,6 +23,7 @@ use Chevere\Tests\src\TestActionObjectConflict;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParamStringRegex;
 use Chevere\Tests\src\TestActionVariadic;
+use Chevere\Tests\src\TestClassInvalidArgument;
 use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\RetryPolicy;
@@ -591,5 +592,50 @@ final class JobTest extends TestCase
                 ],
             ],
         ];
+    }
+
+    public static function dataProviderInvalidArgument(): array
+    {
+        require_once __DIR__ . '/src/TestFunctions.php';
+
+        return [
+            'closure' => [
+                function (#[_int(min: 2)] int $id = 1): void {
+                },
+            ],
+            'anon class' => [
+                new class() {
+                    public function __invoke(#[_int(min: 2)] int $id = 1): void
+                    {
+                    }
+                },
+            ],
+            'class callable array' => [
+                [TestClassInvalidArgument::class, 'staticCallable'],
+            ],
+            'object callable array' => [
+                (new class() {
+                    public function __invoke(#[_int(min: 2)] int $id = 1): void
+                    {
+                    }
+                }),
+                '__invoke',
+            ],
+            'string callable' => [
+                'Chevere\Tests\src\invalidArgumentFunction',
+            ],
+        ];
+    }
+
+    #[DataProvider('dataProviderInvalidArgument')]
+    public function testActionInvalidArgument(mixed $action): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Argument value provided `1` is less than `2`
+            PLAIN
+        );
+        new Job($action);
     }
 }

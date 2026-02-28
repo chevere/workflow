@@ -30,7 +30,7 @@ use InvalidArgumentException;
 use OverflowException;
 use ReflectionClass;
 use ReflectionFunction;
-use ReflectionMethod;
+use ReflectionObject;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
 use function Chevere\Parameter\reflectionToParameters;
@@ -83,15 +83,22 @@ final class Job implements JobInterface
         ActionInterface|string|callable $_,
         mixed ...$argument
     ) {
+        $isClosure = $_ instanceof Closure;
         if (is_callable($_)
-            && ! ($_ instanceof Closure)
+            && ! $isClosure
             && ! ($_ instanceof ActionInterface)
         ) {
             if (is_string($_)) {
                 if (! class_exists($_) || ! is_subclass_of($_, ActionInterface::class, true)) {
+                    $reflection = new ReflectionFunction($_);
                     $_ = Closure::fromCallable($_);
                 }
             } else {
+                if (is_array($_)) {
+                    $reflection = new ReflectionClass($_[0])->getMethod($_[1]);
+                } else {
+                    $reflection = new ReflectionObject($_)->getMethod('__invoke');
+                }
                 $_ = Closure::fromCallable($_);
             }
         }
@@ -111,7 +118,9 @@ final class Job implements JobInterface
         $this->runIfNot = new Vector();
         $this->dependencies = new Vector();
         if ($this->_ instanceof Closure) {
-            $reflection = new ReflectionMethod($this->_, '__invoke');
+            $reflection ??= $isClosure
+                ? new ReflectionFunction($_)
+                : new ReflectionClass($_)->getMethod('__invoke');
             $this->parameters = reflectionToParameters($reflection);
             $this->return = reflectionToReturn($reflection);
         } else {
