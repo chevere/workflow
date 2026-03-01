@@ -41,7 +41,7 @@ use Throwable;
 use TypeError;
 use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
-use function Chevere\Parameter\reflectionPropertyToParameter;
+use function Chevere\Parameter\reflectionToParameter;
 
 final class Jobs implements JobsInterface
 {
@@ -165,7 +165,7 @@ final class Jobs implements JobsInterface
                 $this->references = $this->references
                     ->withPut(
                         strval(response($job, $property->getName())),
-                        reflectionPropertyToParameter($property),
+                        reflectionToParameter($property),
                     );
             }
         }
