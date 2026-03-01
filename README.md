@@ -256,14 +256,14 @@ $workflow = workflow(
 );
 ```
 
-### Accessing Nested Response Keys
+### Accessing Nested Response Keys/Properties
 
-When a job returns an array, access specific keys:
+When a job returns `array` or `object`, access specific keys/properties directly in `response()`:
 
 ```php
-response('user')           // Entire response
-response('user', 'id')     // $response['id']
-response('user', 'profile') // $response['profile']
+response('user')           // job:user       Entire response object
+response('user', 'id')     // job:user->id   id property from object response
+response('post', 'id')     // job:post['id'] id key from array response
 ```
 
 ---
