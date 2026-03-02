@@ -349,6 +349,73 @@ if ($result->skip()->contains('optionalJob')) {
 
 ---
 
+## Dependency Injection
+
+Workflow integrates with [chevere/container](https://chevere.org/packages/container) to provide automatic dependency injection for Action classes. When your jobs use Action classes with constructor dependencies, you can provide a container that will automatically resolve and inject those dependencies.
+
+### Passing a Container
+
+Pass a `ContainerInterface` instance as the second argument to `run()`:
+
+```php
+use Chevere\Container\Container;
+use function Chevere\Workflow\run;
+
+// Create container with dependencies
+$container = new Container(
+    logger: new Logger(),
+    database: new Database()
+);
+
+// Run workflow with container
+$result = run($workflow, $container, ...$vars);
+```
+
+When a job references an Action class, Workflow uses the container to:
+
+1. **Auto-inject dependencies** - Automatically resolve constructor parameters from the container
+2. **Validate availability** - Ensure all required dependencies are present before execution
+3. **Support nested dependencies** - Recursively resolve dependencies of dependencies
+
+### Example with Action Dependencies
+
+```php
+use Chevere\Action\Action;
+
+class SendNotification extends Action
+{
+    // Dependencies injected automatically
+    public function __construct(
+        private LoggerInterface $logger,
+        private MailerInterface $mailer
+    ) {}
+
+    public function __invoke(string $email, string $message): bool
+    {
+        $this->logger->info("Sending email to {$email}");
+        return $this->mailer->send($email, $message);
+    }
+}
+
+// Provide dependencies in container
+$container = new Container(
+    logger: new ConsoleLogger(),
+    mailer: new SmtpMailer()
+);
+
+$workflow = workflow(
+    notify: sync(
+        SendNotification::class,  // Dependencies auto-injected
+        email: variable('userEmail'),
+        message: 'Welcome!'
+    )
+);
+
+$result = run($workflow, $container, userEmail: 'user@example.com');
+```
+
+---
+
 ## Conditional Execution
 
 Control whether a job runs using `withRunIf()` (run when conditions are met) or `withRunIfNot()` (skip when conditions are met). Both methods accept the same kinds of conditions and are evaluated at run-time.
