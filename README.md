@@ -358,7 +358,7 @@ Control whether a job runs using `withRunIf()` (run when conditions are met) or 
 * `boolean` literal — evaluated directly
 * `variable('name')` — runtime argument coerced to boolean
 * `response('job')` or `response('job', 'key')` — uses another job's output
-* `Closure` — invokes a closure passing the current `RunInterface` context
+* `callable` — invokes a callable passing the current `RunInterface` context argument
 
 ---
 
