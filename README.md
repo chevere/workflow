@@ -351,14 +351,14 @@ if ($result->skip()->contains('optionalJob')) {
 
 ## Dependency Injection
 
-Workflow integrates with [chevere/container](https://chevere.org/packages/container) to provide automatic dependency injection for Action classes. When your jobs use Action classes with constructor dependencies, you can provide a container that will automatically resolve and inject those dependencies.
+Workflow supports automatic dependency injection for Action classes using any [PSR-11](https://www.php-fig.org/psr/psr-11/) compatible container. When your jobs use Action classes with constructor dependencies, you can provide a container that will automatically resolve and inject those dependencies. [chevere/container](https://chevere.org/packages/container) is one example, but any PSR-11 container works.
 
 ### Passing a Container
 
 Pass a `ContainerInterface` instance as the second argument to `run()`:
 
 ```php
-use Chevere\Container\Container;
+use Chevere\Container\Container; // or any PSR-11 container
 use function Chevere\Workflow\run;
 
 // Create container with dependencies

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Chevere\Workflow;
 
 use Chevere\Container\Container;
-use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
@@ -26,6 +25,7 @@ use Chevere\Parameter\Interfaces\TypedInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OverflowException;
+use Psr\Container\ContainerInterface;
 use function Chevere\Message\message;
 use function Chevere\Parameter\typed;
 
@@ -62,8 +62,10 @@ final class Run implements RunInterface
         );
         $this->map = new Map();
         $this->skip = new Vector();
-        $this->container = $this->container
-            ->withAutoInject($this->workflow()->dependencies());
+        if ($this->container instanceof Container) {
+            $this->container = $this->container
+                ->withAutoInject($this->workflow()->dependencies());
+        }
         $this->workflow()->dependencies()->assert($this->container);
     }
 

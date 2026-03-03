@@ -15,9 +15,9 @@ namespace Chevere\Workflow\Traits;
 
 use BadMethodCallException;
 use Chevere\Container\Container;
-use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
+use Psr\Container\ContainerInterface;
 use function Chevere\Workflow\run;
 
 /**

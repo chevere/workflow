@@ -15,13 +15,13 @@ namespace Chevere\Workflow;
 
 use Chevere\Action\Interfaces\ActionInterface;
 use Chevere\Container\Container;
-use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\RunnerInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
+use Psr\Container\ContainerInterface;
 use Throwable;
 
 // @codeCoverageIgnoreStart

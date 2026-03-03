@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
-use Chevere\Container\Interfaces\ContainerInterface;
 use Chevere\DataStructure\Interfaces\StringMappedInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\TypedInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
