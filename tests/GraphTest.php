@@ -21,6 +21,9 @@ use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
+use function Chevere\Workflow\response;
+use function Chevere\Workflow\sync;
+use function Chevere\Workflow\workflow;
 
 final class GraphTest extends TestCase
 {
@@ -233,6 +236,62 @@ final class GraphTest extends TestCase
         $graph = new Graph();
         $this->expectException(InvalidArgumentException::class);
         $graph->withPut('job', $this->getJob()->withDepends('123'));
+    }
+
+    public function testDependencyBatchesRespectProducerFirst(): void
+    {
+        $workflow = workflow(
+            producer: sync(
+                function (): int {
+                    return 1;
+                }
+            ),
+            dependent1: sync(
+                function (int $producer): int {
+                    return $producer + 1;
+                },
+                producer: response('producer')
+            ),
+            dependent2: sync(
+                function (int $dependent1): int {
+                    return $dependent1 + 1;
+                },
+                dependent1: response('dependent1')
+            ),
+        );
+        $batches = $workflow->jobs()->graph()->toArray();
+        $this->assertSame('producer', $batches[0][0]);
+        $this->assertContains('dependent1', $batches[1]);
+        $this->assertContains('dependent2', $batches[2]);
+    }
+
+    public function testGraphMultipleDependencies(): void
+    {
+        $workflow = workflow(
+            subCreate: async(
+                function (): int {
+                    return 1;
+                }
+            ),
+            orderCreate: async(
+                function (): int {
+                    return 2;
+                }
+            ),
+            subOrderCreate: async(
+                function (int $subCreate, int $orderCreate): int {
+                    return $subCreate + $orderCreate;
+                },
+                subCreate: response('subCreate'),
+                orderCreate: response('orderCreate')
+            ),
+        );
+        $batches = $workflow->jobs()->graph()->toArray();
+        $this->assertCount(2, $batches[0]);
+        $this->assertContains('subCreate', $batches[0]);
+        $this->assertContains('orderCreate', $batches[0]);
+        $this->assertCount(1, $batches[1]);
+        $this->assertSame('subOrderCreate', $batches[1][0]);
     }
 
     private function getJob(): JobInterface

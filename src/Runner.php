@@ -83,6 +83,7 @@ final class Runner implements RunnerInterface
                 return $new;
             }
         }
+        // Note: This is for "gone" dependencies
         foreach ($job->dependencies() as $dependency) {
             try {
                 $new->run()->response($dependency);

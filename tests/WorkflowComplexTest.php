@@ -123,31 +123,6 @@ final class WorkflowComplexTest extends TestCase
                 arguments: response('emailAppArgs'),
             ),
         );
-        // Workflow doesn't respect this sort because it uses levels for building the dependency graph.
-        // Will push non-dependent jobs to be executed first, regardless of their declaration order.
-        // Use `->withDepends('jobName')` to force the order of execution.
-        // $expected = [
-        //     ['appAssertDomainAvailable'],
-        //     ['user'],
-        //     ['plan'],
-        //     ['subCreate'],
-        //     ['refreshUserSharedCache'],
-        //     ['appCreate'],
-        //     ['orderCreate'],
-        //     ['subOrderCreate'],
-        //     ['checkoutCreate'],
-        //     ['appIdCloak'],
-        //     ['appUri'],
-        //     ['serverAppCreateArgs'],
-        //     ['jobPushServerAppCreate'],
-        //     ['emailAppContext'],
-        //     ['emailAppArgs'],
-        //     ['jobPushEmailApp'],
-        // ];
-        // $this->assertSame(
-        //     $expected,
-        //     $workflow->jobs()->graph()->toArray()
-        // );
         $this->assertSame(
             [
                 ['appAssertDomainAvailable'],
@@ -157,12 +132,12 @@ final class WorkflowComplexTest extends TestCase
                 ['subCreate'],
                 ['appCreate'],
                 ['orderCreate'],
-                ['subOrderCreate'],
                 ['appIdCloak'],
-                ['checkoutCreate'],
-                ['appUri'],
                 ['serverAppCreateArgs'],
+                ['appUri'],
                 ['jobPushServerAppCreate'],
+                ['subOrderCreate'],
+                ['checkoutCreate'],
                 ['emailAppContext'],
                 ['emailAppArgs'],
                 ['jobPushEmailApp'],

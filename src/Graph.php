@@ -95,26 +95,20 @@ final class Graph implements GraphInterface
     public function toArray(): array
     {
         $sort = [];
-        $previous = [];
+        $jobLevels = [];
         $sync = [];
-        $toIndex = 0;
         foreach ($this->getSortAsc() as $job => $dependencies) {
-            $matchCount = 0;
+            $maxDependencyLevel = -1;
             foreach ($dependencies as $dependency) {
-                if (in_array($dependency, $previous, true)) {
-                    ++$matchCount;
-
-                    break;
+                if (isset($jobLevels[$dependency])) {
+                    $maxDependencyLevel = max($maxDependencyLevel, $jobLevels[$dependency]);
                 }
             }
-            if ($matchCount === 1) {
-                $toIndex++;
-                $previous = [];
-            }
-            $sort[$toIndex][] = $job;
-            $previous[] = $job;
+            $jobLevel = $maxDependencyLevel + 1;
+            $sort[$jobLevel][] = $job;
+            $jobLevels[$job] = $jobLevel;
             if ($this->jobs->find($job) !== null) {
-                $sync[$job] = $toIndex;
+                $sync[$job] = $jobLevel;
             }
         }
 
@@ -128,11 +122,16 @@ final class Graph implements GraphInterface
     private function getSortAsc(): array
     {
         $array = $this->map->toArray();
-        uasort($array, function (VectorInterface $a, VectorInterface $b): int {
+        uksort($array, function (int|string $jobA, int|string $jobB) use ($array): int {
+            /** @var VectorInterface<string> $depsA */
+            $depsA = $array[$jobA];
+            /** @var VectorInterface<string> $depsB */
+            $depsB = $array[$jobB];
+
             return match (true) {
-                $b->contains(...$a->toArray()) => -1,
-                $a->contains(...$b->toArray()) => 1,
-                default => 0
+                $depsB->contains($jobA) => -1,
+                $depsA->contains($jobB) => 1,
+                default => $depsA->count() <=> $depsB->count()
             };
         });
 
@@ -147,26 +146,30 @@ final class Graph implements GraphInterface
      */
     private function getSortJobs(array $sort, array $sync): array
     {
-        $aux = 0;
-        $vector = new Vector(...$sort);
-        foreach ($sync as $job => $index) {
-            $auxIndex = $index + $aux;
-            /** @var array<int, string> $array */
-            $array = $vector->get($auxIndex);
-            $key = array_search($job, $array, true);
-            unset($array[$key]);
-            $array = array_values($array);
-            $vector = $vector
-                ->withSet($auxIndex, $array)
-                ->withInsert($auxIndex, [$job]);
-            $aux++;
+        if (empty($sync)) {
+            return array_values($sort);
         }
-        /** @var array<int, array<int, string>> */
-        $array = $vector->toArray();
+        $result = [];
+        $resultIndex = 0;
+        foreach ($sort as $jobs) {
+            $syncJobs = [];
+            $asyncJobs = [];
+            foreach ($jobs as $job) {
+                if (isset($sync[$job])) {
+                    $syncJobs[] = $job;
+                } else {
+                    $asyncJobs[] = $job;
+                }
+            }
+            foreach ($syncJobs as $syncJob) {
+                $result[$resultIndex++] = [$syncJob];
+            }
+            if (! empty($asyncJobs)) {
+                $result[$resultIndex++] = $asyncJobs;
+            }
+        }
 
-        return array_values(
-            array_filter($array)
-        );
+        return array_values($result);
     }
 
     /**

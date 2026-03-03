@@ -192,7 +192,7 @@ final class JobsTest extends TestCase
         $this->assertSame(
             [
                 ['j1', 'j2', 'j4'],
-                ['j3', 'j5'],
+                ['j5', 'j3'],
                 ['j6'],
             ],
             $jobs->graph()->toArray()
