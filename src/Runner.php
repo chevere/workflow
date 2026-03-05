@@ -49,7 +49,7 @@ final class Runner implements RunnerInterface
         $graph = $jobs->graph()->toArray();
         foreach ($graph as $node) {
             if (count($node) === 1) {
-                $runner = runnerForJob($new, $node[0]);
+                $runner = runnerForJob($new, strval($node[0])); // int job name
                 $new->merge($new, $runner);
 
                 continue;

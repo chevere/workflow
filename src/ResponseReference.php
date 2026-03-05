@@ -49,7 +49,7 @@ final class ResponseReference implements ResponseReferenceInterface
 
     private function assertArgument(string $argument, int $code): void
     {
-        if (ctype_space($argument) || empty($argument)) {
+        if (ctype_space($argument) || $argument === '') { // empty panics on 0
             throw new InvalidArgumentException(code: $code);
         }
     }
