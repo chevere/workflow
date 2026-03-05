@@ -807,4 +807,26 @@ final class JobsTest extends TestCase
             ),
         );
     }
+
+    public function testUnionVariable(): void
+    {
+        $this->expectException(JobsException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            [job2]: Variable **id** is of type `union`, parameter **id** expects `int`
+            PLAIN
+        );
+        new Jobs(
+            job1: sync(
+                fn (
+                    string|int $id
+                ) => null,
+                id: variable('id'),
+            ),
+            job2: sync(
+                fn (int $id) => null,
+                id: variable('id'),
+            ),
+        );
+    }
 }
