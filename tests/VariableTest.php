@@ -15,34 +15,45 @@ namespace Chevere\Tests;
 
 use Chevere\Workflow\Variable;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class VariableTest extends TestCase
 {
-    public function testInvalidArgumentEmpty(): void
+    #[DataProvider('dataProviderValidNames')]
+    public function testValid(string $name): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        new Variable('');
+        $variable = new Variable($name);
+        $this->assertSame($name, $variable->__toString());
     }
 
-    public function testInvalidArgumentNumeric(): void
+    public static function dataProviderValidNames(): array
     {
-        $this->expectException(InvalidArgumentException::class);
-        new Variable('123');
+        return [
+            ['x'],
+            ['xy'],
+            ['abc'],
+            ['abc123'],
+            ['_a123'],
+        ];
     }
 
-    public function testInvalidArgumentStartsWithNumeric(): void
+    #[DataProvider('dataProviderInvalidNames')]
+    public function testInvalid(string $name): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new Variable('1ab');
+        new Variable($name);
     }
 
-    public function testConstruct(): void
+    public static function dataProviderInvalidNames(): array
     {
-        $names = ['abc', 'abc123', '_a123'];
-        foreach ($names as $name) {
-            $variable = new Variable($name);
-            $this->assertSame($name, $variable->__toString());
-        }
+        return [
+            [''],
+            ['1'],
+            ['123'],
+            ['1ab'],
+            ['!abc'],
+            ['abc!'],
+        ];
     }
 }
