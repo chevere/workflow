@@ -19,6 +19,7 @@ use Chevere\Workflow\Interfaces\JobInterface;
 use InvalidArgumentException;
 use OutOfBoundsException;
 use OverflowException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
@@ -34,7 +35,13 @@ final class GraphTest extends TestCase
         $graph->hasDependencies('j0');
     }
 
-    public function testWithPut(): void
+    public static function dataProviderWithPut(): array
+    {
+        return [['j1'], ['j2']];
+    }
+
+    #[DataProvider('dataProviderWithPut')]
+    public function testWithPut(string $job): void
     {
         $graph = new Graph();
         $this->assertSame([], $graph->toArray());
@@ -62,41 +69,17 @@ final class GraphTest extends TestCase
             ],
             $with->toArray()
         );
-        // NOTE: These now detect nested self-dependencies
-        // $with = $with->withPut('j2', $this->getJob()->withDepends('j0'));
-        // $this->assertSame(
-        //     [
-        //         ['j1'],
-        //         ['j0'],
-        //         ['j2'],
-        //     ],
-        //     $with->toArray()
-        // );
-        // $with = $with->withPut('j1', $this->getJob()->withDepends('j0'));
-        // $this->assertSame(
-        //     [
-        //         ['j0'],
-        //         ['j1', 'j2'],
-        //     ],
-        //     $with->toArray()
-        // );
-        // $with = $with->withPut('j0', $this->getJob()->withDepends('j1'));
-        // $this->assertSame(
-        //     [
-        //         ['j1'],
-        //         ['j0'],
-        //         ['j2'],
-        //     ],
-        //     $with->toArray()
-        // );
-        // $with = $with->withPut('j0', $this->getJob()->withDepends('j2'));
-        // $this->assertSame(
-        //     [
-        //         ['j1', 'j2'],
-        //         ['j0'],
-        //     ],
-        //     $with->toArray()
-        // );
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Cannot declare job **{$job}** as a self-dependency
+            PLAIN
+        );
+        $closure = fn (string $job, Graph $with): mixed => $with->withPut(
+            $job,
+            async(TestActionNoParams::class)->withDepends('j0')
+        );
+        $closure($job, $with);
     }
 
     public function testWithPutSync(): void
