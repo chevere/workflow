@@ -42,23 +42,23 @@ final class WorkflowComplexTest extends TestCase
                     'email' => 'user@example.com',
                 ],
             ),
-            plan: sync(
-                #[_return(
-                    new _arrayp(
-                        currency_code: new _string()
-                    )
-                )]
+            planRead: sync(
                 fn (): array => [
                     'currency_code' => 'usd',
                 ],
             ),
+            currencyCode: sync(
+                fn (array $planRead): string => $planRead['currency_code'],
+                response('planRead')
+            ),
             subCreate: sync(
                 fn (string $currency_code): int => 1,
-                currency_code: response('plan', 'currency_code')
+                currency_code: response('currencyCode')
             ),
             refreshUserSharedCache: sync(
                 fn () => null,
-            ),
+            )
+                ->withDepends('subCreate'),
             appCreate: sync(
                 fn (int $sub_id): int => 1,
                 sub_id: response('subCreate'),
@@ -127,17 +127,18 @@ final class WorkflowComplexTest extends TestCase
             [
                 ['appAssertDomainAvailable'],
                 ['user'],
-                ['plan'],
-                ['refreshUserSharedCache'],
+                ['planRead'],
+                ['currencyCode'],
                 ['subCreate'],
+                ['refreshUserSharedCache'],
                 ['appCreate'],
                 ['orderCreate'],
                 ['appIdCloak'],
                 ['serverAppCreateArgs'],
-                ['appUri'],
-                ['jobPushServerAppCreate'],
                 ['subOrderCreate'],
                 ['checkoutCreate'],
+                ['appUri'],
+                ['jobPushServerAppCreate'],
                 ['emailAppContext'],
                 ['emailAppArgs'],
                 ['jobPushEmailApp'],

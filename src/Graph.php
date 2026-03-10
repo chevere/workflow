@@ -44,10 +44,11 @@ final class Graph implements GraphInterface
         string $name,
         JobInterface $job,
     ): GraphInterface {
-        $vector = $job->dependencies();
-        $this->assertNotSelfDependency($name, $vector);
+        $directDeps = $job->dependencies();
+        $allDeps = $this->computeTransitiveClosure($directDeps);
+        $this->assertNotSelfDependency($name, $allDeps);
         $new = clone $this;
-        foreach ($vector as $dependency) {
+        foreach ($allDeps as $dependency) {
             if (! $new->has($dependency)) {
                 $new->map = $new->map
                     ->withPut($dependency, new Vector());
@@ -56,11 +57,11 @@ final class Graph implements GraphInterface
         if ($new->map->has($name)) {
             /** @var VectorInterface<string> $existing */
             $existing = $new->map->get($name);
-            $merge = array_merge($existing->toArray(), $vector->toArray());
-            $vector = new Vector(...$merge);
+            $merge = array_merge($existing->toArray(), $allDeps->toArray());
+            $allDeps = new Vector(...array_unique($merge));
         }
-        $new->handleDependencyUpdate($name, $vector);
-        $new->map = $new->map->withPut($name, $vector);
+        $new->handleDependencyUpdate($name, $allDeps);
+        $new->map = $new->map->withPut($name, $allDeps);
         $found = $new->jobs->find($name);
         if ($job->isSync()) {
             if ($found === null) {
@@ -204,5 +205,42 @@ final class Graph implements GraphInterface
             }
             $this->map = $this->map->withPut($dependency, $update);
         }
+    }
+
+    /**
+     * Example:
+     *   A depends on [B]
+     *   B depends on [C]
+     *   C depends on [D]
+     *
+     * computeTransitiveClosure([B]) returns [B, C, D]
+     *
+     * @param VectorInterface<string> $directDeps Direct dependencies
+     * @return VectorInterface<string> All dependencies (direct + transitive)
+     */
+    private function computeTransitiveClosure(VectorInterface $directDeps): VectorInterface
+    {
+        $closed = new Vector();
+        $queue = $directDeps->toArray();
+        $visited = [];
+        while (! empty($queue)) {
+            $dep = array_shift($queue);
+            if (isset($visited[$dep])) {
+                continue;
+            }
+            $visited[$dep] = true;
+            $closed = $closed->withPush($dep);
+            if ($this->map->has($dep)) {
+                /** @var VectorInterface<string> $subDeps */
+                $subDeps = $this->map->get($dep);
+                foreach ($subDeps->toArray() as $subDep) {
+                    if (! isset($visited[$subDep])) {
+                        $queue[] = $subDep;
+                    }
+                }
+            }
+        }
+
+        return $closed;
     }
 }
