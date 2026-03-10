@@ -75,11 +75,10 @@ final class GraphTest extends TestCase
             Cannot declare job **{$job}** as a self-dependency
             PLAIN
         );
-        $closure = fn (string $job, Graph $with): mixed => $with->withPut(
+        $with->withPut(
             $job,
             async(TestActionNoParams::class)->withDepends('j0')
         );
-        $closure($job, $with);
     }
 
     public function testWithPutSync(): void
