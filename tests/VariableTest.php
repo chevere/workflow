@@ -35,6 +35,8 @@ final class VariableTest extends TestCase
             ['abc'],
             ['abc123'],
             ['_a123'],
+            ['my var'],
+            [' v '],
         ];
     }
 
@@ -49,11 +51,10 @@ final class VariableTest extends TestCase
     {
         return [
             [''],
-            ['1'],
-            ['123'],
-            ['1ab'],
-            ['!abc'],
-            ['abc!'],
+            [' '],
+            ['
+
+            '],
         ];
     }
 }

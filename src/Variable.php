@@ -23,7 +23,7 @@ final class Variable implements VariableInterface
     public function __construct(
         private string $name
     ) {
-        $matches = (new Regex('/^[a-zA-Z_]\w*$/'))->match($name);
+        $matches = (new Regex('/\S/'))->match($name);
         if ($matches === []) {
             throw new InvalidArgumentException(
                 (string) message(
