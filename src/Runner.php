@@ -69,6 +69,15 @@ final class Runner implements RunnerInterface
     {
         $new = clone $this;
         $job = $new->run()->workflow()->jobs()->get($name);
+        foreach ($job->dependencies() as $dependency) {
+            try {
+                $new->run()->response($dependency);
+            } catch (OutOfBoundsException) {
+                $new->addJobSkip($name);
+
+                return $new;
+            }
+        }
         foreach ($job->runIf() as $runIf) {
             if ($new->getRunIfCondition($runIf) === false) {
                 $new->addJobSkip($name);
@@ -78,16 +87,6 @@ final class Runner implements RunnerInterface
         }
         foreach ($job->runIfNot() as $runIfNot) {
             if ($new->getRunIfCondition($runIfNot) === true) {
-                $new->addJobSkip($name);
-
-                return $new;
-            }
-        }
-        // Note: This is for "gone" dependencies
-        foreach ($job->dependencies() as $dependency) {
-            try {
-                $new->run()->response($dependency);
-            } catch (OutOfBoundsException) {
                 $new->addJobSkip($name);
 
                 return $new;

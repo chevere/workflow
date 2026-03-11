@@ -784,6 +784,21 @@ final class RunnerTest extends TestCase
         );
     }
 
+    public function testDependenciesBeforeRunIfConditions(): void
+    {
+        $workflow = workflow(
+            a: sync(fn (): bool => true)
+                ->withRunIfNot(true),
+            b: sync(fn () => null)
+                ->withRunIf(response('a')),
+        );
+        $run = run($workflow);
+        $this->assertSame(
+            ['a', 'b'],
+            $run->skip()->toArray()
+        );
+    }
+
     /**
      * @param array<string, JobInterface> $jobs
      */
