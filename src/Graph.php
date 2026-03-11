@@ -45,23 +45,26 @@ final class Graph implements GraphInterface
         JobInterface $job,
     ): GraphInterface {
         $directDeps = $job->dependencies();
-        $allDeps = $this->computeTransitiveClosure($directDeps);
-        $this->assertNotSelfDependency($name, $allDeps);
+        $transitive = $this->computeTransitiveClosure($directDeps);
+        $this->assertNotSelfDependency($name, $transitive);
         $new = clone $this;
-        foreach ($allDeps as $dependency) {
-            if (! $new->has($dependency)) {
+        /** @var string $dep */
+        foreach ($directDeps as $dep) {
+            if (! $new->map->has($dep)) {
                 $new->map = $new->map
-                    ->withPut($dependency, new Vector());
+                    ->withPut($dep, new Vector());
             }
         }
         if ($new->map->has($name)) {
             /** @var VectorInterface<string> $existing */
             $existing = $new->map->get($name);
-            $merge = array_merge($existing->toArray(), $allDeps->toArray());
-            $allDeps = new Vector(...array_unique($merge));
+            $merged = array_unique(
+                array_merge($existing->toArray(), $directDeps->toArray())
+            );
+            $new->map = $new->map->withPut($name, new Vector(...$merged));
+        } else {
+            $new->map = $new->map->withPut($name, $directDeps);
         }
-        $new->handleDependencyUpdate($name, $allDeps);
-        $new->map = $new->map->withPut($name, $allDeps);
         $found = $new->jobs->find($name);
         if ($job->isSync()) {
             if ($found === null) {
@@ -81,96 +84,94 @@ final class Graph implements GraphInterface
 
     public function get(string $job): VectorInterface
     {
-        /** @var VectorInterface<string> */
-        return $this->map->get($job);
+        /** @var VectorInterface<string> $directDeps */
+        $directDeps = $this->map->get($job);
+
+        return $this->computeTransitiveClosure($directDeps);
     }
 
     public function hasDependencies(string $job, string ...$dependencies): bool
     {
-        /** @var VectorInterface<string> $array */
-        $array = $this->map->get($job);
-
-        return $array->contains(...$dependencies);
+        return $this->get($job)->contains(...$dependencies);
     }
 
     public function toArray(): array
     {
-        $sort = [];
-        $jobLevels = [];
-        $sync = [];
-        foreach ($this->getSortAsc() as $job => $dependencies) {
-            $maxDependencyLevel = -1;
-            foreach ($dependencies as $dependency) {
-                if (isset($jobLevels[$dependency])) {
-                    $maxDependencyLevel = max($maxDependencyLevel, $jobLevels[$dependency]);
+        /** @var array<string, VectorInterface<string>> $map */
+        $map = $this->map->toArray();
+        /** @var array<string, list<string>> $successors */
+        $successors = [];
+        /** @var array<string, int> $inDegree */
+        $inDegree = [];
+        foreach ($map as $job => $deps) {
+            $job = (string) $job;
+            if (! isset($successors[$job])) {
+                $successors[$job] = [];
+            }
+            $inDegree[$job] = $deps->count();
+            /** @var string $dep */
+            foreach ($deps as $dep) {
+                $successors[$dep][] = $job;
+            }
+        }
+        $queue = [];
+        foreach ($inDegree as $job => $degree) {
+            if ($degree === 0) {
+                $queue[] = (string) $job;
+            }
+        }
+        $levels = [];
+        while (! empty($queue)) {
+            $levels[] = $queue;
+            $nextQueue = [];
+            foreach ($queue as $job) {
+                foreach ($successors[$job] as $successor) {
+                    $inDegree[$successor]--;
+                    if ($inDegree[$successor] === 0) {
+                        $nextQueue[] = $successor;
+                    }
                 }
             }
-            $jobLevel = $maxDependencyLevel + 1;
-            $sort[$jobLevel][] = $job;
-            $jobLevels[$job] = $jobLevel;
-            if ($this->jobs->find($job) !== null) {
-                $sync[$job] = $jobLevel;
-            }
+            $queue = $nextQueue;
         }
 
-        return $this->getSortJobs($sort, $sync);
+        return $this->splitSyncBatches($levels);
     }
 
     /**
-     * @return array<string, VectorInterface<string>>
-     * @infection-ignore-all
-     */
-    private function getSortAsc(): array
-    {
-        $array = $this->map->toArray();
-        uksort($array, function (int|string $jobA, int|string $jobB) use ($array): int {
-            /** @var VectorInterface<string> $depsA */
-            $depsA = $array[$jobA];
-            /** @var VectorInterface<string> $depsB */
-            $depsB = $array[$jobB];
-
-            return match (true) {
-                $depsB->contains($jobA) => -1,
-                $depsA->contains($jobB) => 1,
-                default => $depsA->count() <=> $depsB->count()
-            };
-        });
-
-        /* @phpstan-ignore-next-line */
-        return $array;
-    }
-
-    /**
-     * @param array<int, array<int, string>> $sort
-     * @param array<string, int> $sync
+     * @param array<int, array<int, string>> $levels
      * @return array<int, array<int, string>>
      */
-    private function getSortJobs(array $sort, array $sync): array
+    private function splitSyncBatches(array $levels): array
     {
-        if (empty($sync)) {
-            return array_values($sort);
+        $syncSet = [];
+        /** @var string $job */
+        foreach ($this->jobs as $job) {
+            $syncSet[$job] = true;
+        }
+        if (empty($syncSet)) {
+            return $levels;
         }
         $result = [];
-        $resultIndex = 0;
-        foreach ($sort as $jobs) {
+        foreach ($levels as $jobs) {
             $syncJobs = [];
             $asyncJobs = [];
             foreach ($jobs as $job) {
-                if (isset($sync[$job])) {
+                if (isset($syncSet[$job])) {
                     $syncJobs[] = $job;
                 } else {
                     $asyncJobs[] = $job;
                 }
             }
             foreach ($syncJobs as $syncJob) {
-                $result[$resultIndex++] = [$syncJob];
+                $result[] = [$syncJob];
             }
             if (! empty($asyncJobs)) {
-                $result[$resultIndex++] = $asyncJobs;
+                $result[] = $asyncJobs;
             }
         }
 
-        return array_values($result);
+        return $result;
     }
 
     /**
@@ -188,23 +189,6 @@ final class Graph implements GraphInterface
                 job: $job
             )
         );
-    }
-
-    /**
-     * @param VectorInterface<string> $vector
-     */
-    private function handleDependencyUpdate(string $job, VectorInterface $vector): void
-    {
-        /** @var string $dependency */
-        foreach ($vector as $dependency) {
-            /** @var VectorInterface<string> $update */
-            $update = $this->map->get($dependency);
-            $findJob = $update->find($job);
-            if ($findJob !== null) {
-                $update = $update->withRemove($findJob);
-            }
-            $this->map = $this->map->withPut($dependency, $update);
-        }
     }
 
     /**

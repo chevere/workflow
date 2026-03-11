@@ -179,20 +179,20 @@ final class JobsTest extends TestCase
     public function testWithDependsMix(): void
     {
         $jobs = new Jobs(
-            j1: async(new TestActionNoParams()),
-            j2: async(new TestActionNoParams()),
-            j3: async(new TestActionNoParams())
+            j1: async(TestActionNoParams::class),
+            j2: async(TestActionNoParams::class),
+            j3: async(TestActionNoParams::class)
                 ->withDepends('j1', 'j2'),
-            j4: async(new TestActionNoParams()),
-            j5: async(new TestActionNoParams())
+            j4: async(TestActionNoParams::class),
+            j5: async(TestActionNoParams::class)
                 ->withDepends('j4'),
-            j6: async(new TestActionNoParams())
+            j6: async(TestActionNoParams::class)
                 ->withDepends('j5'),
         );
         $this->assertSame(
             [
                 ['j1', 'j2', 'j4'],
-                ['j5', 'j3'],
+                ['j3', 'j5'],
                 ['j6'],
             ],
             $jobs->graph()->toArray()

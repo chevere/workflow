@@ -45,14 +45,14 @@ final class GraphTest extends TestCase
     {
         $graph = new Graph();
         $this->assertSame([], $graph->toArray());
-        $with = $graph->withPut('j0', $this->getJob()->withDepends('j1'));
+        $with = $graph->withPut('j0', self::asyncJob()->withDepends('j1'));
         $this->assertNotSame($graph, $with);
         $expected = [
             ['j1'],
             ['j0'],
         ];
         $this->assertSame($expected, $with->toArray());
-        $with = $with->withPut('j0', $this->getJob()->withDepends('j2'));
+        $with = $with->withPut('j0', self::asyncJob()->withDepends('j2'));
         $this->assertSame(
             [
                 ['j1', 'j2'],
@@ -60,8 +60,8 @@ final class GraphTest extends TestCase
             ],
             $with->toArray()
         );
-        $with = $with->withPut('j1', $this->getJob());
-        $with = $with->withPut('j2', $this->getJob());
+        $with = $with->withPut('j1', self::asyncJob());
+        $with = $with->withPut('j2', self::asyncJob());
         $this->assertSame(
             [
                 ['j1', 'j2'],
@@ -86,14 +86,14 @@ final class GraphTest extends TestCase
         $graph = new Graph();
         $graph = $graph->withPut(
             'jn',
-            $this->getJob()->withDepends('j0', 'j1')
+            self::asyncJob()->withDepends('j0', 'j1')
         );
         $graph = $graph->withPut(
             'jx',
-            $this->getJob()->withDepends('j0', 'j1')
+            self::asyncJob()->withDepends('j0', 'j1')
         );
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
-        $graph = $graph->withPut('j1', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('j0', self::asyncJob()->withIsSync(true));
+        $graph = $graph->withPut('j1', self::asyncJob()->withIsSync(true));
         $this->assertSame(
             [
                 ['j0'],
@@ -109,19 +109,19 @@ final class GraphTest extends TestCase
         $graph = new Graph();
         $graph = $graph->withPut(
             'jn',
-            $this->getJob()->withDepends('j0', 'j1')
+            self::asyncJob()->withDepends('j0', 'j1')
         );
         $graph = $graph->withPut(
             'jx',
-            $this->getJob()->withDepends('j2', 'j3')
+            self::asyncJob()->withDepends('j2', 'j3')
         );
         $graph = $graph->withPut(
             'jy',
-            $this->getJob()->withDepends('j2', 'j3', 'j4')
+            self::asyncJob()->withDepends('j2', 'j3', 'j4')
         );
-        $graph = $graph->withPut('j2', $this->getJob()->withIsSync(true));
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
-        $graph = $graph->withPut('jy', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('j2', self::asyncJob()->withIsSync(true));
+        $graph = $graph->withPut('j0', self::asyncJob()->withIsSync(true));
+        $graph = $graph->withPut('jy', self::asyncJob()->withIsSync(true));
         $this->assertSame(
             [
                 ['j0'],
@@ -137,8 +137,8 @@ final class GraphTest extends TestCase
     public function testSyncToggleRemovesSyncFlag(): void
     {
         $graph = new Graph();
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
-        $graph = $graph->withPut('j1', $this->getJob());
+        $graph = $graph->withPut('j0', self::asyncJob()->withIsSync(true));
+        $graph = $graph->withPut('j1', self::asyncJob());
         $this->assertSame(
             [
                 ['j0'],
@@ -146,7 +146,7 @@ final class GraphTest extends TestCase
             ],
             $graph->toArray()
         );
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(false));
+        $graph = $graph->withPut('j0', self::asyncJob()->withIsSync(false));
         $this->assertSame(
             [
                 ['j0', 'j1'],
@@ -158,8 +158,8 @@ final class GraphTest extends TestCase
     public function testWithPutSyncDoesNotDuplicate(): void
     {
         $graph = new Graph();
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
-        $graph = $graph->withPut('j0', $this->getJob()->withIsSync(true));
+        $graph = $graph->withPut('j0', self::asyncJob()->withIsSync(true));
+        $graph = $graph->withPut('j0', self::asyncJob()->withIsSync(true));
         $this->assertSame(
             [
                 ['j0'],
@@ -171,12 +171,12 @@ final class GraphTest extends TestCase
     public function testWithPutWea(): void
     {
         $graph = new Graph();
-        $graph = $graph->withPut('j0', $this->getJob());
+        $graph = $graph->withPut('j0', self::asyncJob());
         $this->assertTrue($graph->hasDependencies('j0'));
         $this->assertFalse($graph->hasDependencies('j0', 'jn'));
         $this->assertSame([], $graph->get('j0')->toArray());
-        $graph = $graph->withPut('j1', $this->getJob());
-        $graph = $graph->withPut('j2', $this->getJob()->withDepends('j0'));
+        $graph = $graph->withPut('j1', self::asyncJob());
+        $graph = $graph->withPut('j2', self::asyncJob()->withDepends('j0'));
         $this->assertTrue($graph->hasDependencies('j2', 'j0'));
         $this->assertSame(['j0'], $graph->get('j2')->toArray());
         $expected = [
@@ -190,35 +190,35 @@ final class GraphTest extends TestCase
     {
         $graph = new Graph();
         $this->expectException(InvalidArgumentException::class);
-        $graph->withPut('j0', $this->getJob()->withDepends('j0'));
+        $graph->withPut('j0', self::asyncJob()->withDepends('j0'));
     }
 
     public function testWithPutDupes(): void
     {
         $graph = new Graph();
         $this->expectException(OverflowException::class);
-        $graph->withPut('j0', $this->getJob()->withDepends('j1', 'j1'));
+        $graph->withPut('j0', self::asyncJob()->withDepends('j1', 'j1'));
     }
 
     public function testWithPutEmpty(): void
     {
         $graph = new Graph();
         $this->expectException(InvalidArgumentException::class);
-        $graph->withPut('job', $this->getJob()->withDepends(''));
+        $graph->withPut('job', self::asyncJob()->withDepends(''));
     }
 
     public function testWithPutSpace(): void
     {
         $graph = new Graph();
         $this->expectException(InvalidArgumentException::class);
-        $graph->withPut('job', $this->getJob()->withDepends(' '));
+        $graph->withPut('job', self::asyncJob()->withDepends(' '));
     }
 
     public function testWithPutDigit(): void
     {
         $graph = new Graph();
         $this->expectException(InvalidArgumentException::class);
-        $graph->withPut('job', $this->getJob()->withDepends('123'));
+        $graph->withPut('job', self::asyncJob()->withDepends('123'));
     }
 
     public function testDependencyBatchesRespectProducerFirst(): void
@@ -277,10 +277,8 @@ final class GraphTest extends TestCase
         $this->assertSame('subOrderCreate', $batches[1][0]);
     }
 
-    private function getJob(): JobInterface
+    private static function asyncJob(): JobInterface
     {
-        return async(
-            new TestActionNoParams()
-        );
+        return async(fn () => null);
     }
 }
