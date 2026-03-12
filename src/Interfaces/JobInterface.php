@@ -89,7 +89,7 @@ interface JobInterface
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified run-if condition.
      */
-    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): self;
+    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context): self;
 
     /**
      * Return an instance with the specified run-if-not condition.
@@ -97,7 +97,7 @@ interface JobInterface
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified run-if-not condition.
      */
-    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): self;
+    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context): self;
 
     /**
      * Return an instance with the specified sync flag.

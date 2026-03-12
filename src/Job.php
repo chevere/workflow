@@ -162,7 +162,7 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): JobInterface
+    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context): JobInterface
     {
         $new = clone $this;
         $new->pushRunConditional('runIf', ...$context);
@@ -170,7 +170,7 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool ...$context): JobInterface
+    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context): JobInterface
     {
         $new = clone $this;
         $new->pushRunConditional('runIfNot', ...$context);
@@ -237,7 +237,7 @@ final class Job implements JobInterface
 
     private function pushRunConditional(
         string $collection,
-        ResponseReferenceInterface|VariableInterface|callable|bool ...$context
+        ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context
     ): void {
         $this->{$collection} = new Vector();
         $known = new Vector();
@@ -246,6 +246,7 @@ final class Job implements JobInterface
                 $condition instanceof ResponseReferenceInterface,
                 $condition instanceof VariableInterface => $condition->__toString(),
                 $condition instanceof Closure => 'callable#' . spl_object_id($condition),
+                is_int($condition) => "int#{$condition}",
                 default => $condition === true ? 'bool#true' : 'bool#false',
             };
             if ($known->contains($item)) {

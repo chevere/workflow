@@ -229,104 +229,72 @@ final class JobTest extends TestCase
         $job->withDepends('');
     }
 
-    public function testWithRunIfVariable(): void
-    {
-        $action = new TestActionNoParams();
-        $job = new Job($action);
-        $variable = variable('wea');
-        $with = $job->withRunIf($variable);
-        $this->assertNotSame($job, $with);
-        $this->assertSame(
-            [$variable],
-            $with->runIf()->toArray()
-        );
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            Condition `wea` is already defined
-            PLAIN
-        );
-        $with->withRunIf($variable, $variable);
-    }
-
     public function testWithRunIfReference(): void
     {
         $action = new TestActionNoParams();
         $job = new Job($action);
         $reference = response('jobN', 'parameter');
         $job = $job->withRunIf($reference);
-        $this->assertSame(
-            [$reference],
-            $job->runIf()->toArray()
-        );
         $this->assertTrue($job->dependencies()->contains('jobN'));
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            Condition `jobN:parameter` is already defined
-            PLAIN
-        );
-        $job->withRunIf($reference, $reference);
     }
 
-    public function testWithRunIfClosure(): void
+    #[DataProvider('dataProviderWithRunIf')]
+    public function testWithRunIf(mixed $value, string $context): void
     {
-        $action = new TestActionNoParams();
-        $job = new Job($action);
-        $closure = function (): bool {
-            return true;
-        };
-        $closureId = spl_object_id($closure);
-        $job = $job->withRunIf($closure);
-        $this->assertSame(
-            [$closure],
-            $job->runIf()->toArray()
-        );
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            Condition `callable#{$closureId}` is already defined
-            PLAIN
-        );
-        $job->withRunIf($closure, $closure);
-    }
-
-    public function testWithRunIfBool(): void
-    {
-        $action = new TestActionNoParams();
-        $job = new Job($action);
-        $job = $job->withRunIf(true);
-        $this->assertSame(
-            [true],
-            $job->runIf()->toArray()
-        );
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            Condition `bool#true` is already defined
-            PLAIN
-        );
-        $job->withRunIf(true, true);
-    }
-
-    public function testWithRunIfNotVariable(): void
-    {
-        $action = new TestActionNoParams();
-        $job = new Job($action);
-        $variable = variable('wea');
-        $with = $job->withRunIfNot($variable);
+        $job = new Job(fn () => null);
+        $with = $job->withRunIf($value);
         $this->assertNotSame($job, $with);
         $this->assertSame(
-            [$variable],
+            [$value],
+            $with->runIf()->toArray()
+        );
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Condition `{$context}` is already defined
+            PLAIN
+        );
+        $with->withRunIf($value, $value);
+    }
+
+    #[DataProvider('dataProviderWithRunIf')]
+    public function testWithRunIfNot(mixed $value, string $context): void
+    {
+        $job = new Job(fn () => null);
+        $with = $job->withRunIfNot($value);
+        $this->assertNotSame($job, $with);
+        $this->assertSame(
+            [$value],
             $with->runIfNot()->toArray()
         );
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            Condition `wea` is already defined
+            Condition `{$context}` is already defined
             PLAIN
         );
-        $with->withRunIfNot($variable, $variable);
+        $with->withRunIfNot($value, $value);
+    }
+
+    public static function dataProviderWithRunIf(): array
+    {
+        $closure = function (): bool {
+            return true;
+        };
+        $closureId = spl_object_id($closure);
+        $reference = response('jobN', 'parameter');
+        $variable = variable('wea');
+
+        return [
+            [true, 'bool#true'],
+            [false, 'bool#false'],
+            [1, 'int#1'],
+            [0, 'int#0'],
+            [123, 'int#123'],
+            [$closure, "callable#{$closureId}"],
+            [$reference, 'jobN:parameter'],
+            [$variable, 'wea'],
+        ];
     }
 
     public function testWithRunIfNotReference(): void
@@ -335,58 +303,7 @@ final class JobTest extends TestCase
         $job = new Job($action);
         $reference = response('jobN', 'parameter');
         $job = $job->withRunIfNot($reference);
-        $this->assertSame(
-            [$reference],
-            $job->runIfNot()->toArray()
-        );
         $this->assertTrue($job->dependencies()->contains('jobN'));
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            Condition `jobN:parameter` is already defined
-            PLAIN
-        );
-        $job->withRunIfNot($reference, $reference);
-    }
-
-    public function testWithRunIfNotClosure(): void
-    {
-        $action = new TestActionNoParams();
-        $job = new Job($action);
-        $closure = function (): bool {
-            return true;
-        };
-        $closureId = spl_object_id($closure);
-        $job = $job->withRunIfNot($closure);
-        $this->assertSame(
-            [$closure],
-            $job->runIfNot()->toArray()
-        );
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            Condition `callable#{$closureId}` is already defined
-            PLAIN
-        );
-        $job->withRunIfNot($closure, $closure);
-    }
-
-    public function testWithRunIfNotBool(): void
-    {
-        $action = new TestActionNoParams();
-        $job = new Job($action);
-        $job = $job->withRunIfNot(true);
-        $this->assertSame(
-            [true],
-            $job->runIfNot()->toArray()
-        );
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            <<<PLAIN
-            Condition `bool#true` is already defined
-            PLAIN
-        );
-        $job->withRunIfNot(true, true);
     }
 
     public function testWithMissingArgument(): void

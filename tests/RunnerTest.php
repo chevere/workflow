@@ -375,8 +375,8 @@ final class RunnerTest extends TestCase
         $this->assertTrue($run2->skip()->contains('job2'));
     }
 
-    #[DataProvider('dataProviderRunIfCallable')]
-    public function testRunIfCallable(bool $runIf): void
+    #[DataProvider('dataProviderRunIf')]
+    public function testRunIf(mixed $runIf): void
     {
         $closure = fn () => $runIf;
         $job = async(new TestActionNoParams())
@@ -389,21 +389,8 @@ final class RunnerTest extends TestCase
         );
     }
 
-    #[DataProvider('dataProviderRunIfCallable')]
-    public function testRunIfBool(bool $runIf): void
-    {
-        $job = async(new TestActionNoParams())
-            ->withRunIf($runIf);
-        $workflow = workflow(job1: $job);
-        $run = run($workflow);
-        $this->assertSame(
-            ! $runIf,
-            $run->skip()->contains('job1'),
-        );
-    }
-
-    #[DataProvider('dataProviderRunIfCallable')]
-    public function testRunIfNotCallable(bool $runIf): void
+    #[DataProvider('dataProviderRunIf')]
+    public function testRunIfNot(mixed $runIf): void
     {
         $closure = fn () => $runIf;
         $job = async(new TestActionNoParams())
@@ -411,22 +398,20 @@ final class RunnerTest extends TestCase
         $workflow = workflow(job1: $job);
         $run = run($workflow);
         $this->assertSame(
-            $runIf,
+            (bool) $runIf,
             $run->skip()->contains('job1'),
         );
     }
 
-    #[DataProvider('dataProviderRunIfCallable')]
-    public function testRunIfNotBool(bool $runIf): void
+    public static function dataProviderRunIf(): array
     {
-        $job = async(new TestActionNoParams())
-            ->withRunIfNot($runIf);
-        $workflow = workflow(job1: $job);
-        $run = run($workflow);
-        $this->assertSame(
-            $runIf,
-            $run->skip()->contains('job1'),
-        );
+        return [
+            [true],
+            [false],
+            [1],
+            [0],
+            [200],
+        ];
     }
 
     public function testRunIfNotCallableOverflow(): void
@@ -443,14 +428,6 @@ final class RunnerTest extends TestCase
         $callable = fn () => true;
         async(new TestActionNoParams())
             ->withRunIf($callable, $callable);
-    }
-
-    public static function dataProviderRunIfCallable(): array
-    {
-        return [
-            [true],
-            [false],
-        ];
     }
 
     public function testActionThrows(): void
