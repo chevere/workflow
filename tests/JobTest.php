@@ -24,6 +24,7 @@ use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParamStringRegex;
 use Chevere\Tests\src\TestActionVariadic;
 use Chevere\Tests\src\TestClassInvalidArgument;
+use Chevere\Tests\src\TestInvocableClass;
 use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use Chevere\Workflow\Job;
 use Chevere\Workflow\RetryPolicy;
@@ -554,5 +555,12 @@ final class JobTest extends TestCase
             PLAIN
         );
         new Job($action);
+    }
+
+    public function testInvocableClass(): void
+    {
+        $job = new Job(TestInvocableClass::class, id: 5);
+        $this->assertEquals(int(min: 2), $job->parameters()->get('id'));
+        $this->assertEquals(int(min: 1), $job->return());
     }
 }

@@ -69,23 +69,22 @@ final class Job implements JobInterface
     private RetryPolicyInterface $retryPolicy;
 
     /**
-     * @var ActionInterface|class-string<ActionInterface>|Closure
+     * @var ActionInterface|class-string|Closure
      */
     private ActionInterface|string|Closure $_;
 
     /**
      * @internal DO NOT use this method directly, use `sync()` or `async()` functions instead.
      *
-     * @param ActionInterface|class-string<ActionInterface>|callable $_ The action to run
+     * @param ActionInterface|class-string|callable $_ The action to run
      * @param mixed ...$argument Action arguments for its run method (raw, reference or variable)
      */
     public function __construct(
         ActionInterface|string|callable $_,
         mixed ...$argument
     ) {
-        $isClosure = $_ instanceof Closure;
         if (is_callable($_)
-            && ! $isClosure
+            && ! ($_ instanceof Closure)
             && ! ($_ instanceof ActionInterface)
         ) {
             if (is_string($_)) {
@@ -103,7 +102,6 @@ final class Job implements JobInterface
                 $_ = Closure::fromCallable($_);
             }
         }
-        // @phpstan-ignore-next-line
         $this->_ = $_;
         $debugBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $callerFunction = $debugBacktrace[1]['function'] ?? '';
@@ -119,8 +117,14 @@ final class Job implements JobInterface
         $this->runIf = new Vector();
         $this->runIfNot = new Vector();
         $this->dependencies = new Vector();
-        if ($this->_ instanceof Closure) {
-            $reflection ??= $isClosure
+        if ($this->_ instanceof Closure
+            || (
+                is_string($this->_)
+                && ! is_callable($this->_)
+                && class_exists($this->_)
+                && ! is_subclass_of($this->_, ActionInterface::class, true)
+            )) {
+            $reflection ??= $this->_ instanceof Closure
                 ? new ReflectionFunction($this->_)
                 : (new ReflectionClass($this->_))->getMethod('__invoke');
             $this->parameters = reflectionToParameters($reflection);

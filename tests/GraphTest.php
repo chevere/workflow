@@ -46,6 +46,7 @@ final class GraphTest extends TestCase
         $graph = new Graph();
         $this->assertSame([], $graph->toArray());
         $with = $graph->withPut('j0', self::asyncJob()->withDepends('j1'));
+        $this->assertTrue($with->has('j0'));
         $this->assertNotSame($graph, $with);
         $expected = [
             ['j1'],

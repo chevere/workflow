@@ -95,7 +95,7 @@ Workflow is built around four main concepts:
 
 ## Jobs
 
-Jobs are the building blocks of a workflow. Each job wraps an executable unit ([Action](https://chevere.org/packages/action), [Closure](https://www.php.net/manual/en/class.closure.php) or any PHP [callable](https://www.php.net/manual/en/language.types.callable.php)) and declares its input arguments.
+Jobs are the building blocks of a workflow. Each job wraps an executable unit ([Action](https://chevere.org/packages/action), [Closure](https://www.php.net/manual/en/class.closure.php), Invocable class, or any PHP [callable](https://www.php.net/manual/en/language.types.callable.php)) and declares its input arguments.
 
 ### Creating Jobs with Closures
 
@@ -124,7 +124,7 @@ echo $result->response('format')->string(); // Sum: 15
 
 ### Creating Jobs with Action Classes
 
-For complex or reusable logic, use [Action](https://chevere.org/packages/action) classes:
+For complex or reusable logic, use [Action](https://chevere.org/packages/action) classes as these additionally support method definitions for `acceptParameters()` and `acceptReturn()` to define parameter and return rules that are automatically applied at runtime.
 
 ```php
 use Chevere\Action\Action;
@@ -162,6 +162,94 @@ $workflow = workflow(
 );
 
 $result = run($workflow, id: 123);
+```
+
+### Creating Jobs with Invocable Classes
+
+Use invocable classes (classes with `__invoke` method) for reusable logic without needing Action base class:
+
+```php
+class CalculateTotal
+{
+    public function __invoke(array $items, float $taxRate): float
+    {
+        $subtotal = array_sum(array_column($items, 'price'));
+        return $subtotal * (1 + $taxRate);
+    }
+}
+
+class FormatCurrency
+{
+    public function __invoke(float $amount, string $currency = 'USD'): string
+    {
+        return $currency . ' ' . number_format($amount, 2);
+    }
+}
+```
+
+```php
+$workflow = workflow(
+    total: sync(
+        CalculateTotal::class,
+        items: variable('items'),
+        taxRate: 0.08
+    ),
+    formatted: sync(
+        FormatCurrency::class,
+        amount: response('total'),
+        currency: 'EUR'
+    )
+);
+
+$result = run($workflow, items: [
+    ['name' => 'Item 1', 'price' => 10.00],
+    ['name' => 'Item 2', 'price' => 20.00]
+]);
+echo $result->response('formatted')->string(); // EUR 32.40
+```
+
+### Creating Jobs with Callables
+
+Use any PHP callable including array callbacks, function names, or static methods:
+
+```php
+class StringHelper
+{
+    public static function uppercase(string $text): string
+    {
+        return strtoupper($text);
+    }
+
+    public function reverse(string $text): string
+    {
+        return strrev($text);
+    }
+}
+```
+
+```php
+$helper = new StringHelper();
+
+$workflow = workflow(
+    // Using built-in PHP function
+    trim: sync(
+        'trim',
+        string: variable('input')
+    ),
+    // Using static method
+    upper: sync(
+        [StringHelper::class, 'uppercase'],
+        text: response('trim')
+    ),
+    // Using instance method
+    reversed: sync(
+        [$helper, 'reverse'],
+        text: response('upper')
+    )
+);
+
+$result = run($workflow, input: '  hello  ');
+echo $result->response('reversed')->string(); // OLLEH
 ```
 
 ### Sync vs Async Jobs

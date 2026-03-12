@@ -36,7 +36,7 @@ interface JobInterface
     public function return(): ParameterInterface;
 
     /**
-     * @return ActionInterface|class-string<ActionInterface>|Closure
+     * @return ActionInterface|class-string|Closure
      */
     public function action(): ActionInterface|string|Closure;
 
