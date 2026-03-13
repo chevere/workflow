@@ -439,7 +439,7 @@ if ($result->skip()->contains('optionalJob')) {
 
 ## Dependency Injection
 
-Workflow supports automatic dependency injection for Action classes using any [PSR-11](https://www.php-fig.org/psr/psr-11/) compatible container. When your jobs use Action classes with constructor dependencies, you can provide a container that will automatically resolve and inject those dependencies. [chevere/container](https://chevere.org/packages/container) is one example, but any PSR-11 container works.
+Workflow supports automatic dependency injection for any class passed as a class-string using any [PSR-11](https://www.php-fig.org/psr/psr-11/) compatible container. When your jobs reference classes with constructor dependencies, you can provide a container that will automatically resolve and inject those dependencies. [chevere/container](https://chevere.org/packages/container) is one example, but any PSR-11 container works.
 
 ### Passing a Container
 
@@ -459,11 +459,13 @@ $container = new Container(
 $result = run($workflow, $container, ...$vars);
 ```
 
-When a job references an Action class, Workflow uses the container to:
+When a job references a class-string (Action class, invokable class, or any other class), Workflow uses the container to:
 
 1. **Auto-inject dependencies** - Automatically resolve constructor parameters from the container
 2. **Validate availability** - Ensure all required dependencies are present before execution
 3. **Support nested dependencies** - Recursively resolve dependencies of dependencies
+
+**Note:** Dependency injection only works for classes passed as class-strings (e.g., `MyClass::class`). It does not work for closures, already instantiated objects, or array callbacks.
 
 ### Example with Action Dependencies
 
@@ -500,6 +502,44 @@ $workflow = workflow(
 );
 
 $result = run($workflow, $container, userEmail: 'user@example.com');
+```
+
+### Example with Invokable Class Dependencies
+
+Dependency injection also works with invokable classes and any other class:
+
+```php
+class ProcessOrder
+{
+    // Dependencies injected automatically
+    public function __construct(
+        private DatabaseInterface $database,
+        private PaymentGateway $payment
+    ) {}
+
+    public function __invoke(int $orderId, float $amount): array
+    {
+        $order = $this->database->getOrder($orderId);
+        $result = $this->payment->charge($amount);
+        return ['order' => $order, 'payment' => $result];
+    }
+}
+
+// Provide dependencies in container
+$container = new Container(
+    database: new MySQLDatabase(),
+    payment: new StripeGateway()
+);
+
+$workflow = workflow(
+    process: sync(
+        ProcessOrder::class,  // Dependencies auto-injected
+        orderId: variable('orderId'),
+        amount: variable('amount')
+    )
+);
+
+$result = run($workflow, $container, orderId: 123, amount: 99.99);
 ```
 
 ---
