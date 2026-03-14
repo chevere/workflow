@@ -22,7 +22,7 @@ use Psr\Container\ContainerInterface;
 /**
  * Describes the component in charge of defining a workflow run, with arguments returned for each job.
  *
- * @extends StringMappedInterface<TypedInterface>
+ * @extends StringMappedInterface<mixed>
  */
 interface RunInterface extends StringMappedInterface
 {
