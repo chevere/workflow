@@ -22,13 +22,15 @@
 
 **Key features:**
 
-* **Declarative job definitions** - Define what to do, not how to orchestrate it
-* **Automatic dependency graph** - Jobs execute in optimal order based on their dependencies
-* **Sync and async execution** - Mix blocking and non-blocking jobs freely
-* **Type-safe responses** - Access job outputs with full type safety
-* **Conditional execution** - Run jobs based on variables or previous responses
-* **Built-in retry policies** - Handle transient failures automatically
-* **Testable components** - Each job is independently testable
+* **Declarative job definitions**: Define what to do, not how to orchestrate it
+* **Automatic dependency graph**: Jobs execute in optimal order based on their dependencies
+* **Sync and async execution**: Mix blocking and non-blocking jobs freely
+* **Type-safe responses**: Access job outputs with full type safety
+* **Conditional execution**: Run jobs based on variables or previous responses
+* **Built-in retry policies**: Handle transient failures automatically
+* **Testable**: Each job is independently testable and workflow graph can be verified
+
+You define jobs and how they connect and depend on each other, **Chevere Workflow** figures out the execution order and runs them accordingly.
 
 ## Installing
 
