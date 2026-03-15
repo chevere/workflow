@@ -435,8 +435,9 @@ Generate a Mermaid flowchart using `Mermaid::generate()`:
             i: response('j2'),
             j: response('j3')
         ),
-    );
+  );
   ```
+
 </details>
 
 ```php
