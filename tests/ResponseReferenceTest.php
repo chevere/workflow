@@ -51,7 +51,7 @@ final class ResponseReferenceTest extends TestCase
     {
         $job = 'job';
         $key = 'key';
-        $string = $job . ':' . $key;
+        $string = $job . '->' . $key;
         $reference = new ResponseReference($job, $key);
         $this->assertSame($string, $reference->__toString());
         $this->assertSame($job, $reference->job());

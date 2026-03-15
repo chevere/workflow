@@ -205,7 +205,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<STRING
-            [two]: Response **one:bar** conflict at parameter **foo**: Expected regex `/^.*$/s`, provided `/^bar$/`
+            [two]: Response **one->bar** conflict at parameter **foo**: Expected regex `/^.*$/s`, provided `/^bar$/`
             STRING
         );
         new Jobs(
@@ -226,7 +226,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [two]: Response **zero:key** not found
+            [two]: Response **zero->key** not found
             PLAIN
         );
         new Jobs(
@@ -246,7 +246,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [two]: Response **one:id** is of type `int`, parameter **foo** expects `string`
+            [two]: Response **one->id** is of type `int`, parameter **foo** expects `string`
             PLAIN
         );
         new Jobs(
@@ -266,7 +266,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [two]: Response **one:id** is of type `int`, parameter **foo** expects `string`
+            [two]: Response **one->id** is of type `int`, parameter **foo** expects `string`
             PLAIN
         );
 
@@ -281,7 +281,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [two]: Response **one:id** is of type `int`, parameter **foo** expects `string`
+            [two]: Response **one->id** is of type `int`, parameter **foo** expects `string`
             PLAIN
         );
 
@@ -372,7 +372,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Response **j1:name** must be of type `bool|int`, type `string` provided');
+        $this->expectExceptionMessage('Response **j1->name** must be of type `bool|int`, type `string` provided');
         new Jobs(
             j1: async(new TestActionNoParamsArrayResponse()),
             j2: async(new TestActionNoParams())
@@ -489,7 +489,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfNotInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Response **j1:name** must be of type `bool|int`, type `string` provided');
+        $this->expectExceptionMessage('Response **j1->name** must be of type `bool|int`, type `string` provided');
         new Jobs(
             j1: async(new TestActionNoParamsArrayResponse()),
             j2: async(new TestActionNoParams())
@@ -586,7 +586,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Invalid response reference **job1:missing** as job **job1** doesn't define such response key
+            [job2]: Invalid response reference **job1->missing** as job **job1** doesn't define such response key
             PLAIN
         );
         new Jobs(
@@ -606,7 +606,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Invalid response reference **job1:missing** as job **job1** doesn't define such response key
+            [job2]: Invalid response reference **job1->missing** as job **job1** doesn't define such response key
             PLAIN
         );
         new Jobs(
@@ -628,7 +628,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1:baz** is of type `float`, parameter **foo** expects `string`
+            [job2]: Response **job1->baz** is of type `float`, parameter **foo** expects `string`
             PLAIN
         );
         new Jobs(
@@ -769,7 +769,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1:id** is of type `int`, parameter **id** expects `string`
+            [job2]: Response **job1->id** is of type `int`, parameter **id** expects `string`
             PLAIN
         );
         new Jobs(
@@ -791,7 +791,7 @@ final class JobsTest extends TestCase
         $this->expectException(JobsException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [job2]: Response **job1:id** conflict at parameter **id**: Expected min value `5`, provided `1`
+            [job2]: Response **job1->id** conflict at parameter **id**: Expected min value `5`, provided `1`
             PLAIN
         );
         new Jobs(

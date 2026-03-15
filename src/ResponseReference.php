@@ -33,7 +33,7 @@ final class ResponseReference implements ResponseReferenceInterface
     {
         return match ($this->key) {
             null => $this->job,
-            default => "{$this->job}:{$this->key}",
+            default => "{$this->job}->{$this->key}",
         };
     }
 
@@ -49,7 +49,7 @@ final class ResponseReference implements ResponseReferenceInterface
 
     private function assertArgument(string $argument, int $code): void
     {
-        if (ctype_space($argument) || $argument === '') { // empty panics on 0
+        if (ctype_space($argument) || $argument === '') {
             throw new InvalidArgumentException(code: $code);
         }
     }

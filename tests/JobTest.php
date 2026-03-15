@@ -293,7 +293,7 @@ final class JobTest extends TestCase
             [0, 'int#0'],
             [123, 'int#123'],
             [$closure, "callable#{$closureId}"],
-            [$reference, 'jobN:parameter'],
+            [$reference, 'jobN->parameter'],
             [$variable, 'wea'],
         ];
     }
