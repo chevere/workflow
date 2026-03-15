@@ -17,20 +17,23 @@ use Chevere\Action\Action;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use function Chevere\Parameter\arrayp;
 use function Chevere\Parameter\int;
+use function Chevere\Parameter\string;
 
-final class TestActionNoParamsArrayIntResponse extends Action
+final class TestActionNoParamsArrayResponse extends Action
 {
     public function __invoke(): array
     {
         return [
             'id' => 123,
+            'name' => 'test',
         ];
     }
 
     public static function acceptReturn(): ParameterInterface
     {
         return arrayp(
-            id: int()
+            id: int(),
+            name: string(),
         );
     }
 }

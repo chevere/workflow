@@ -18,7 +18,7 @@ use Chevere\Action\Action;
 use Chevere\Parameter\Attributes\_int;
 use Chevere\Parameter\Attributes\_return;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
+use Chevere\Tests\src\TestActionNoParamsArrayResponse;
 use Chevere\Tests\src\TestActionObjectConflict;
 use Chevere\Tests\src\TestActionParam;
 use Chevere\Tests\src\TestActionParamStringRegex;
@@ -201,7 +201,7 @@ final class JobTest extends TestCase
 
     public function testWithDependencies(): void
     {
-        $action = new TestActionNoParamsArrayIntResponse();
+        $action = new TestActionNoParamsArrayResponse();
         $job = new Job($action);
         $this->assertSame([], $job->dependencies()->toArray());
         $job = $job->withDepends('foo', 'bar');
@@ -212,7 +212,7 @@ final class JobTest extends TestCase
 
     public function testWithDependenciesOverflow(): void
     {
-        $action = new TestActionNoParamsArrayIntResponse();
+        $action = new TestActionNoParamsArrayResponse();
         $job = new Job($action);
         $this->assertSame([], $job->dependencies()->toArray());
         $this->expectException(OverflowException::class);
@@ -223,7 +223,7 @@ final class JobTest extends TestCase
 
     public function testWithWrongDependencies(): void
     {
-        $action = new TestActionNoParamsArrayIntResponse();
+        $action = new TestActionNoParamsArrayResponse();
         $job = new Job($action);
         $this->assertSame([], $job->dependencies()->toArray());
         $this->expectException(InvalidArgumentException::class);

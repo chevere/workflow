@@ -28,7 +28,7 @@ use Chevere\Tests\src\TestActionDependsNoParams;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionInvalidAssert;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
+use Chevere\Tests\src\TestActionNoParamsArrayResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamsFooBarResponse2;
@@ -295,8 +295,8 @@ final class RunnerTest extends TestCase
     {
         $job1 = async(new TestActionNoParamsBoolResponses());
         $job2 = async(new TestActionNoParamsBoolResponses());
-        $job3 = async(new TestActionNoParamsArrayIntResponse());
-        $job4 = async(new TestActionNoParamsArrayIntResponse());
+        $job3 = async(new TestActionNoParamsArrayResponse());
+        $job4 = async(new TestActionNoParamsArrayResponse());
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIf(response('job1', 'true')),
@@ -330,8 +330,8 @@ final class RunnerTest extends TestCase
     {
         $job1 = async(new TestActionNoParamsBoolResponses());
         $job2 = async(new TestActionNoParamsBoolResponses());
-        $job3 = async(new TestActionNoParamsArrayIntResponse());
-        $job4 = async(new TestActionNoParamsArrayIntResponse());
+        $job3 = async(new TestActionNoParamsArrayResponse());
+        $job4 = async(new TestActionNoParamsArrayResponse());
         $workflow = workflow(
             job1: $job1,
             job2: $job2->withRunIfNot(response('job1', 'true')),
@@ -453,7 +453,7 @@ final class RunnerTest extends TestCase
         $run = run(
             workflow(
                 job1: sync(
-                    new TestActionNoParamsArrayIntResponse(),
+                    new TestActionNoParamsArrayResponse(),
                 ),
                 job2: sync(
                     new TestActionUnion(),
@@ -509,7 +509,7 @@ final class RunnerTest extends TestCase
                     int: variable('intVariable'),
                 ),
                 job2: sync(
-                    new TestActionNoParamsArrayIntResponse(),
+                    new TestActionNoParamsArrayResponse(),
                 ),
                 job3: sync(
                     new TestActionVariadic(),
@@ -526,6 +526,7 @@ final class RunnerTest extends TestCase
         $this->assertSame(
             [
                 'id' => 123,
+                'name' => 'test',
             ],
             $run->response('job2')->array()
         );
@@ -550,7 +551,7 @@ final class RunnerTest extends TestCase
                     int: variable('intVariable'),
                 ),
                 job2: sync(
-                    new TestActionNoParamsArrayIntResponse(),
+                    new TestActionNoParamsArrayResponse(),
                 ),
                 job3: sync(
                     new TestActionVariadic(),
@@ -583,7 +584,7 @@ final class RunnerTest extends TestCase
                     int: variable('intVariable'),
                 ),
                 job2: sync(
-                    new TestActionNoParamsArrayIntResponse(),
+                    new TestActionNoParamsArrayResponse(),
                 ),
                 job3: sync(
                     new TestActionVariadic(),

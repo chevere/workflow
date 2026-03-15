@@ -18,7 +18,6 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Parameter\Interfaces\MixedParameterInterface;
 use Chevere\Parameter\Interfaces\ObjectParameterInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
@@ -414,13 +413,13 @@ final class Jobs implements JobsInterface
             }
             $return = $return->parameters()->get($runIf->key());
         }
-        if ($return->type()->primitive() === 'bool') {
+        if (in_array($return->type()->primitive(), ['bool', 'int'], true)) {
             return;
         }
 
         throw new TypeError(
             (string) message(
-                'Response **%response%** must be of type `bool`, `%type%` provided',
+                'Response **%response%** must be of type `bool|int`, type `%type%` provided',
                 response: strval($runIf),
                 type: $return->type()->primitive()
             )
@@ -435,10 +434,10 @@ final class Jobs implements JobsInterface
         if ($this->variables->has($runIf->__toString())) {
             /** @var ParameterInterface $parameter */
             $parameter = $this->variables->get($runIf->__toString());
-            if (! ($parameter instanceof BoolParameterInterface)) {
+            if (! in_array($parameter->type()->primitive(), ['bool', 'int'], true)) {
                 throw new TypeError(
                     (string) message(
-                        'Variable **%variable%** (previously declared as `%type%`) is not of type `bool` at Job **%job%**',
+                        'Variable **%variable%** (previously inferred as `%type%`) is not of type `bool|int` at Job **%job%**',
                         variable: $runIf->__toString(),
                         type: $parameter->type()->primitive(),
                         job: $name,

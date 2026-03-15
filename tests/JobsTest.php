@@ -23,7 +23,7 @@ use Chevere\Parameter\Interfaces\BoolParameterInterface;
 use Chevere\Tests\src\TestActionIntParam_return;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
+use Chevere\Tests\src\TestActionNoParamsArrayResponse;
 use Chevere\Tests\src\TestActionNoParamsBoolResponses;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
@@ -251,7 +251,7 @@ final class JobsTest extends TestCase
         );
         new Jobs(
             one: async(
-                new TestActionNoParamsArrayIntResponse(),
+                new TestActionNoParamsArrayResponse(),
             ),
             two: async(
                 new TestActionParams(),
@@ -271,7 +271,7 @@ final class JobsTest extends TestCase
         );
 
         new Jobs(
-            one: async(new TestActionNoParamsArrayIntResponse()),
+            one: async(new TestActionNoParamsArrayResponse()),
             two: async(new TestActionParams(), response('one', 'id'), 'c')
         );
     }
@@ -286,7 +286,7 @@ final class JobsTest extends TestCase
         );
 
         new Jobs(
-            one: async(new TestActionNoParamsArrayIntResponse()),
+            one: async(new TestActionNoParamsArrayResponse()),
             two: async(new TestActionVariadic(), response('one', 'id'))
         );
     }
@@ -306,7 +306,7 @@ final class JobsTest extends TestCase
     public function testMixedParameterAcceptsReferenceType(): void
     {
         $jobs = new Jobs(
-            job1: async(TestActionNoParamsArrayIntResponse::class),
+            job1: async(TestActionNoParamsArrayResponse::class),
             job2: async(
                 function (mixed $foo): array {
                     return [];
@@ -334,7 +334,7 @@ final class JobsTest extends TestCase
     public function testVariadicNamedArgumentsRegisterJobsReferencesAndVariables(): void
     {
         $jobs = new Jobs(
-            job2: async(new TestActionNoParamsArrayIntResponse()),
+            job2: async(new TestActionNoParamsArrayResponse()),
             job1: async(
                 new TestActionVariadic(),
                 bar1: variable('intVariable'),
@@ -372,12 +372,12 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Response **j1:id** must be of type `bool`');
+        $this->expectExceptionMessage('Response **j1:name** must be of type `bool|int`, type `string` provided');
         new Jobs(
-            j1: async(new TestActionNoParamsArrayIntResponse()),
+            j1: async(new TestActionNoParamsArrayResponse()),
             j2: async(new TestActionNoParams())
                 ->withRunIf(
-                    response('j1', 'id')
+                    response('j1', 'name')
                 ),
         );
     }
@@ -385,7 +385,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfInvalidVariableType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Variable **theFoo** (previously declared as `string`) is not of type `bool` at Job **j2**');
+        $this->expectExceptionMessage('Variable **theFoo** (previously inferred as `string`) is not of type `bool|int` at Job **j2**');
         new Jobs(
             j1: async(
                 new TestActionParams(),
@@ -489,12 +489,12 @@ final class JobsTest extends TestCase
     public function testWithRunIfNotInvalidJobKeyType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Response **j1:id** must be of type `bool`');
+        $this->expectExceptionMessage('Response **j1:name** must be of type `bool|int`, type `string` provided');
         new Jobs(
-            j1: async(new TestActionNoParamsArrayIntResponse()),
+            j1: async(new TestActionNoParamsArrayResponse()),
             j2: async(new TestActionNoParams())
                 ->withRunIfNot(
-                    response('j1', 'id')
+                    response('j1', 'name')
                 ),
         );
     }
@@ -502,7 +502,7 @@ final class JobsTest extends TestCase
     public function testWithRunIfNotInvalidVariableType(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Variable **theFoo** (previously declared as `string`) is not of type `bool` at Job **j2**');
+        $this->expectExceptionMessage('Variable **theFoo** (previously inferred as `string`) is not of type `bool|int` at Job **j2**');
         new Jobs(
             j1: async(
                 new TestActionParams(),

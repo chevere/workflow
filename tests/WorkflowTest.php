@@ -16,7 +16,7 @@ namespace Chevere\Tests;
 use Chevere\Tests\src\TestActionAppendString;
 use Chevere\Tests\src\TestActionIntToString;
 use Chevere\Tests\src\TestActionNoParams;
-use Chevere\Tests\src\TestActionNoParamsArrayIntResponse;
+use Chevere\Tests\src\TestActionNoParamsArrayResponse;
 use Chevere\Tests\src\TestActionParamFooResponse1;
 use Chevere\Tests\src\TestActionParamFooResponseBar;
 use Chevere\Tests\src\TestActionVariadic;
@@ -140,7 +140,7 @@ final class WorkflowTest extends TestCase
         $workflow = new Workflow(
             new Jobs(
                 job2: async(
-                    new TestActionNoParamsArrayIntResponse(),
+                    new TestActionNoParamsArrayResponse(),
                 ),
                 job1: async(
                     new TestActionVariadic(),
@@ -161,7 +161,7 @@ final class WorkflowTest extends TestCase
         $workflow = new Workflow(
             new Jobs(
                 job2: async(
-                    new TestActionNoParamsArrayIntResponse(),
+                    new TestActionNoParamsArrayResponse(),
                 ),
                 job1: async(
                     new TestActionVariadic(),
