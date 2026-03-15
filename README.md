@@ -376,12 +376,10 @@ $workflow = workflow(
         large: response('large')
     )
 );
-
-// View the execution graph
 $graph = $workflow->jobs()->graph()->toArray();
 // [
 //     ['thumb', 'medium', 'large'],  // Level 0: parallel
-//     ['store']                       // Level 1: after dependencies
+//     ['store']                      // Level 1: after dependencies
 // ]
 ```
 
@@ -391,6 +389,96 @@ graph TD
     medium --> store
     large --> store
 ```
+
+---
+
+## Mermaid Graphs
+
+Workflow's graph can be rendered as a Mermaid flowchart for visualization. Each job is a node, and edges represent dependencies. Job conditions are annotated on the node labels.
+
+Generate a Mermaid flowchart using `Mermaid::generate()`:
+
+<details>
+  <summary>Workflow</summary>
+
+  ```php
+  workflow(
+        ja: async(
+            fn (): int => 1
+        ),
+        jb: async(
+            fn (): int => 2
+        )
+            ->withRunIf(response('ja'))
+            ->withRunIfNot(variable('var')),
+        j1: async(
+            #[_return(new _arrayp(
+                id: new _int(),
+                name: new _string()
+            ))]
+            fn (): array => [
+                'id' => 123,
+                'name' => 'example',
+            ]
+        ),
+        j2: sync(
+            fn (int $n, string $m): int => $n + $m,
+            n: response('j1', 'id'),
+            m: response('j1', 'name')
+        ),
+        j3: sync(
+            fn (int $a): int => $a,
+            a: response('jb')
+        ),
+        j4: sync(
+            fn (int $i, int $j): int => $i * $j,
+            i: response('j2'),
+            j: response('j3')
+        ),
+    );
+  ```
+</details>
+
+```php
+$mermaid = Mermaid::generate($workflow);
+echo $mermaid->render();
+```
+
+```mermaid
+graph TB;
+    ja("`ja`");
+    j1("`j1`");
+    j2("`j2`");
+    jb("`jb
+*if* res(ja)
+*ifNot* var(var)`");
+    j3("`j3`");
+    j4("`j4`");
+
+    j1-->|"j1->id @ j2(n:)
+j1->name @ j2(m:)"|j2;
+    ja-->jb;
+    jb-->|"jb @ j3(a:)"|j3;
+    j2-->|"j2 @ j4(i:)"|j4;
+    j3-->|"j3 @ j4(j:)"|j4;
+```
+
+Where:
+
+* ***if* res(ja)**
+  Job `jb` runs only if job `ja` response is truthy
+* ***ifNot* var(var) 1 true**
+  Job `jb` runs only if `var` variable is not equal to `1` or `true`
+* **j1->id @ j2(n:)**
+  Job `j1` response key/property `id` is used as argument `n` for job `j2`
+* **j1->name @ j2(m:)**
+  Job `j1` response key/property `name` is used as argument `m` for job `j2`
+* **jb @ j3(a:)**
+  Job `jb` response is used as argument `a` for job `j3`
+* **j2 @ j4(i:)**
+  Job `j2` response is used as argument `i` for job `j4`
+* **j3 @ j4(j:)**
+  Job `j3` response is used as argument `j` for job `j4`
 
 ---
 

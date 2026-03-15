@@ -17,19 +17,19 @@ use Chevere\Parameter\Attributes\_arrayp;
 use Chevere\Parameter\Attributes\_int;
 use Chevere\Parameter\Attributes\_return;
 use Chevere\Parameter\Attributes\_string;
-use Chevere\Workflow\Jobs;
 use Chevere\Workflow\Mermaid;
 use PHPUnit\Framework\TestCase;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\sync;
 use function Chevere\Workflow\variable;
+use function Chevere\Workflow\workflow;
 
 final class MermaidTest extends TestCase
 {
     public function testJobsIO(): void
     {
-        $jobs = new Jobs(
+        $workflow = workflow(
             ja: async(
                 fn (): int => 1
             ),
@@ -83,7 +83,7 @@ final class MermaidTest extends TestCase
                 j3-->|"j3 @ j4(j:)"|j4;
 
             MERMAID,
-            Mermaid::generate($jobs)->render()
+            Mermaid::generate($workflow)->render()
         );
     }
 }

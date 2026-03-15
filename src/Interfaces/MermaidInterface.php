@@ -17,8 +17,5 @@ use JBZoo\MermaidPHP\Graph;
 
 interface MermaidInterface
 {
-    /**
-     * @param JobsInterface $jobs The jobs to generate the diagram for
-     */
-    public static function generate(JobsInterface $jobs): Graph;
+    public static function generate(WorkflowInterface $workflow): Graph;
 }

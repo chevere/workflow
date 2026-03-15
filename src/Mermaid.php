@@ -15,10 +15,10 @@ namespace Chevere\Workflow;
 
 use Chevere\DataStructure\Map;
 use Chevere\Workflow\Interfaces\JobInterface;
-use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\MermaidInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use Chevere\Workflow\Interfaces\WorkflowInterface;
 use JBZoo\MermaidPHP\Graph;
 use JBZoo\MermaidPHP\Link;
 use JBZoo\MermaidPHP\Node;
@@ -47,12 +47,12 @@ final class Mermaid implements MermaidInterface
         $this->currentTitle = '';
     }
 
-    public static function generate(JobsInterface $jobs): Graph
+    public static function generate(WorkflowInterface $workflow): Graph
     {
         $self = new self();
-        foreach ($jobs->graph()->toArray() as $jobNames) {
+        foreach ($workflow->jobs()->graph()->toArray() as $jobNames) {
             foreach ($jobNames as $name) {
-                $self->currentJob = $jobs->get($name);
+                $self->currentJob = $workflow->jobs()->get($name);
                 $self->currentTitle = $name;
                 $self->addConditions('if');
                 $self->addConditions('ifNot');
