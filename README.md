@@ -398,49 +398,41 @@ Workflow's graph can be rendered as a Mermaid flowchart for visualization. Each 
 
 Generate a Mermaid flowchart using `Mermaid::generate()`:
 
-<details>
-  <summary>Workflow</summary>
-
-  ```php
-  workflow(
-        ja: async(
-            fn (): int => 1
-        ),
-        jb: async(
-            fn (): int => 2
-        )
-            ->withRunIf(response('ja'))
-            ->withRunIfNot(variable('var')),
-        j1: async(
-            #[_return(new _arrayp(
-                id: new _int(),
-                name: new _string()
-            ))]
-            fn (): array => [
-                'id' => 123,
-                'name' => 'example',
-            ]
-        ),
-        j2: sync(
-            fn (int $n, string $m): int => $n + $m,
-            n: response('j1', 'id'),
-            m: response('j1', 'name')
-        ),
-        j3: sync(
-            fn (int $a): int => $a,
-            a: response('jb')
-        ),
-        j4: sync(
-            fn (int $i, int $j): int => $i * $j,
-            i: response('j2'),
-            j: response('j3')
-        ),
-  );
-  ```
-
-</details>
-
 ```php
+$workflow = workflow(
+    ja: async(
+        fn (): int => 1
+    ),
+    jb: async(
+        fn (): int => 2
+    )
+        ->withRunIf(response('ja'))
+        ->withRunIfNot(variable('var')),
+    j1: async(
+        #[_return(new _arrayp(
+            id: new _int(),
+            name: new _string()
+        ))]
+        fn (): array => [
+            'id' => 123,
+            'name' => 'example',
+        ]
+    ),
+    j2: sync(
+        fn (int $n, string $m): int => $n + $m,
+        n: response('j1', 'id'),
+        m: response('j1', 'name')
+    ),
+    j3: sync(
+        fn (int $a): int => $a,
+        a: response('jb')
+    ),
+    j4: sync(
+        fn (int $i, int $j): int => $i * $j,
+        i: response('j2'),
+        j: response('j3')
+    ),
+);
 $mermaid = Mermaid::generate($workflow);
 ```
 
