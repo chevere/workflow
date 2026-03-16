@@ -13,42 +13,35 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
-use Chevere\DataStructure\Map;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\MermaidInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
-use JBZoo\MermaidPHP\Graph;
-use JBZoo\MermaidPHP\Link;
-use JBZoo\MermaidPHP\Node;
 
 final class Mermaid implements MermaidInterface
 {
     private JobInterface $currentJob;
 
-    private Graph $graph;
+    private string $currentTitle;
 
     /**
-     * @var Map<Node>
+     * @var string[]
      */
-    private Map $nodes;
-
-    private string $currentTitle;
+    private array $links = [];
 
     public function __construct()
     {
-        $this->graph = new Graph(
-            [
-                'title' => 'Workflow',
-            ]
-        );
-        $this->nodes = new Map();
         $this->currentTitle = '';
+        $this->links = [];
     }
 
-    public static function generate(WorkflowInterface $workflow): Graph
+    public static function generate(WorkflowInterface $workflow): string
     {
+        $output = <<<MERMAID
+        graph TB;
+
+        MERMAID;
         $self = new self();
         foreach ($workflow->jobs()->graph()->toArray() as $jobNames) {
             foreach ($jobNames as $name) {
@@ -56,33 +49,41 @@ final class Mermaid implements MermaidInterface
                 $self->currentTitle = $name;
                 $self->addConditions('if');
                 $self->addConditions('ifNot');
-                $node = new Node($name, "`{$self->currentTitle}`");
-                $self->nodes = $self->nodes->withPut($name, $node);
-                $self->graph->addNode($node);
+                $output .= <<<MERMAID
+                    {$name}("`{$self->currentTitle}`");
+
+                MERMAID;
                 $self->addLinks($name);
             }
         }
+        $output .= "\n" . implode("\n", $self->links) . "\n";
 
-        return $self->graph;
+        return $output;
     }
 
     private function addLinks(string $name): void
     {
-        $node = $this->nodes->get($name);
         foreach ($this->currentJob->dependencies() as $dependency) {
-            $relation = '';
+            $relationParts = [];
             foreach ($this->currentJob->arguments() as $k => $v) {
                 if (! ($v instanceof ResponseReferenceInterface) || $v->job() !== $dependency) {
                     continue;
                 }
-                $relation .= <<<PLAIN
+                $relationParts[] = <<<MARKDOWN
                 {$v} @ {$name}({$k}:)
-
-                PLAIN;
+                MARKDOWN;
             }
-            $this->graph->addLink(
-                new Link($this->nodes->get($dependency), $node, $relation)
-            );
+            if ($relationParts === []) {
+                $this->links[] = <<<MERMAID
+                    {$dependency}-->{$name};
+                MERMAID;
+
+                continue;
+            }
+            $relation = implode("\n", $relationParts);
+            $this->links[] = <<<MERMAID
+                {$dependency}-->|"{$relation}"|{$name};
+            MERMAID;
         }
     }
 

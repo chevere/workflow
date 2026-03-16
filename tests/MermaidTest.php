@@ -83,7 +83,7 @@ final class MermaidTest extends TestCase
                 j3-->|"j3 @ j4(j:)"|j4;
 
             MERMAID,
-            Mermaid::generate($workflow)->render()
+            Mermaid::generate($workflow)
         );
     }
 }

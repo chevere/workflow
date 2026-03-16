@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow\Interfaces;
 
-use JBZoo\MermaidPHP\Graph;
-
 interface MermaidInterface
 {
-    public static function generate(WorkflowInterface $workflow): Graph;
+    public static function generate(WorkflowInterface $workflow): string;
 }

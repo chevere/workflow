@@ -442,7 +442,6 @@ Generate a Mermaid flowchart using `Mermaid::generate()`:
 
 ```php
 $mermaid = Mermaid::generate($workflow);
-echo $mermaid->render();
 ```
 
 ```mermaid
