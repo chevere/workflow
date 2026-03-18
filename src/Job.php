@@ -48,6 +48,11 @@ final class Job implements JobInterface
      */
     private VectorInterface $dependencies;
 
+    /**
+     * @var VectorInterface<string>
+     */
+    private VectorInterface $after;
+
     private ParametersInterface $parameters;
 
     private ParameterInterface $return;
@@ -117,6 +122,7 @@ final class Job implements JobInterface
         $this->runIf = new Vector();
         $this->runIfNot = new Vector();
         $this->dependencies = new Vector();
+        $this->after = new Vector();
         if ($this->_ instanceof Closure
             || (
                 is_string($this->_)
@@ -198,6 +204,14 @@ final class Job implements JobInterface
         return $new;
     }
 
+    public function withAfter(string ...$jobs): JobInterface
+    {
+        $new = clone $this;
+        $new->addAfter(...$jobs);
+
+        return $new;
+    }
+
     public function withRetry(
         int $timeout = 0,
         int $maxAttempts = 1,
@@ -222,6 +236,11 @@ final class Job implements JobInterface
     public function dependencies(): VectorInterface
     {
         return $this->dependencies;
+    }
+
+    public function after(): VectorInterface
+    {
+        return $this->after;
     }
 
     public function runIf(): VectorInterface
@@ -438,6 +457,17 @@ final class Job implements JobInterface
                 continue;
             }
             $this->dependencies = $this->dependencies->withPush($job);
+        }
+    }
+
+    private function addAfter(string ...$jobs): void
+    {
+        $this->assertDependencies(...$jobs);
+        foreach ($jobs as $job) {
+            if ($this->after->contains($job)) {
+                continue;
+            }
+            $this->after = $this->after->withPush($job);
         }
     }
 

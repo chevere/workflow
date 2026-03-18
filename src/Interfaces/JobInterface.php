@@ -51,6 +51,11 @@ interface JobInterface
     public function dependencies(): VectorInterface;
 
     /**
+     * @return VectorInterface<string>
+     */
+    public function after(): VectorInterface;
+
+    /**
      * @return bool True if the job is synchronous (blocking)
      */
     public function isSync(): bool;
@@ -116,6 +121,14 @@ interface JobInterface
      * an instance that contains the specified job dependencies.
      */
     public function withDepends(string ...$jobs): self;
+
+    /**
+     * Return an instance with the specified job after.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified job after.
+     */
+    public function withAfter(string ...$jobs): self;
 
     /**
      * @param int<0, max> $timeout Timeout in seconds across all attempts (0 = unlimited)

@@ -16,6 +16,7 @@ namespace Chevere\Tests;
 use Chevere\Tests\src\TestActionNoParams;
 use Chevere\Workflow\Graph;
 use Chevere\Workflow\Interfaces\JobInterface;
+use Chevere\Workflow\Jobs;
 use InvalidArgumentException;
 use OutOfBoundsException;
 use OverflowException;
@@ -276,6 +277,35 @@ final class GraphTest extends TestCase
         $this->assertContains('orderCreate', $batches[0]);
         $this->assertCount(1, $batches[1]);
         $this->assertSame('subOrderCreate', $batches[1][0]);
+    }
+
+    public function testAfter(): void
+    {
+        $job = sync(fn (): bool => false);
+        $jobs = new Jobs(
+            j0: $job,
+            j1: $job->withRunIf(response('j0')),
+        );
+        $with = $jobs->withAdded(
+            jf: $job,
+        );
+        $this->assertSame(
+            [
+                ['j0'],
+                ['jf'],
+                ['j1'],
+            ],
+            $with->graph()->toArray()
+        );
+        $with = $jobs->withAdded(jf: $job->withAfter('j1'));
+        $this->assertSame(
+            [
+                ['j0'],
+                ['j1'],
+                ['jf'],
+            ],
+            $with->graph()->toArray()
+        );
     }
 
     private static function asyncJob(): JobInterface

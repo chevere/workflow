@@ -44,12 +44,12 @@ final class Graph implements GraphInterface
         string $name,
         JobInterface $job,
     ): GraphInterface {
-        $directDeps = $job->dependencies();
-        $transitive = $this->computeTransitiveClosure($directDeps);
+        $deps = $job->dependencies()->withPush(...$job->after()->toArray());
+        $transitive = $this->computeTransitiveClosure($deps);
         $this->assertNotSelfDependency($name, $transitive);
         $new = clone $this;
         /** @var string $dep */
-        foreach ($directDeps as $dep) {
+        foreach ($deps as $dep) {
             if (! $new->map->has($dep)) {
                 $new->map = $new->map
                     ->withPut($dep, new Vector());
@@ -59,11 +59,11 @@ final class Graph implements GraphInterface
             /** @var VectorInterface<string> $existing */
             $existing = $new->map->get($name);
             $merged = array_unique(
-                array_merge($existing->toArray(), $directDeps->toArray())
+                array_merge($existing->toArray(), $deps->toArray())
             );
             $new->map = $new->map->withPut($name, new Vector(...$merged));
         } else {
-            $new->map = $new->map->withPut($name, $directDeps);
+            $new->map = $new->map->withPut($name, $deps);
         }
         $found = $new->jobs->find($name);
         if ($job->isSync()) {
