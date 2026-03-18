@@ -674,13 +674,35 @@ While `response()` creates implicit dependencies, use `withDepends()` for explic
 
 ```php
 $workflow = workflow(
-    setup: async(SetupAction::class),
-    process: async(
-        ProcessAction::class,
-        data: variable('input')
-    )->withDepends('setup')  // Wait for setup even without using its response
+    exists: sync(ExistsAction::class),
+    update: sync(UpdateAction::class)
+        ->withRunIf(response('exists')),
+    cleanup: sync(CleanupAction::class)
+        ->withDepends('update')
 );
 ```
+
+For the code above, `cleanup` happens only if `update` runs and completes successfully. If `update` is skipped (because `exists` is false), then `cleanup` is also skipped since it depends on `update`.
+
+---
+
+## Run After Job
+
+Use `withAfter()` to enforce ordering between jobs without creating a dependency. It guarantees that the target job is scheduled only after the specified job node has resolved.
+
+```php
+$workflow = workflow(
+    exists: sync(ExistsAction::class),
+    update: sync(UpdateAction::class)
+        ->withRunIf(response('exists')),
+    cleanup: sync(CleanupAction::class)
+        ->withAfter('update')
+);
+```
+
+For the code above, `cleanup` happens after node `update` regardless of whether `update` actually ran or was skipped.
+
+Without `withAfter('update')`, `cleanup` and `update` are independent and may run in any order (for example, `cleanup` could run before `update`). Adding `withAfter('update')` ensures `cleanup` is scheduled only after the `update` node resolves.
 
 ---
 
