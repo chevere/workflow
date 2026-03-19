@@ -637,6 +637,8 @@ Control whether a job runs using `withRunIf()` (run when conditions are met) or 
 * `response('job')` or `response('job', 'key')` uses another job's output
 * `callable` invokes a callable passing the current `RunInterface` context argument
 
+**Note:** Empty string is considered falsy. To learn more check [PHP type comparison tables](https://www.php.net/manual/en/types.comparisons.php).
+
 ---
 
 ```php
