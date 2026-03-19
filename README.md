@@ -632,10 +632,10 @@ Control whether a job runs using `withRunIf()` (run when conditions are met) or 
 
 ### Accepted condition types
 
-* `boolean` literal — evaluated directly
-* `variable('name')` — runtime argument coerced to boolean
-* `response('job')` or `response('job', 'key')` — uses another job's output
-* `callable` — invokes a callable passing the current `RunInterface` context argument
+* `boolean|int|float|string` literal scalar value
+* `variable('name')` runtime argument coerced to truly/falsy
+* `response('job')` or `response('job', 'key')` uses another job's output
+* `callable` invokes a callable passing the current `RunInterface` context argument
 
 ---
 
