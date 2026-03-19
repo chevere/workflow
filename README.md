@@ -459,7 +459,7 @@ Where:
 
 * ***if* res(ja)**
   Job `jb` runs only if job `ja` response is truthy
-* ***ifNot* var(var) 1 true**
+* ***ifNot* var(var)**
   Job `jb` runs only if `var` variable is not falsy
 * **j1->id @ j2(n:)**
   Job `j1` response key/property `id` is used as argument `n` for job `j2`
