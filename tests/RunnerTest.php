@@ -411,6 +411,10 @@ final class RunnerTest extends TestCase
             [1],
             [0],
             [200],
+            [1.5],
+            [''],
+            ['foo'],
+            [null],
         ];
     }
 

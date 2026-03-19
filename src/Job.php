@@ -172,7 +172,7 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context): JobInterface
+    public function withRunIf(ResponseReferenceInterface|VariableInterface|callable|bool|int|float|string|null ...$context): JobInterface
     {
         $new = clone $this;
         $new->pushRunConditional('runIf', ...$context);
@@ -180,7 +180,7 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context): JobInterface
+    public function withRunIfNot(ResponseReferenceInterface|VariableInterface|callable|bool|int|float|string|null ...$context): JobInterface
     {
         $new = clone $this;
         $new->pushRunConditional('runIfNot', ...$context);
@@ -260,16 +260,23 @@ final class Job implements JobInterface
 
     private function pushRunConditional(
         string $collection,
-        ResponseReferenceInterface|VariableInterface|callable|bool|int ...$context
+        ResponseReferenceInterface|VariableInterface|callable|bool|int|float|string|null ...$context
     ): void {
         $this->{$collection} = new Vector();
         $known = new Vector();
         foreach ($context as $condition) {
+            $label = null;
+            if (is_string($condition) && $condition === '') {
+                $label = 'empty-string';
+            }
             $item = match (true) {
                 $condition instanceof ResponseReferenceInterface,
                 $condition instanceof VariableInterface => $condition->__toString(),
                 $condition instanceof Closure => 'callable#' . spl_object_id($condition),
                 is_int($condition) => "int#{$condition}",
+                is_float($condition) => "float#{$condition}",
+                is_string($condition) => $label ?? "string#{$condition}",
+                $condition === null => 'null',
                 default => $condition === true ? 'bool#true' : 'bool#false',
             };
             if ($known->contains($item)) {
