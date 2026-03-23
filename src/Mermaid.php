@@ -78,7 +78,7 @@ final class Mermaid implements MermaidInterface
             }
             if ($relationParts === []) {
                 $this->links[] = <<<MERMAID
-                    {$dependency}~~~{$name};
+                    {$dependency}-->{$name};
                 MERMAID;
 
                 continue;
