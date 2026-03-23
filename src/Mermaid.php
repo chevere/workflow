@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\MermaidInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
@@ -63,7 +64,9 @@ final class Mermaid implements MermaidInterface
 
     private function addLinks(string $name): void
     {
-        foreach ($this->currentJob->dependencies() as $dependency) {
+        /** @var VectorInterface<string> $deps */
+        $deps = $this->currentJob->dependencies()->withPush(...$this->currentJob->after()->toArray());
+        foreach ($deps as $dependency) {
             $relationParts = [];
             foreach ($this->currentJob->arguments() as $k => $v) {
                 if (! ($v instanceof ResponseReferenceInterface) || $v->job() !== $dependency) {
@@ -75,7 +78,7 @@ final class Mermaid implements MermaidInterface
             }
             if ($relationParts === []) {
                 $this->links[] = <<<MERMAID
-                    {$dependency}-->{$name};
+                    {$dependency}~~~{$name};
                 MERMAID;
 
                 continue;

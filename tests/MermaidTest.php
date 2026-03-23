@@ -77,7 +77,7 @@ final class MermaidTest extends TestCase
 
                 j1-->|"j1->id @ j2(n:)
             j1->name @ j2(m:)"|j2;
-                ja-->jb;
+                ja~~~jb;
                 jb-->|"jb @ j3(a:)"|j3;
                 j2-->|"j2 @ j4(i:)"|j4;
                 j3-->|"j3 @ j4(j:)"|j4;
