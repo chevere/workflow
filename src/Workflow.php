@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Chevere\Workflow;
 
+use BadMethodCallException;
 use Chevere\Container\Dependencies;
 use Chevere\Container\Interfaces\DependenciesInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
+use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
+use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
@@ -44,9 +47,17 @@ final class Workflow implements WorkflowInterface
 
     private DependenciesInterface $dependencies;
 
+    private Config $config;
+
+    private VectorInterface $violations;
+
+    private string $mermaid;
+
     public function __construct(
         private JobsInterface $jobs
     ) {
+        $this->config = Config::fromEnv();
+        $this->violations = new Vector();
         $this->parameters = new Parameters();
         $this->referenced = new Map();
         $this->provided = new Map();
@@ -55,6 +66,24 @@ final class Workflow implements WorkflowInterface
             ...iterator_to_array(
                 $jobs->getIterator()
             )
+        );
+        if ($this->config->isLint) {
+            $this->mermaid = Mermaid::generate($this);
+        }
+    }
+
+    public function lint(): string
+    {
+        if (! $this->config->isLint) {
+            throw new BadMethodCallException();
+        }
+
+        return json_encode(
+            [
+                'violations' => $this->violations->toArray(),
+                'mermaid' => $this->mermaid,
+            ],
+            JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR
         );
     }
 
@@ -136,6 +165,23 @@ final class Workflow implements WorkflowInterface
             if (is_string($item->action())) {
                 $this->dependencies = $this->dependencies
                     ->withClass($item->action());
+            }
+            if ($this->config->isLint) {
+                $violations = $item->violations();
+                if (count($violations) === 0) {
+                    continue;
+                }
+                $this->violations = $this->violations->withPush(
+                    ...array_map(
+                        fn (array $violation): array => array_merge(
+                            [
+                                'job' => $name,
+                            ],
+                            $violation
+                        ),
+                        $violations->toArray()
+                    )
+                );
             }
         }
     }

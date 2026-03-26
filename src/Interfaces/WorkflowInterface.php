@@ -66,4 +66,6 @@ interface WorkflowInterface extends Countable
     public function withAddedJob(JobInterface ...$job): self;
 
     public function parameters(): ParametersInterface;
+
+    public function lint(): string;
 }

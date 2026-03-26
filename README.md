@@ -785,6 +785,32 @@ class OrderProcessor
 
 ---
 
+## Lint Mode
+
+Set the `CHEVERE_WORKFLOW_LINT_ENABLE=1` environment variable to enable lint mode. In this mode both `Workflow` and `Job` collect parameter violations instead of throwing on errors, and generate a Mermaid graph on construction.
+
+```sh
+CHEVERE_WORKFLOW_LINT_ENABLE=1 php my-workflow.php
+```
+
+Call `$workflow->lint()` to get a JSON report with violations and the Mermaid diagram:
+
+```php
+$workflow = workflow(
+    step: sync(MyAction::class, value: variable('input'))
+);
+
+$report = $workflow->lint();
+// {
+//   "violations": [...],
+//   "mermaid": "graph TB;\n    ..."
+// }
+```
+
+Lint mode is intended for development and CI pipelines to inspect workflow definitions without halting on the first error.
+
+---
+
 ## Testing
 
 ### Testing Actions

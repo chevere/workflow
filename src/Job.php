@@ -31,6 +31,7 @@ use OverflowException;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionObject;
+use Throwable;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
 use function Chevere\Parameter\reflectionToParameters;
@@ -78,6 +79,10 @@ final class Job implements JobInterface
      */
     private ActionInterface|string|Closure $_;
 
+    private Config $config;
+
+    private VectorInterface $violations;
+
     /**
      * @internal DO NOT use this method directly, use `sync()` or `async()` functions instead.
      *
@@ -88,6 +93,8 @@ final class Job implements JobInterface
         ActionInterface|string|callable $_,
         mixed ...$argument
     ) {
+        $this->config = Config::fromEnv();
+        $this->violations = new Vector();
         if (is_callable($_)
             && ! ($_ instanceof Closure)
             && ! ($_ instanceof ActionInterface)
@@ -142,6 +149,11 @@ final class Job implements JobInterface
         $this->arguments = [];
         $this->setArguments(...$argument);
         $this->retryPolicy = new RetryPolicy();
+    }
+
+    public function violations(): VectorInterface
+    {
+        return $this->violations;
     }
 
     public function caller(): CallerInterface
@@ -303,43 +315,60 @@ final class Job implements JobInterface
         $lastKey = array_key_last($this->parameters->keys());
         $lastName = $lastKey !== null ? $this->parameters->keys()[$lastKey] : null;
         foreach ($this->parameters as $name => $parameter) {
-            if ($name === $lastName && $this->parameters->isVariadic()) {
-                if ($isPositional) {
-                    $sliceAt = count($this->parameters) - 1;
-                    $variadicKeys = array_slice($argument, $sliceAt);
-                    if ($variadicKeys === []) {
-                        continue;
+            try {
+                if ($name === $lastName && $this->parameters->isVariadic()) {
+                    if ($isPositional) {
+                        $sliceAt = count($this->parameters) - 1;
+                        $variadicKeys = array_slice($argument, $sliceAt);
+                        if ($variadicKeys === []) {
+                            continue;
+                        }
+                        $variadicKeys = array_combine(
+                            range($sliceAt, $sliceAt + count($variadicKeys) - 1),
+                            $variadicKeys
+                        );
+                    } else {
+                        $variadicKeys = array_diff_key(
+                            $argument,
+                            array_flip($this->parameters->keys())
+                        );
                     }
-                    $variadicKeys = array_combine(
-                        range($sliceAt, $sliceAt + count($variadicKeys) - 1),
-                        $variadicKeys
+                    foreach ($variadicKeys as $key => $value) {
+                        $key = strval($key);
+                        $values[$key] = $value;
+                        $this->inferDependencies($value);
+                        $this->assertParameter($name, $parameter, $value);
+                    }
+                } else {
+                    if (! array_key_exists($name, $argument)) {
+                        $named = strval($name);
+                        $name = array_search($name, $this->parameters->keys());
+                        if ($name === false) {
+                            continue;
+                        }
+                        $name = strval($name);
+                    }
+                    if (array_key_exists($name, $argument)) {
+                        $value = $argument[$name];
+                        $values[$name] = $value;
+                        $this->inferDependencies($value);
+                        $this->assertParameter($named ?? $name, $parameter, $value);
+                    }
+                }
+            } catch (Throwable $e) {
+                if ($this->config->isLint) {
+                    $this->violations = $this->violations->withPush(
+                        [
+                            'parameter' => $name,
+                            'message' => str_replace(
+                                "Argument [{$name}]: ",
+                                '',
+                                $e->getMessage(),
+                            ),
+                        ]
                     );
                 } else {
-                    $variadicKeys = array_diff_key(
-                        $argument,
-                        array_flip($this->parameters->keys())
-                    );
-                }
-                foreach ($variadicKeys as $key => $value) {
-                    $key = strval($key);
-                    $values[$key] = $value;
-                    $this->inferDependencies($value);
-                    $this->assertParameter($name, $parameter, $value);
-                }
-            } else {
-                if (! array_key_exists($name, $argument)) {
-                    $named = strval($name);
-                    $name = array_search($name, $this->parameters->keys());
-                    if ($name === false) {
-                        continue;
-                    }
-                    $name = strval($name);
-                }
-                if (array_key_exists($name, $argument)) {
-                    $value = $argument[$name];
-                    $values[$name] = $value;
-                    $this->inferDependencies($value);
-                    $this->assertParameter($named ?? $name, $parameter, $value);
+                    throw $e;
                 }
             }
         }

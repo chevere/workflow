@@ -80,6 +80,8 @@ interface JobInterface
      */
     public function retryPolicy(): RetryPolicyInterface;
 
+    public function violations(): VectorInterface;
+
     /**
      * Return an instance with the specified arguments.
      *
