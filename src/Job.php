@@ -356,20 +356,19 @@ final class Job implements JobInterface
                     }
                 }
             } catch (Throwable $e) {
-                if ($this->config->isLint) {
-                    $this->violations = $this->violations->withPush(
-                        [
-                            'parameter' => $name,
-                            'message' => str_replace(
-                                "Argument [{$name}]: ",
-                                '',
-                                $e->getMessage(),
-                            ),
-                        ]
-                    );
-                } else {
+                if (! $this->config->isLint) {
                     throw $e;
                 }
+                $this->violations = $this->violations->withPush(
+                    [
+                        'parameter' => $name,
+                        'message' => str_replace(
+                            "Argument [{$name}]: ",
+                            '',
+                            $e->getMessage(),
+                        ),
+                    ]
+                );
             }
         }
         $this->arguments = $values;

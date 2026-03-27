@@ -71,8 +71,14 @@ final class Jobs implements JobsInterface
      */
     private VectorInterface $jobDependencies;
 
+    private Config $config;
+
+    private VectorInterface $violations;
+
     public function __construct(JobInterface ...$jobs)
     {
+        $this->config = Config::fromEnv();
+        $this->violations = new Vector();
         $this->map = new Map();
         $this->jobs = new Vector();
         $this->graph = new Graph();
@@ -107,6 +113,11 @@ final class Jobs implements JobsInterface
         return $this->map->has($job);
     }
 
+    public function violations(): VectorInterface
+    {
+        return $this->violations;
+    }
+
     public function withAdded(JobInterface ...$jobs): JobsInterface
     {
         $new = clone $this;
@@ -131,22 +142,34 @@ final class Jobs implements JobsInterface
     private function putAdded(JobInterface ...$job): void
     {
         foreach ($job as $name => $item) {
-            $this->jobDependencies = $item->dependencies();
-            $name = strval($name);
-            $this->addMap($name, $item);
-            $this->jobs = $this->jobs->withPush($name);
-            $this->handleArguments($name, $item);
-            foreach ($item->runIf() as $runIf) {
-                $this->handleRunIfReference($runIf);
-                $this->handleRunIfVariable($name, $runIf);
+            try {
+                $this->jobDependencies = $item->dependencies();
+                $name = strval($name);
+                $this->addMap($name, $item);
+                $this->jobs = $this->jobs->withPush($name);
+                $this->handleArguments($name, $item);
+                foreach ($item->runIf() as $runIf) {
+                    $this->handleRunIfReference($name, $runIf, 'withRunIf');
+                    $this->handleRunIfVariable($name, $runIf, 'withRunIf');
+                }
+                foreach ($item->runIfNot() as $runIfNot) {
+                    $this->handleRunIfReference($name, $runIfNot, 'withRunIfNot');
+                    $this->handleRunIfVariable($name, $runIfNot, 'withRunIfNot');
+                }
+                $this->storeReferences($name, $item);
+                $this->assertDependencies($name);
+                $this->graph = $this->graph->withPut($name, $item);
+            } catch (Throwable $e) {
+                if (! $this->config->isLint) {
+                    throw $e;
+                }
+                $this->violations = $this->violations->withPush(
+                    [
+                        'job' => $name,
+                        'message' => $e->getMessage(),
+                    ]
+                );
             }
-            foreach ($item->runIfNot() as $runIfNot) {
-                $this->handleRunIfReference($runIfNot);
-                $this->handleRunIfVariable($name, $runIfNot);
-            }
-            $this->storeReferences($name, $item);
-            $this->assertDependencies($name);
-            $this->graph = $this->graph->withPut($name, $item);
         }
     }
 
@@ -217,7 +240,20 @@ final class Jobs implements JobsInterface
                 /** @var VariableInterface|ResponseReferenceInterface $value */
                 $this->mapParameter($argument, $collection, $parameter, $value);
             } catch (Throwable $e) {
-                throw new JobsException(name: $name, job: $job, throwable: $e);
+                if (! $this->config->isLint) {
+                    throw new JobsException(name: $name, job: $job, throwable: $e);
+                }
+                $this->violations = $this->violations->withPush(
+                    [
+                        'job' => $name,
+                        'parameter' => $argument,
+                        'message' => str_replace(
+                            "Argument [{$argument}]: ",
+                            '',
+                            $e->getMessage(),
+                        ),
+                    ]
+                );
             }
         }
     }
@@ -394,7 +430,7 @@ final class Jobs implements JobsInterface
         }
     }
 
-    private function handleRunIfReference(mixed $runIf): void
+    private function handleRunIfReference(string $name, mixed $runIf, string $method): void
     {
         if (! $runIf instanceof ResponseReferenceInterface) {
             return;
@@ -416,17 +452,25 @@ final class Jobs implements JobsInterface
         if (in_array($return->type()->primitive(), ['bool', 'int'], true)) {
             return;
         }
-
-        throw new TypeError(
-            (string) message(
-                'Response **%response%** must be of type `bool|int`, type `%type%` provided',
-                response: strval($runIf),
-                type: $return->type()->primitive()
-            )
+        $message = (string) message(
+            'Response **%response%** must be of type `bool|int`, type `%type%` provided',
+            response: strval($runIf),
+            type: $return->type()->primitive()
+        );
+        if (! $this->config->isLint) {
+            throw new TypeError($message);
+        }
+        $this->violations = $this->violations->withPush(
+            [
+                'job' => $name,
+                'method' => $method,
+                'response' => $runIf->__toString(),
+                'message' => $message,
+            ]
         );
     }
 
-    private function handleRunIfVariable(string $name, mixed $runIf): void
+    private function handleRunIfVariable(string $name, mixed $runIf, string $method): void
     {
         if (! $runIf instanceof VariableInterface) {
             return;
@@ -435,13 +479,22 @@ final class Jobs implements JobsInterface
             /** @var ParameterInterface $parameter */
             $parameter = $this->variables->get($runIf->__toString());
             if (! in_array($parameter->type()->primitive(), ['bool', 'int'], true)) {
-                throw new TypeError(
-                    (string) message(
-                        'Variable **%variable%** (previously inferred as `%type%`) is not of type `bool|int` at Job **%job%**',
-                        variable: $runIf->__toString(),
-                        type: $parameter->type()->primitive(),
-                        job: $name,
-                    )
+                $message = (string) message(
+                    'Variable **%variable%** (previously inferred as `%type%`) is not of type `bool|int` at Job **%job%**',
+                    variable: $runIf->__toString(),
+                    type: $parameter->type()->primitive(),
+                    job: $name,
+                );
+                if (! $this->config->isLint) {
+                    throw new TypeError($message);
+                }
+                $this->violations = $this->violations->withPush(
+                    [
+                        'job' => $name,
+                        'method' => $method,
+                        'variable' => $runIf->__toString(),
+                        'message' => $message,
+                    ]
                 );
             }
         } else {

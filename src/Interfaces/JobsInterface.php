@@ -15,6 +15,7 @@ namespace Chevere\Workflow\Interfaces;
 
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\StringMappedInterface;
+use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Iterator;
 use OutOfBoundsException;
@@ -81,6 +82,8 @@ interface JobsInterface extends StringMappedInterface
      * @return GraphInterface The dependency graph for job execution
      */
     public function graph(): GraphInterface;
+
+    public function violations(): VectorInterface;
 
     /**
      * Return an instance with additional jobs added to the collection.

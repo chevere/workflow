@@ -19,7 +19,6 @@ use Chevere\Container\Interfaces\DependenciesInterface;
 use Chevere\DataStructure\Interfaces\MapInterface;
 use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
-use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
 use Chevere\Parameter\Interfaces\ParametersInterface;
 use Chevere\Parameter\Parameters;
@@ -57,7 +56,7 @@ final class Workflow implements WorkflowInterface
         private JobsInterface $jobs
     ) {
         $this->config = Config::fromEnv();
-        $this->violations = new Vector();
+        $this->violations = $jobs->violations();
         $this->parameters = new Parameters();
         $this->referenced = new Map();
         $this->provided = new Map();
@@ -166,23 +165,24 @@ final class Workflow implements WorkflowInterface
                 $this->dependencies = $this->dependencies
                     ->withClass($item->action());
             }
-            if ($this->config->isLint) {
-                $violations = $item->violations();
-                if (count($violations) === 0) {
-                    continue;
-                }
-                $this->violations = $this->violations->withPush(
-                    ...array_map(
-                        fn (array $violation): array => array_merge(
-                            [
-                                'job' => $name,
-                            ],
-                            $violation
-                        ),
-                        $violations->toArray()
-                    )
-                );
+            if (! $this->config->isLint) {
+                continue;
             }
+            $violations = $item->violations();
+            if (count($violations) === 0) {
+                continue;
+            }
+            $this->violations = $this->violations->withPush(
+                ...array_map(
+                    fn (array $violation): array => array_merge(
+                        [
+                            'job' => $name,
+                        ],
+                        $violation
+                    ),
+                    $violations->toArray()
+                )
+            );
         }
     }
 
