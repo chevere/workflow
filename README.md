@@ -63,6 +63,25 @@ echo $result->response('greet')->string();
 // Output: Hello, World!
 ```
 
+## Workflow Provider Convention
+
+Implement `WorkflowProviderInterface` to expose a workflow definition from a class:
+
+```php
+use Chevere\Workflow\Interfaces\WorkflowProviderInterface;
+use Chevere\Workflow\Interfaces\WorkflowInterface;
+
+class MyProvider implements WorkflowProviderInterface
+{
+    public static function workflow(): WorkflowInterface
+    {
+        return workflow(/* ... */);
+    }
+}
+```
+
+This is the recommended pattern for packages and applications. It separates workflow configuration from execution logic and enables discovery by tooling such as the **Chevere Workflow VSCode extension**.
+
 ## Core Concepts
 
 Workflow is built around four main concepts:
