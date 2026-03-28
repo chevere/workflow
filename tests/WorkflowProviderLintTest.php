@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Chevere\Tests;
 
-use Chevere\Tests\src\TestWorkflowProvider;
+use Chevere\Tests\src\TestWorkflowProviderLintMode;
 use PHPUnit\Framework\TestCase;
 
-final class WorkflowProviderTest extends TestCase
+final class WorkflowProviderLintTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -30,7 +30,7 @@ final class WorkflowProviderTest extends TestCase
 
     public function testLint(): void
     {
-        $lint = json_decode(TestWorkflowProvider::workflow()->lint(), true);
+        $lint = json_decode(TestWorkflowProviderLintMode::workflow()->lint(), true);
         $this->assertSame(
             [
                 [
