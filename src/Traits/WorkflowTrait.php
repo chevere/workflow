@@ -24,7 +24,7 @@ use function Chevere\Workflow\run;
  * Provides method `execute()` to assign `$run` property.
  * Provides method `run()` to access the `$run` property.
  */
-trait WorkflowTrait // @phpstan-ignore-line
+trait WorkflowTrait
 {
     private RunInterface $run;
 

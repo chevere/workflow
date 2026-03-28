@@ -19,7 +19,7 @@ use Closure;
 /**
  * Shorthand for testing a job runtime WorkflowException for PHPUnit.
  */
-trait ExpectWorkflowExceptionTrait // @phpstan-ignore-line
+trait ExpectWorkflowExceptionTrait
 {
     abstract public static function assertInstanceOf(string $expected, mixed $actual, string $message = ''): void;
 
