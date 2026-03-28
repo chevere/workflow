@@ -528,13 +528,21 @@ final class Jobs implements JobsInterface
         $dependencies = $this->jobDependencies->toArray();
         if (! $this->jobs->contains(...$dependencies)) {
             $missing = array_diff($dependencies, $this->jobs->toArray());
-
-            throw new OutOfBoundsException(
-                (string) message(
-                    'Job **%job%** has undeclared dependencies: `%dependencies%`',
-                    job: $job,
-                    dependencies: implode(', ', $missing),
-                )
+            $message = (string) message(
+                'Job **%job%** has undeclared dependencies: `%dependencies%`',
+                job: $job,
+                dependencies: implode(', ', $missing),
+            );
+            if (! $this->config->isLint) {
+                throw new OutOfBoundsException($message);
+            }
+            $this->violations = $this->violations->withPush(
+                [
+                    'job' => $job,
+                    'method' => 'withDepends',
+                    'missing' => $missing,
+                    'message' => $message,
+                ]
             );
         }
     }

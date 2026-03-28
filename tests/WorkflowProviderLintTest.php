@@ -41,6 +41,8 @@ final class WorkflowProviderLintTest extends TestCase
                 ],
                 [
                     'job' => 'j1',
+                    'method' => 'withDepends',
+                    'missing' => ['not_found'],
                     'message' => 'Job **j1** has undeclared dependencies: `not_found`',
                 ],
                 [

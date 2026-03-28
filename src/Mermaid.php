@@ -19,6 +19,7 @@ use Chevere\Workflow\Interfaces\MermaidInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
+use Throwable;
 
 final class Mermaid implements MermaidInterface
 {
@@ -31,8 +32,11 @@ final class Mermaid implements MermaidInterface
      */
     private array $links = [];
 
+    private Config $config;
+
     public function __construct()
     {
+        $this->config = Config::fromEnv();
         $this->currentTitle = '';
         $this->links = [];
     }
@@ -46,7 +50,15 @@ final class Mermaid implements MermaidInterface
         $self = new self();
         foreach ($workflow->jobs()->graph()->toArray() as $jobNames) {
             foreach ($jobNames as $name) {
-                $self->currentJob = $workflow->jobs()->get($name);
+                try {
+                    $self->currentJob = $workflow->jobs()->get($name);
+                } catch (Throwable $e) {
+                    if (! $self->config->isLint) {
+                        throw $e;
+                    }
+
+                    continue;
+                }
                 $self->currentTitle = $name;
                 $self->addConditions('if');
                 $self->addConditions('ifNot');
