@@ -76,11 +76,19 @@ final class Workflow implements WorkflowInterface
         if (! $this->config->isLint) {
             throw new BadMethodCallException();
         }
+        $variables = [];
+        foreach ($this->parameters as $name => $parameter) {
+            $variables[$name] = [
+                'required' => $this->parameters->requiredKeys()->contains($name),
+                ...$parameter->schema(),
+            ];
+        }
 
         return json_encode(
             [
                 'violations' => $this->violations->toArray(),
                 'mermaid' => $this->mermaid,
+                'variables' => $variables,
             ],
             JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR
         );

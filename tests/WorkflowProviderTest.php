@@ -78,5 +78,29 @@ final class WorkflowProviderTest extends TestCase
             MERMAID,
             $lint['mermaid']
         );
+        $this->assertSame(
+            [
+                // NOTE: Default null doesn't mean nullable. Union types denote nullability (when `null` is included in the union).
+                // Default is the value on the signature `$wea = 124` if any
+                'my_var' => [
+                    'required' => true,
+                    'type' => 'className',
+                    'className' => 'stdClass',
+                    'description' => '',
+                    'default' => null,
+                ],
+                'my_float' => [
+                    'required' => true,
+                    'type' => 'float',
+                    'description' => 'A float variable',
+                    'default' => null,
+                    'min' => 0.1,
+                    'max' => 100.2,
+                    'accept' => [],
+                    'reject' => [],
+                ],
+            ],
+            $lint['variables'],
+        );
     }
 }

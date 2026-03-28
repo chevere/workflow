@@ -43,10 +43,11 @@ final class TestWorkflowProvider implements WorkflowProviderInterface
                 fn (): int => 100
             )->withDepends('not_found'),
             ja: sync(
-                #[_return(
-                    new _float()
-                )]
-                fn (): float => 0.1
+                fn (
+                    #[_float(min: 0.1, max: 100.20, description: 'A float variable', label: 'My Float')]
+                    float $float
+                ): float => $float,
+                float: variable('my_float')
             ),
             j2: sync(
                 fn (
