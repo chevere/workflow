@@ -864,10 +864,37 @@ public function testWorkflowGraph(): void
         b: async(ActionB::class),
         c: sync(ActionC::class, x: response('a'), y: response('b'))
     );
-
     $graph = $workflow->jobs()->graph()->toArray();
 
     $this->assertSame([['a', 'b'], ['c']], $graph);
+}
+```
+
+### Testing Workflow Providers with PHPUnit
+
+Use `Chevere\Workflow\Traits\WorkflowProviderTestTrait` in PHPUnit test cases to assert provider correctness:
+
+| Method                                      | Description                                                    |
+| ------------------------------------------- | -------------------------------------------------------------- |
+| `assertWorkflowProvider($provider)`         | Asserts the class implements `WorkflowProviderInterface`       |
+| `assertWorkflowGraph($expected, $workflow)` | Asserts the workflow jobs dependency graph matches `$expected` |
+
+When passing a class string to `assertWorkflowGraph`, it also calls `assertWorkflowProvider` internally.
+
+```php
+use Chevere\Workflow\Traits\WorkflowProviderTestTrait;
+
+class MyWorkflowProviderTest extends PHPUnit\Framework\TestCase
+{
+    use WorkflowProviderTestTrait;
+
+    public function testProviderGraph(): void
+    {
+        $this->assertWorkflowGraph(
+            [['a', 'b'], ['c']],
+            MyProvider::class
+        );
+    }
 }
 ```
 
