@@ -14,11 +14,11 @@
     "require": {
         "php": "^8.1",
         "amphp/amp": "^3.1",
-        "chevere/action": "^3.0.1",
+        "chevere/action": "^3.0.x-dev",
         "chevere/caller": "^1.0.0",
         "chevere/container": "^1.0.0",
         "chevere/data-structure": "^1.1.0",
-        "chevere/parameter": "^2.0.1",
+        "chevere/parameter": "^2.0.x-dev",
         "chevere/regex": "^1.0.2"
     },
     "require-dev": {

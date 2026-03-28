@@ -57,12 +57,18 @@ final class WorkflowProviderLintTest extends TestCase
                     'response' => 'j0',
                     'message' => 'Response **j0** must be of type `bool|int`, type `className` provided',
                 ],
+                [
+                    'job' => 'a',
+                    'parameter' => 'foo',
+                    'message' => 'Argument value provided `1` is less than `200`',
+                ],
             ],
             $lint['violations']
         );
         $this->assertSame(
             <<<MERMAID
             graph TB;
+                a("`a`");
                 j00("`j00`");
                 j0("`j0
             *if* var(my_var)`");

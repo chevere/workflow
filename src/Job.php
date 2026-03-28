@@ -15,16 +15,15 @@ namespace Chevere\Workflow;
 
 use ArgumentCountError;
 use Chevere\Action\Interfaces\ActionInterface;
+use Chevere\Action\ReflectionAction;
 use Chevere\Caller\Caller;
-use Chevere\Caller\Interfaces\CallerInterface;
-use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Vector;
 use Chevere\Parameter\Interfaces\ParameterInterface;
-use Chevere\Parameter\Interfaces\ParametersInterface;
+use Chevere\Parameter\Parameters;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
-use Chevere\Workflow\Interfaces\RetryPolicyInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
+use Chevere\Workflow\Traits\JobPropertiesTrait;
 use Closure;
 use InvalidArgumentException;
 use OverflowException;
@@ -34,54 +33,13 @@ use ReflectionObject;
 use Throwable;
 use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
+use function Chevere\Parameter\mixed;
 use function Chevere\Parameter\reflectionToParameters;
 use function Chevere\Parameter\reflectionToReturn;
 
 final class Job implements JobInterface
 {
-    /**
-     * @var array<string, mixed>
-     */
-    private array $arguments;
-
-    /**
-     * @var VectorInterface<string>
-     */
-    private VectorInterface $dependencies;
-
-    /**
-     * @var VectorInterface<string>
-     */
-    private VectorInterface $after;
-
-    private ParametersInterface $parameters;
-
-    private ParameterInterface $return;
-
-    /**
-     * @var VectorInterface<ResponseReferenceInterface|VariableInterface>
-     */
-    private VectorInterface $runIf;
-
-    /**
-     * @var VectorInterface<ResponseReferenceInterface|VariableInterface>
-     */
-    private VectorInterface $runIfNot;
-
-    private bool $isSync;
-
-    private CallerInterface $caller;
-
-    private RetryPolicyInterface $retryPolicy;
-
-    /**
-     * @var ActionInterface|class-string|Closure
-     */
-    private ActionInterface|string|Closure $_;
-
-    private Config $config;
-
-    private VectorInterface $violations;
+    use JobPropertiesTrait;
 
     /**
      * @internal DO NOT use this method directly, use `sync()` or `async()` functions instead.
@@ -130,6 +88,10 @@ final class Job implements JobInterface
         $this->runIfNot = new Vector();
         $this->dependencies = new Vector();
         $this->after = new Vector();
+        $this->retryPolicy = new RetryPolicy();
+        $this->arguments = [];
+        $this->parameters = new Parameters();
+        $this->return = mixed();
         if ($this->_ instanceof Closure
             || (
                 is_string($this->_)
@@ -140,40 +102,41 @@ final class Job implements JobInterface
             $reflection ??= $this->_ instanceof Closure
                 ? new ReflectionFunction($this->_)
                 : (new ReflectionClass($this->_))->getMethod('__invoke');
-            $this->parameters = reflectionToParameters($reflection);
-            $this->return = reflectionToReturn($reflection);
+            $violations = $this->config->isLint ? [] : null;
+            $this->parameters = reflectionToParameters($reflection, $violations);
+            if ($violations) {
+                $this->violations = $this->violations->withPush(...$violations);
+            }
+            $this->wrapThrowable(
+                'return',
+                function () use ($reflection) {
+                    $this->return = reflectionToReturn($reflection);
+                }
+            );
         } else {
-            $this->parameters = $this->_::reflection()->parameters();
-            $this->return = $this->_::reflection()->return();
+            /** @var class-string<ActionInterface> $action */
+            $action = match (true) {
+                is_string($this->_) => $this->_,
+                default => get_class($this->_),
+            };
+            $reflectionAction = new ReflectionAction($action, failFast: ! $this->config->isLint);
+            $this->parameters = $reflectionAction->parameters();
+            $violations = $reflectionAction->violations()->toArray();
+            if ($violations !== []) {
+                $this->violations = $this->violations->withPush(...$violations);
+            }
+            $this->wrapThrowable(
+                'return',
+                function () {
+                    // @phpstan-ignore-next-line
+                    $this->return = $this->_::reflection()->return();
+                }
+            );
         }
-        $this->arguments = [];
+        if (count($this->violations) > 0) {
+            return;
+        }
         $this->setArguments(...$argument);
-        $this->retryPolicy = new RetryPolicy();
-    }
-
-    public function violations(): VectorInterface
-    {
-        return $this->violations;
-    }
-
-    public function caller(): CallerInterface
-    {
-        return $this->caller;
-    }
-
-    public function parameters(): ParametersInterface
-    {
-        return $this->parameters;
-    }
-
-    public function return(): ParameterInterface
-    {
-        return $this->return;
-    }
-
-    public function retryPolicy(): RetryPolicyInterface
-    {
-        return $this->retryPolicy;
     }
 
     public function withArguments(mixed ...$argument): JobInterface
@@ -235,39 +198,21 @@ final class Job implements JobInterface
         return $new;
     }
 
-    public function action(): ActionInterface|string|Closure
+    private function wrapThrowable(string $concern, Closure $closure): void
     {
-        return $this->_;
-    }
-
-    public function arguments(): array
-    {
-        return $this->arguments;
-    }
-
-    public function dependencies(): VectorInterface
-    {
-        return $this->dependencies;
-    }
-
-    public function after(): VectorInterface
-    {
-        return $this->after;
-    }
-
-    public function runIf(): VectorInterface
-    {
-        return $this->runIf;
-    }
-
-    public function runIfNot(): VectorInterface
-    {
-        return $this->runIfNot;
-    }
-
-    public function isSync(): bool
-    {
-        return $this->isSync;
+        try {
+            $closure();
+        } catch (Throwable $e) {
+            if (! $this->config->isLint) {
+                throw $e;
+            }
+            $this->violations = $this->violations->withPush(
+                [
+                    'concern' => $concern,
+                    'message' => $e->getMessage(),
+                ]
+            );
+        }
     }
 
     private function pushRunConditional(
