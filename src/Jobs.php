@@ -435,19 +435,36 @@ final class Jobs implements JobsInterface
         if (! $runIf instanceof ResponseReferenceInterface) {
             return;
         }
-        $return = $this->map->get($runIf->job())->return();
-        if ($runIf->key() !== null) {
-            if (! $return instanceof ParametersAccessInterface) {
-                throw new OutOfBoundsException(
-                    (string) message(
-                        'Response **%response%** job `%job%` doesn\'t bind to `%parameter%` parameter',
-                        response: strval($runIf),
-                        job: $runIf->job(),
-                        parameter: $runIf->key()
-                    )
-                );
+
+        try {
+            $return = $this->map->get($runIf->job())->return();
+            if ($runIf->key() !== null) {
+                if (! $return instanceof ParametersAccessInterface) {
+                    throw new OutOfBoundsException(
+                        (string) message(
+                            'Response **%response%** job `%job%` doesn\'t bind to `%parameter%` parameter',
+                            response: strval($runIf),
+                            job: $runIf->job(),
+                            parameter: $runIf->key()
+                        )
+                    );
+                }
+                $return = $return->parameters()->get($runIf->key());
             }
-            $return = $return->parameters()->get($runIf->key());
+        } catch (Throwable $e) {
+            if (! $this->config->isLint) {
+                throw $e;
+            }
+            $this->violations = $this->violations->withPush(
+                [
+                    'job' => $name,
+                    'method' => $method,
+                    'response' => strval($runIf),
+                    'message' => $e->getMessage(),
+                ]
+            );
+
+            return;
         }
         if (in_array($return->type()->primitive(), ['bool', 'int'], true)) {
             return;
