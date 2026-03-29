@@ -32,6 +32,11 @@
 
 You define jobs and how they connect and depend on each other, **Chevere Workflow** figures out the execution order and runs them accordingly.
 
+## Integrations
+
+* **[VS Code Extension](https://marketplace.visualstudio.com/items?itemName=Chevere.vscode-workflow)**: Complete language server support plus graph visualization
+* **[Laravel Integration](https://github.com/chevere/workflow-laravel)**: Package for integrating with Laravel applications
+
 ## Installing
 
 Workflow is available through [Packagist](https://packagist.org/packages/chevere/workflow) and the repository source is at [chevere/workflow](https://github.com/chevere/workflow).
