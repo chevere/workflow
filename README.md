@@ -35,7 +35,7 @@ You define jobs and how they connect and depend on each other, **Chevere Workflo
 ## Integrations
 
 * **[VS Code Extension](https://marketplace.visualstudio.com/items?itemName=Chevere.vscode-workflow)**: Complete language server support plus graph visualization
-* **[Laravel Integration](https://github.com/chevere/workflow-laravel)**: Package for integrating with Laravel applications
+* **[Laravel Integration](https://chevere.org/packages/workflow-laravel)**: Package for integrating with Laravel applications
 
 ## Installing
 
