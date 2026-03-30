@@ -119,19 +119,13 @@ final class Job implements JobInterface
                 is_string($this->_) => $this->_,
                 default => get_class($this->_),
             };
-            $reflectionAction = new ReflectionAction($action, failFast: ! $this->config->isLint);
+            $reflectionAction = new ReflectionAction($action, isFailFast: ! $this->config->isLint);
             $this->parameters = $reflectionAction->parameters();
+            $this->return = $reflectionAction->return();
             $violations = $reflectionAction->violations()->toArray();
-            if ($violations !== []) {
+            if ($violations) {
                 $this->violations = $this->violations->withPush(...$violations);
             }
-            $this->wrapThrowable(
-                'return',
-                function () {
-                    // @phpstan-ignore-next-line
-                    $this->return = $this->_::reflection()->return();
-                }
-            );
         }
         if (count($this->violations) > 0) {
             return;

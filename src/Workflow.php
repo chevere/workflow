@@ -27,7 +27,10 @@ use Chevere\Workflow\Interfaces\JobsInterface;
 use Chevere\Workflow\Interfaces\ResponseReferenceInterface;
 use Chevere\Workflow\Interfaces\VariableInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
+use LogicException;
 use OutOfBoundsException;
+use Throwable;
+use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
 
 final class Workflow implements WorkflowInterface
@@ -66,6 +69,11 @@ final class Workflow implements WorkflowInterface
                 $jobs->getIterator()
             )
         );
+        if (count($this->violations) > 0 && ! $this->config->isLint) {
+            throw new LogicException(
+                (string) message('Workflow has violations')
+            );
+        }
         if ($this->config->isLint) {
             $this->mermaid = Mermaid::generate($this);
         }
@@ -169,14 +177,23 @@ final class Workflow implements WorkflowInterface
             $name = strval($name);
             $this->putJobConditions($item);
             $this->putParameters($name, $item);
-            if (is_string($item->action())) {
-                $this->dependencies = $this->dependencies
-                    ->withClass($item->action());
+            $violations = $item->violations();
+            if (is_string($item->action()) && count($violations) === 0) {
+                try {
+                    $this->dependencies = $this->dependencies
+                        ->withClass($item->action());
+                } catch (Throwable $e) {
+                    $violations = $violations->withPush(
+                        [
+                            'concern' => 'dependency',
+                            'message' => $e->getMessage(),
+                        ]
+                    );
+                }
             }
             if (! $this->config->isLint) {
                 continue;
             }
-            $violations = $item->violations();
             if (count($violations) === 0) {
                 continue;
             }

@@ -29,6 +29,7 @@ final class TestWorkflowProviderLintMode implements WorkflowProviderInterface
     public static function workflow(): WorkflowInterface
     {
         return workflow(
+            z: sync('not_valid_action'),
             a: sync(
                 fn (#[_int(min: 200)] int $foo = 1): bool => false,
                 foo: variable('wea')

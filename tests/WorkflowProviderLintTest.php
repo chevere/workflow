@@ -58,6 +58,11 @@ final class WorkflowProviderLintTest extends TestCase
                     'message' => 'Response **j0** must be of type `bool|int`, type `className` provided',
                 ],
                 [
+                    'job' => 'z',
+                    'concern' => 'class',
+                    'message' => "Action doesn't exists",
+                ],
+                [
                     'job' => 'a',
                     'parameter' => 'foo',
                     'message' => 'Argument value provided `1` is less than `200`',
@@ -68,6 +73,7 @@ final class WorkflowProviderLintTest extends TestCase
         $this->assertSame(
             <<<MERMAID
             graph TB;
+                z("`z`");
                 a("`a`");
                 j00("`j00`");
                 j0("`j0
