@@ -782,6 +782,9 @@ try {
 Throw `EarlyReturnException` inside a job to stop workflow execution immediately without treating it as an error. Catch it at the call site to handle the early exit gracefully:
 
 ```php
+use Chevere\Workflow\Exceptions\WorkflowException;
+use Chevere\Workflow\Exceptions\EarlyReturnException;
+
 try {
     $result = run($workflow, ...);
 } catch (WorkflowException $e) {
