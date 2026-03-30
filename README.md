@@ -777,6 +777,23 @@ try {
 
 ---
 
+## Return Early
+
+Throw `EarlyReturnException` inside a job to stop workflow execution immediately without treating it as an error. Catch it at the call site to handle the early exit gracefully:
+
+```php
+try {
+    $result = run($workflow, ...);
+} catch (WorkflowException $e) {
+    if($e->throwable instanceof EarlyReturnException) {
+        // Handle early return (e.g., return a default response)
+        return;
+    }
+}
+```
+
+---
+
 ## Using WorkflowTrait
 
 For class-based workflow management, use `WorkflowTrait`:
