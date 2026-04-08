@@ -1,0 +1,582 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/chevere/workflow/3.0/schema/workflow-lint.schema.json",
+    "title": "Workflow Lint",
+    "description": "JSON output of WorkflowInterface::lint() when CHEVERE_WORKFLOW_LINT_ENABLE=1",
+    "type": "object",
+    "required": [
+        "violations",
+        "mermaid"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "violations": {
+            "type": "array",
+            "description": "Violations detected during workflow lint",
+            "items": {
+                "oneOf": [
+                    {
+                        "$ref": "#/$defs/ViolationVariable"
+                    },
+                    {
+                        "$ref": "#/$defs/ViolationDepends"
+                    },
+                    {
+                        "$ref": "#/$defs/ViolationResponse"
+                    },
+                    {
+                        "$ref": "#/$defs/ViolationConcern"
+                    },
+                    {
+                        "$ref": "#/$defs/ViolationParameter"
+                    },
+                    {
+                        "$ref": "#/$defs/ViolationGeneral"
+                    }
+                ]
+            }
+        },
+        "mermaid": {
+            "type": "string",
+            "description": "Mermaid `graph TB` diagram representing the workflow job graph"
+        },
+        "variables": {
+            "type": "object",
+            "description": "Workflow input variables inferred from job signatures, keyed by variable name",
+            "additionalProperties": {
+                "oneOf": [
+                    {
+                        "$ref": "#/$defs/VariableBool"
+                    },
+                    {
+                        "$ref": "#/$defs/VariableNull"
+                    },
+                    {
+                        "$ref": "#/$defs/VariableMixed"
+                    },
+                    {
+                        "$ref": "#/$defs/VariableInt"
+                    },
+                    {
+                        "$ref": "#/$defs/VariableFloat"
+                    },
+                    {
+                        "$ref": "#/$defs/VariableString"
+                    },
+                    {
+                        "$ref": "#/$defs/VariableObject"
+                    },
+                    {
+                        "$ref": "#/$defs/VariableArray"
+                    }
+                ]
+            }
+        }
+    },
+    "$defs": {
+        "ViolationVariable": {
+            "description": "A workflow variable used in withRunIf/withRunIfNot is not of type bool|int",
+            "type": "object",
+            "required": [
+                "job",
+                "method",
+                "variable",
+                "message"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "job": {
+                    "type": "string",
+                    "description": "Job name where the violation was detected"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "withRunIf",
+                        "withRunIfNot"
+                    ],
+                    "description": "Job method that triggered the violation"
+                },
+                "variable": {
+                    "type": "string",
+                    "description": "Variable name that has an incompatible type"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Human-readable violation description"
+                }
+            }
+        },
+        "ViolationDepends": {
+            "description": "A job declares dependencies on jobs that do not exist in the workflow",
+            "type": "object",
+            "required": [
+                "job",
+                "method",
+                "missing",
+                "message"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "job": {
+                    "type": "string",
+                    "description": "Job name where the violation was detected"
+                },
+                "method": {
+                    "type": "string",
+                    "const": "withDepends",
+                    "description": "Job method that triggered the violation"
+                },
+                "missing": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "description": "Names of undeclared jobs referenced as dependencies"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Human-readable violation description"
+                }
+            }
+        },
+        "ViolationResponse": {
+            "description": "A response reference used in withRunIf/withRunIfNot does not exist or is not of type bool|int",
+            "type": "object",
+            "required": [
+                "job",
+                "method",
+                "response",
+                "message"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "job": {
+                    "type": "string",
+                    "description": "Job name where the violation was detected"
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "withRunIf",
+                        "withRunIfNot"
+                    ],
+                    "description": "Job method that triggered the violation"
+                },
+                "response": {
+                    "type": "string",
+                    "description": "Response reference string, e.g. 'jobName' or 'jobName->key'"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Human-readable violation description"
+                }
+            }
+        },
+        "ViolationConcern": {
+            "description": "An action-level concern such as a missing class, invalid return type, or unresolvable dependency",
+            "type": "object",
+            "required": [
+                "job",
+                "concern",
+                "message"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "job": {
+                    "type": "string",
+                    "description": "Job name where the violation was detected"
+                },
+                "concern": {
+                    "type": "string",
+                    "description": "Concern category, e.g. 'class', 'return', 'dependency'"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Human-readable violation description"
+                }
+            }
+        },
+        "ViolationParameter": {
+            "description": "An argument provided for a job parameter fails validation",
+            "type": "object",
+            "required": [
+                "job",
+                "parameter",
+                "message"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "job": {
+                    "type": "string",
+                    "description": "Job name where the violation was detected"
+                },
+                "parameter": {
+                    "type": "string",
+                    "description": "Parameter name that received the invalid argument"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Human-readable violation description"
+                }
+            }
+        },
+        "ViolationGeneral": {
+            "description": "A general job-level violation not covered by a more specific category",
+            "type": "object",
+            "required": [
+                "job",
+                "message"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "job": {
+                    "type": "string",
+                    "description": "Job name where the violation was detected"
+                },
+                "message": {
+                    "type": "string",
+                    "description": "Human-readable violation description"
+                }
+            }
+        },
+        "VariableBool": {
+            "description": "A bool workflow variable",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "description",
+                "default"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "bool"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "VariableNull": {
+            "description": "A null workflow variable",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "description",
+                "default"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "null"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": "null"
+                }
+            }
+        },
+        "VariableMixed": {
+            "description": "A mixed workflow variable",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "description",
+                "default"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "mixed"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": true
+            }
+        },
+        "VariableInt": {
+            "description": "An int workflow variable",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "description",
+                "default",
+                "min",
+                "max",
+                "accept",
+                "reject"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "int"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "min": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Minimum accepted value, or null if unconstrained"
+                },
+                "max": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "description": "Maximum accepted value, or null if unconstrained"
+                },
+                "accept": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "Allowlist of accepted values (empty means all values are allowed)"
+                },
+                "reject": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "Denylist of rejected values (empty means no values are rejected)"
+                }
+            }
+        },
+        "VariableFloat": {
+            "description": "A float workflow variable",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "description",
+                "default",
+                "min",
+                "max",
+                "accept",
+                "reject"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "float"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "min": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "description": "Minimum accepted value, or null if unconstrained"
+                },
+                "max": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "description": "Maximum accepted value, or null if unconstrained"
+                },
+                "accept": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "description": "Allowlist of accepted values (empty means all values are allowed)"
+                },
+                "reject": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "description": "Denylist of rejected values (empty means no values are rejected)"
+                }
+            }
+        },
+        "VariableString": {
+            "description": "A string workflow variable",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "description",
+                "default",
+                "regex"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "regex": {
+                    "type": "string",
+                    "description": "Regex pattern the value must match (without delimiters)"
+                }
+            }
+        },
+        "VariableObject": {
+            "description": "An object workflow variable",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "className",
+                "description",
+                "default"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "const": "className",
+                    "description": "Literal primitive type identifier for object parameters"
+                },
+                "className": {
+                    "type": "string",
+                    "description": "Fully-qualified class name the value must be an instance of"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "description": "Fully-qualified class name of the default instance, or null if no default"
+                }
+            }
+        },
+        "VariableArray": {
+            "description": "An array or iterable workflow variable with named parameters",
+            "type": "object",
+            "required": [
+                "required",
+                "type",
+                "description",
+                "default",
+                "parameters"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "array",
+                        "iterable"
+                    ],
+                    "description": "Primitive type identifier"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "default": {
+                    "type": [
+                        "array",
+                        "null"
+                    ]
+                },
+                "parameters": {
+                    "type": "object",
+                    "description": "Named parameters that describe the shape of the array",
+                    "additionalProperties": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/$defs/VariableBool"
+                            },
+                            {
+                                "$ref": "#/$defs/VariableNull"
+                            },
+                            {
+                                "$ref": "#/$defs/VariableMixed"
+                            },
+                            {
+                                "$ref": "#/$defs/VariableInt"
+                            },
+                            {
+                                "$ref": "#/$defs/VariableFloat"
+                            },
+                            {
+                                "$ref": "#/$defs/VariableString"
+                            },
+                            {
+                                "$ref": "#/$defs/VariableObject"
+                            },
+                            {
+                                "$ref": "#/$defs/VariableArray"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

@@ -853,6 +853,8 @@ $report = $workflow->lint();
 
 Lint mode is intended for development and CI pipelines to inspect workflow definitions without halting on the first error.
 
+The output conforms to the `schema/workflow-lint.schema.json`, which you can use to validate lint reports or integrate with tooling.
+
 ---
 
 ## Testing

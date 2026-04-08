@@ -22,6 +22,7 @@
         "chevere/regex": "^1.0.2"
     },
     "require-dev": {
+        "opis/json-schema": "^2.6",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^10.5",
         "symplify/easy-coding-standard": "^13.0"
