@@ -95,12 +95,15 @@ final class Runner implements RunnerInterface
         $arguments = $new->getJobArguments($job);
         $action = $job->action();
         if (is_string($action)) {
-            $dependencies = $this->run->workflow()->dependencies()->extract(
-                $action,
-                $this->run->container()
-            );
-            /** @var ActionInterface $action */
-            $action = new $action(...$dependencies);
+            if ($this->run->container()->has($action)) {
+                $action = $this->run->container()->get($action);
+            } else {
+                $dependencies = $this->run->workflow()->dependencies()->extract(
+                    $action,
+                    $this->run->container()
+                );
+                $action = new $action(...$dependencies);
+            }
         }
         if ($action instanceof ActionInterface) {
             $action->assert();
@@ -122,11 +125,13 @@ final class Runner implements RunnerInterface
                 if ($cancellation !== null) {
                     $response = await(
                         [
+                            // @phpstan-ignore method.nonObject
                             async(fn (): mixed => $action->__invoke(...$arguments)),
                         ],
                         cancellation: $cancellation
                     )[0];
                 } else {
+                    // @phpstan-ignore method.nonObject
                     $response = $action->__invoke(...$arguments);
                 }
                 $lastException = null;
