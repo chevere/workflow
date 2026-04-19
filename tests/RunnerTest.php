@@ -614,13 +614,18 @@ final class RunnerTest extends TestCase
 
     public function testRunnerActionClassNameWithDependency(): void
     {
-        $this->expectNotToPerformAssertions();
         $workflow = workflow(
             job1: sync(TestActionDependsNoParams::class),
         );
-        run($workflow);
         $container = new Container(dependency: new stdClass());
         run($workflow, $container);
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            <<<PLAIN
+            Missing argument `dependency` as previously defined by `Chevere\Tests\src\TestActionDependsNoParams`
+            PLAIN
+        );
+        run($workflow);
     }
 
     public function testRunnerActionClassNameMissingDependency(): void

@@ -25,40 +25,13 @@ use function Chevere\Filesystem\filePhpReturnForPath;
 final class ProviderDiscovery implements ProviderDiscoveryInterface
 {
     /**
-     * @var array<class-string<WorkflowProviderInterface>>
+     * @param array<class-string<WorkflowProviderInterface>> $providers
+     * @param array<class-string> $dependencies
      */
-    private array $providers = [];
-
-    /**
-     * @var array<class-string>
-     */
-    private array $dependencies = [];
-
-    private DirectoryInterface $directory;
-
-    public function __construct(string $dir)
-    {
-        $this->directory = directoryForPath(
-            realpath($dir)
-            ?: throw new RuntimeException(
-                "Unable to resolve path for `{$dir}`"
-            )
-        );
-        /** @var array<class-string<WorkflowProviderInterface>> $discovered */
-        $discovered = Discover::in($this->directory->path()->__toString())
-            ->classes()->implementing(WorkflowProviderInterface::class)->get();
-        sort($discovered);
-        $this->providers = $discovered;
-        $deps = [];
-        foreach ($this->providers as $providerClass) {
-            foreach ($providerClass::workflow()->dependencies()->classes() as $dependencyClass) {
-                $deps[$dependencyClass] = true;
-            }
-        }
-        /** @var array<class-string> $keys */
-        $keys = array_keys($deps);
-        sort($keys);
-        $this->dependencies = $keys;
+    public function __construct(
+        public readonly array $providers,
+        public readonly array $dependencies
+    ) {
     }
 
     public function providers(): array
@@ -71,24 +44,66 @@ final class ProviderDiscovery implements ProviderDiscoveryInterface
         return $this->dependencies;
     }
 
-    public function build(?string $dir = null): void
+    public function build(string $dir): void
     {
-        $directory = $this->directory;
-        if ($dir !== null) {
-            $directory = directoryForPath(
-                realpath($dir)
-                ?: throw new RuntimeException(
-                    "Unable to resolve path for `{$dir}`"
-                )
-            );
-        }
-        filePhpReturnForPath($directory->path()->getChild('workflow-providers.php'))
+        $directory = static::getDirectory($dir);
+        filePhpReturnForPath(
+            $directory->path()->getChild(static::PROVIDERS_FILENAME)
+        )
             ->put(
                 new StorableVariable($this->providers)
             );
-        filePhpReturnForPath($directory->path()->getChild('workflow-dependencies.php'))
+        filePhpReturnForPath(
+            $directory->path()->getChild(static::DEPENDENCIES_FILENAME)
+        )
             ->put(
                 new StorableVariable($this->dependencies)
             );
+    }
+
+    public static function fromDirectory(string $dir): ProviderDiscoveryInterface
+    {
+        $directory = static::getDirectory($dir);
+        /** @var array<class-string<WorkflowProviderInterface>> $providers */
+        $providers = Discover::in($directory->path()->__toString())
+            ->classes()->implementing(WorkflowProviderInterface::class)
+            ->get();
+        sort($providers);
+        $dependencies = [];
+        foreach ($providers as $providerClass) {
+            foreach ($providerClass::workflow()->dependencies()->classes() as $dependencyClass) {
+                $dependencies[$dependencyClass] = true;
+            }
+        }
+        /** @var array<class-string> $dependencies */
+        $dependencies = array_keys($dependencies);
+        sort($dependencies);
+
+        return new self($providers, $dependencies);
+    }
+
+    public static function fromBuild(string $dir): ProviderDiscoveryInterface
+    {
+        $directory = static::getDirectory($dir);
+        /** @var array<class-string<WorkflowProviderInterface>> $providers */
+        $providers = filePhpReturnForPath(
+            $directory->path()->getChild(static::PROVIDERS_FILENAME)
+        )->get();
+        /** @var array<class-string> $dependencies */
+        $dependencies = filePhpReturnForPath(
+            $directory->path()->getChild(static::DEPENDENCIES_FILENAME)
+        )->get();
+
+        return new self($providers, $dependencies);
+    }
+
+    private static function getDirectory(string $dir): DirectoryInterface
+    {
+        return directoryForPath(
+            realpath($dir)
+            ?: throw new RuntimeException(
+                "Unable to resolve path for `{$dir}`"
+            )
+        );
     }
 }

@@ -550,7 +550,7 @@ This is the recommended pattern for packages and applications. It separates work
 ```php
 use Chevere\Workflow\ProviderDiscovery;
 
-$discovery = new ProviderDiscovery('/path/to/src');
+$discovery = ProviderDiscovery::fromDirectory('/path/to/src');
 
 // `workflow()` providers e.g. [OrderWorkflow::class, UserWorkflow::class, ...]
 $workflowProviders = $discovery->providers();
@@ -559,18 +559,12 @@ $workflowProviders = $discovery->providers();
 $workflowDependencies = $discovery->dependencies();
 ```
 
-### Building Cache Files
+### Build discovery results
 
-Call `build()` to persist the discovery results as PHP return files. Subsequent bootstraps can load these files instead of re-scanning the directory on every request.
+Call `build()` to persist the discovery results as PHP return files, which you can commit to your repository or load at runtime for faster access without needing to scan directories:
 
 ```php
-$discovery = new ProviderDiscovery('/path/to/src');
-
-// Write cache to the same directory
-$discovery->build();
-
-// Or write to a separate cache directory
-$discovery->build('/path/to/cache');
+$discovery->build('/path/to/build');
 ```
 
 Two files are written:
@@ -580,29 +574,25 @@ Two files are written:
 | `workflow-providers.php`    | `array<class-string<WorkflowProviderInterface>>` providers |
 | `workflow-dependencies.php` | `array<class-string>` required by discovered job actions   |
 
-### Working with chevere/container
-
-If you use `chevere/container` for dependency injection, the discovery results can be used to automatically register dependencies in the container:
+Call `fromBuild()` to load the discovery results from the cache files:
 
 ```php
-use Chevere\Container\Dependencies;
-
-$dependencies = new Dependencies(
-    ...$workflowProviders,
-    ...$workflowDependencies
-);
-$container = $container->withAutoInject($dependencies);
+$discovery = ProviderDiscovery::fromBuild('/path/to/build');
 ```
 
-To validate that your container can satisfy all discovered dependencies before running any workflow, call `assert()`:
+### Validating Dependencies
+
+To validate that your container can satisfy all discovered dependencies before running any workflow, call `assert()` on `Dependencies` with your container instance. It will throw if any required class is missing:
 
 ```php
+$dependencies = new Dependencies(
+    ...$discovery->dependencies(),
+    ...$discovery->providers()
+);
 $dependencies->assert($container);
 ```
 
-### Working with any PSR-11 container
-
-Use the discovered dependency list to assert that your PSR-11 container can satisfy every dependency before running any workflow:
+You can also manually check the list of dependencies against your PSR-11 container:
 
 ```php
 use Chevere\Workflow\ProviderDiscovery;
@@ -636,6 +626,7 @@ $container = new Container(
 );
 
 // Run workflow with container
+// The system will auto-inject and assert dependencies.
 $result = run($workflow, $container, ...$vars);
 ```
 

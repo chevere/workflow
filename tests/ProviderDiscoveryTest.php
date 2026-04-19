@@ -43,19 +43,19 @@ final class ProviderDiscoveryTest extends TestCase
     public function testInvalidPath(): void
     {
         $this->expectException(RuntimeException::class);
-        new ProviderDiscovery('/non/existent/path/that/does/not/exist');
+        ProviderDiscovery::fromDirectory('/non/existent/path/that/does/not/exist');
     }
 
     public function testNoProviders(): void
     {
-        $discovery = new ProviderDiscovery($this->tempDir);
+        $discovery = ProviderDiscovery::fromDirectory($this->tempDir);
         $this->assertSame([], $discovery->providers());
         $this->assertSame([], $discovery->dependencies());
     }
 
     public function testProviders(): void
     {
-        $discovery = new ProviderDiscovery($this->fixtureDir);
+        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
         $this->assertSame(
             [
                 TestProviderWithDependency::class,
@@ -67,7 +67,7 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testProvidersAreSorted(): void
     {
-        $discovery = new ProviderDiscovery($this->fixtureDir);
+        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
         $providers = $discovery->providers();
         $sorted = $providers;
         sort($sorted);
@@ -76,7 +76,7 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testDependencies(): void
     {
-        $discovery = new ProviderDiscovery($this->fixtureDir);
+        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
         $this->assertSame(
             [TestActionRequiresInterface::class],
             $discovery->dependencies()
@@ -85,27 +85,16 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testDependenciesAreSorted(): void
     {
-        $discovery = new ProviderDiscovery($this->fixtureDir);
+        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
         $dependencies = $discovery->dependencies();
         $sorted = $dependencies;
         sort($sorted);
         $this->assertSame($sorted, $dependencies);
     }
 
-    public function testBuildDefaultDir(): void
+    public function testBuild(): void
     {
-        $discovery = new ProviderDiscovery($this->tempDir);
-        $discovery->build();
-        $dir = directoryForPath($this->tempDir);
-        $providers = filePhpReturnForPath($dir->path()->getChild('workflow-providers.php'))->get();
-        $this->assertSame([], $providers);
-        $dependencies = filePhpReturnForPath($dir->path()->getChild('workflow-dependencies.php'))->get();
-        $this->assertSame([], $dependencies);
-    }
-
-    public function testBuildExplicitDir(): void
-    {
-        $discovery = new ProviderDiscovery($this->fixtureDir);
+        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
         $discovery->build($this->tempDir);
         $dir = directoryForPath($this->tempDir);
         $providers = filePhpReturnForPath($dir->path()->getChild('workflow-providers.php'))->get();
@@ -116,8 +105,23 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testBuildInvalidDir(): void
     {
-        $discovery = new ProviderDiscovery($this->tempDir);
+        $discovery = ProviderDiscovery::fromDirectory($this->tempDir);
         $this->expectException(RuntimeException::class);
         $discovery->build('/non/existent/build/path');
+    }
+
+    public function testFromBuild(): void
+    {
+        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
+        $discovery->build($this->tempDir);
+        $loaded = ProviderDiscovery::fromBuild($this->tempDir);
+        $this->assertSame($discovery->providers(), $loaded->providers());
+        $this->assertSame($discovery->dependencies(), $loaded->dependencies());
+    }
+
+    public function testFromBuildInvalidDir(): void
+    {
+        $this->expectException(RuntimeException::class);
+        ProviderDiscovery::fromBuild('/non/existent/build/path');
     }
 }
