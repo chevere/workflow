@@ -26,7 +26,7 @@ final class WorkflowDiscovery implements WorkflowDiscoveryInterface
 {
     /**
      * @param array<class-string<WorkflowProviderInterface>> $providers
-     * @param array<class-string> $dependencies
+     * @param array<class-string> $dependencies Job actions with constructor dependencies.
      */
     public function __construct(
         public readonly array $providers,

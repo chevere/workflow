@@ -30,7 +30,7 @@ interface WorkflowDiscoveryInterface
     public function providers(): array;
 
     /**
-     * @return array<class-string> List of dependency class names defined by job action.
+     * @return array<class-string> List of class names defined by job action requiring constructor dependencies.
      */
     public function dependencies(): array;
 

@@ -53,6 +53,9 @@ interface WorkflowInterface extends Countable
      */
     public function referenced(): MapInterface;
 
+    /**
+     * Job action class names requiring constructor dependencies.
+     */
     public function dependencies(): DependenciesInterface;
 
     /**
