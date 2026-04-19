@@ -16,13 +16,13 @@ namespace Chevere\Tests;
 use Chevere\Tests\src\ProviderDiscovery\TestProviderWithDependency;
 use Chevere\Tests\src\ProviderDiscovery\TestSimpleProvider;
 use Chevere\Tests\src\TestActionRequiresInterface;
-use Chevere\Workflow\ProviderDiscovery;
+use Chevere\Workflow\WorkflowDiscovery;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use function Chevere\Filesystem\directoryForPath;
 use function Chevere\Filesystem\filePhpReturnForPath;
 
-final class ProviderDiscoveryTest extends TestCase
+final class WorkflowDiscoveryTest extends TestCase
 {
     private string $fixtureDir;
 
@@ -43,19 +43,19 @@ final class ProviderDiscoveryTest extends TestCase
     public function testInvalidPath(): void
     {
         $this->expectException(RuntimeException::class);
-        ProviderDiscovery::fromDirectory('/non/existent/path/that/does/not/exist');
+        WorkflowDiscovery::fromDirectory('/non/existent/path/that/does/not/exist');
     }
 
     public function testNoProviders(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->tempDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->tempDir);
         $this->assertSame([], $discovery->providers());
         $this->assertSame([], $discovery->dependencies());
     }
 
     public function testProviders(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->fixtureDir);
         $this->assertSame(
             [
                 TestProviderWithDependency::class,
@@ -67,7 +67,7 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testProvidersAreSorted(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->fixtureDir);
         $providers = $discovery->providers();
         $sorted = $providers;
         sort($sorted);
@@ -76,7 +76,7 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testDependencies(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->fixtureDir);
         $this->assertSame(
             [TestActionRequiresInterface::class],
             $discovery->dependencies()
@@ -85,7 +85,7 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testDependenciesAreSorted(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->fixtureDir);
         $dependencies = $discovery->dependencies();
         $sorted = $dependencies;
         sort($sorted);
@@ -94,7 +94,7 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testBuild(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->fixtureDir);
         $discovery->build($this->tempDir);
         $dir = directoryForPath($this->tempDir);
         $providers = filePhpReturnForPath($dir->path()->getChild('workflow-providers.php'))->get();
@@ -105,16 +105,16 @@ final class ProviderDiscoveryTest extends TestCase
 
     public function testBuildInvalidDir(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->tempDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->tempDir);
         $this->expectException(RuntimeException::class);
         $discovery->build('/non/existent/build/path');
     }
 
     public function testFromBuild(): void
     {
-        $discovery = ProviderDiscovery::fromDirectory($this->fixtureDir);
+        $discovery = WorkflowDiscovery::fromDirectory($this->fixtureDir);
         $discovery->build($this->tempDir);
-        $loaded = ProviderDiscovery::fromBuild($this->tempDir);
+        $loaded = WorkflowDiscovery::fromBuild($this->tempDir);
         $this->assertSame($discovery->providers(), $loaded->providers());
         $this->assertSame($discovery->dependencies(), $loaded->dependencies());
     }
@@ -122,6 +122,6 @@ final class ProviderDiscoveryTest extends TestCase
     public function testFromBuildInvalidDir(): void
     {
         $this->expectException(RuntimeException::class);
-        ProviderDiscovery::fromBuild('/non/existent/build/path');
+        WorkflowDiscovery::fromBuild('/non/existent/build/path');
     }
 }

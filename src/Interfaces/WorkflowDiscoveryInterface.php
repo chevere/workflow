@@ -18,7 +18,7 @@ use RuntimeException;
 /**
  * Describes the component in charge of discovering workflow providers and their dependencies.
  */
-interface ProviderDiscoveryInterface
+interface WorkflowDiscoveryInterface
 {
     public const PROVIDERS_FILENAME = 'workflow-providers.php';
 

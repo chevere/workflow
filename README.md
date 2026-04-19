@@ -543,14 +543,18 @@ class MyProvider implements WorkflowProviderInterface
 
 This is the recommended pattern for packages and applications. It separates workflow configuration from execution logic and enables discovery by tooling such as the **Chevere Workflow VSCode extension**.
 
-## Provider Discovery
+## Workflow Discovery
 
-`ProviderDiscovery` scans a directory for all classes that implement `WorkflowProviderInterface` and collects the dependency class names (jobs) required by their workflows. Use it to inventory providers at build time, warm caches, or validate your dependency container before runtime.
+`WorkflowDiscovery` provides a list for classes implementing `WorkflowProviderInterface` under `providers()`, and a list of all class-string dependencies (jobs) under `dependencies()`.
+
+### Creating WorkflowDiscovery
+
+Create a discovery instance by providing the path to the directory containing your workflow providers:
 
 ```php
-use Chevere\Workflow\ProviderDiscovery;
+use Chevere\Workflow\WorkflowDiscovery;
 
-$discovery = ProviderDiscovery::fromDirectory('/path/to/src');
+$discovery = WorkflowDiscovery::fromDirectory('/path/to/src');
 
 // `workflow()` providers e.g. [OrderWorkflow::class, UserWorkflow::class, ...]
 $workflowProviders = $discovery->providers();
@@ -559,7 +563,7 @@ $workflowProviders = $discovery->providers();
 $workflowDependencies = $discovery->dependencies();
 ```
 
-### Build discovery results
+### Build WorkflowDiscovery
 
 Call `build()` to persist the discovery results as PHP return files, which you can commit to your repository or load at runtime for faster access without needing to scan directories:
 
@@ -577,7 +581,7 @@ Two files are written:
 Call `fromBuild()` to load the discovery results from the cache files:
 
 ```php
-$discovery = ProviderDiscovery::fromBuild('/path/to/build');
+$discovery = WorkflowDiscovery::fromBuild('/path/to/build');
 ```
 
 ### Validating Dependencies
@@ -595,9 +599,6 @@ $dependencies->assert($container);
 You can also manually check the list of dependencies against your PSR-11 container:
 
 ```php
-use Chevere\Workflow\ProviderDiscovery;
-
-$discovery = new ProviderDiscovery('/path/to/src');
 foreach ($discovery->dependencies() as $class) {
     if (! $container->has($class)) {
         throw new RuntimeException("Missing dependency: {$class}");
@@ -626,13 +627,13 @@ $container = new Container(
 );
 
 // Run workflow with container
-// The system will auto-inject and assert dependencies.
+// When using chevere/container it will auto-inject and assert
 $result = run($workflow, $container, ...$vars);
 ```
 
 When a job references a class-string (Action class, invokable class, or any other class), Workflow uses the container to:
 
-1. **Auto-inject dependencies** - Automatically resolve constructor parameters from the container
+1. **Inject dependencies** - Automatically resolve constructor parameters from the container
 2. **Validate availability** - Ensure all required dependencies are present before execution
 3. **Support nested dependencies** - Recursively resolve dependencies of dependencies
 

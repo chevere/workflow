@@ -15,14 +15,14 @@ namespace Chevere\Workflow;
 
 use Chevere\Filesystem\Interfaces\DirectoryInterface;
 use Chevere\VarSupport\StorableVariable;
-use Chevere\Workflow\Interfaces\ProviderDiscoveryInterface;
+use Chevere\Workflow\Interfaces\WorkflowDiscoveryInterface;
 use Chevere\Workflow\Interfaces\WorkflowProviderInterface;
 use RuntimeException;
 use Spatie\StructureDiscoverer\Discover;
 use function Chevere\Filesystem\directoryForPath;
 use function Chevere\Filesystem\filePhpReturnForPath;
 
-final class ProviderDiscovery implements ProviderDiscoveryInterface
+final class WorkflowDiscovery implements WorkflowDiscoveryInterface
 {
     /**
      * @param array<class-string<WorkflowProviderInterface>> $providers
@@ -61,7 +61,7 @@ final class ProviderDiscovery implements ProviderDiscoveryInterface
             );
     }
 
-    public static function fromDirectory(string $dir): ProviderDiscoveryInterface
+    public static function fromDirectory(string $dir): WorkflowDiscoveryInterface
     {
         $directory = static::getDirectory($dir);
         /** @var array<class-string<WorkflowProviderInterface>> $providers */
@@ -82,7 +82,7 @@ final class ProviderDiscovery implements ProviderDiscoveryInterface
         return new self($providers, $dependencies);
     }
 
-    public static function fromBuild(string $dir): ProviderDiscoveryInterface
+    public static function fromBuild(string $dir): WorkflowDiscoveryInterface
     {
         $directory = static::getDirectory($dir);
         /** @var array<class-string<WorkflowProviderInterface>> $providers */
