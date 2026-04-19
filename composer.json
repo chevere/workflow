@@ -16,7 +16,7 @@
         "amphp/amp": "^3.1",
         "chevere/action": "^3.0.2",
         "chevere/caller": "^1.0.0",
-        "chevere/container": "^1.0.0",
+        "chevere/container": "^1.0.3",
         "chevere/data-structure": "^1.1.0",
         "chevere/filesystem": "^2.0",
         "chevere/parameter": "^2.0.5",
