@@ -68,25 +68,6 @@ echo $result->response('greet')->string();
 // Output: Hello, World!
 ```
 
-## Workflow Provider Convention
-
-Implement `WorkflowProviderInterface` to expose a workflow definition from a class:
-
-```php
-use Chevere\Workflow\Interfaces\WorkflowProviderInterface;
-use Chevere\Workflow\Interfaces\WorkflowInterface;
-
-class MyProvider implements WorkflowProviderInterface
-{
-    public static function workflow(): WorkflowInterface
-    {
-        return workflow(/* ... */);
-    }
-}
-```
-
-This is the recommended pattern for packages and applications. It separates workflow configuration from execution logic and enables discovery by tooling such as the **Chevere Workflow VSCode extension**.
-
 ## Core Concepts
 
 Workflow is built around four main concepts:
@@ -538,6 +519,99 @@ When using conditional execution, check which jobs were skipped:
 ```php
 if ($result->skip()->contains('optionalJob')) {
     // Job was skipped
+}
+```
+
+---
+
+## Workflow Provider Convention
+
+Implement `WorkflowProviderInterface` to expose a workflow definition from a class:
+
+```php
+use Chevere\Workflow\Interfaces\WorkflowProviderInterface;
+use Chevere\Workflow\Interfaces\WorkflowInterface;
+
+class MyProvider implements WorkflowProviderInterface
+{
+    public static function workflow(): WorkflowInterface
+    {
+        return workflow(/* ... */);
+    }
+}
+```
+
+This is the recommended pattern for packages and applications. It separates workflow configuration from execution logic and enables discovery by tooling such as the **Chevere Workflow VSCode extension**.
+
+## Provider Discovery
+
+`ProviderDiscovery` scans a directory for all classes that implement `WorkflowProviderInterface` and collects the dependency class names (jobs) required by their workflows. Use it to inventory providers at build time, warm caches, or validate your dependency container before runtime.
+
+```php
+use Chevere\Workflow\ProviderDiscovery;
+
+$discovery = new ProviderDiscovery('/path/to/src');
+
+// `workflow()` providers e.g. [OrderWorkflow::class, UserWorkflow::class, ...]
+$workflowProviders = $discovery->providers();
+
+// Job action classes e.g. [UserCreate::class, OrderCreate::class, ...]
+$workflowDependencies = $discovery->dependencies();
+```
+
+### Building Cache Files
+
+Call `build()` to persist the discovery results as PHP return files. Subsequent bootstraps can load these files instead of re-scanning the directory on every request.
+
+```php
+$discovery = new ProviderDiscovery('/path/to/src');
+
+// Write cache to the same directory
+$discovery->build();
+
+// Or write to a separate cache directory
+$discovery->build('/path/to/cache');
+```
+
+Two files are written:
+
+| File                        | Contents                                                   |
+| --------------------------- | ---------------------------------------------------------- |
+| `workflow-providers.php`    | `array<class-string<WorkflowProviderInterface>>` providers |
+| `workflow-dependencies.php` | `array<class-string>` required by discovered job actions   |
+
+### Working with chevere/container
+
+If you use `chevere/container` for dependency injection, the discovery results can be used to automatically register dependencies in the container:
+
+```php
+use Chevere\Container\Dependencies;
+
+$dependencies = new Dependencies(
+    ...$workflowProviders,
+    ...$workflowDependencies
+);
+$container = $container->withAutoInject($dependencies);
+```
+
+To validate that your container can satisfy all discovered dependencies before running any workflow, call `assert()`:
+
+```php
+$dependencies->assert($container);
+```
+
+### Working with any PSR-11 container
+
+Use the discovered dependency list to assert that your PSR-11 container can satisfy every dependency before running any workflow:
+
+```php
+use Chevere\Workflow\ProviderDiscovery;
+
+$discovery = new ProviderDiscovery('/path/to/src');
+foreach ($discovery->dependencies() as $class) {
+    if (! $container->has($class)) {
+        throw new RuntimeException("Missing dependency: {$class}");
+    }
 }
 ```
 

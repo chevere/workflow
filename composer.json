@@ -18,8 +18,10 @@
         "chevere/caller": "^1.0.0",
         "chevere/container": "^1.0.0",
         "chevere/data-structure": "^1.1.0",
+        "chevere/filesystem": "^2.0",
         "chevere/parameter": "^2.0.5",
-        "chevere/regex": "^1.0.2"
+        "chevere/regex": "^1.0.2",
+        "spatie/php-structure-discoverer": "^2.4"
     },
     "require-dev": {
         "opis/json-schema": "^2.6",
