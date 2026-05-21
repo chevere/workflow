@@ -64,7 +64,6 @@ final class Job implements JobInterface
                 }
             } else {
                 if (is_array($_)) {
-                    // @phpstan-ignore-next-line
                     $reflection = (new ReflectionClass($_[0]))->getMethod($_[1]);
                 } elseif (is_object($_)) {
                     $reflection = (new ReflectionObject($_))->getMethod('__invoke');

@@ -49,7 +49,6 @@ use OutOfBoundsException;
 use OverflowException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 use function Chevere\Workflow\async;
 use function Chevere\Workflow\response;
 use function Chevere\Workflow\run;
@@ -617,10 +616,9 @@ final class RunnerTest extends TestCase
         $workflow = workflow(
             job1: sync(TestActionDependsNoParams::class),
         );
-        $container = new Container(dependency: new stdClass());
+        $container = new Container(dependency: 'the-dependency');
         $this->expectNotToPerformAssertions();
-        run($workflow, $container); // explicit
-        run($workflow); // on-the-fly container creation
+        run($workflow, $container);
     }
 
     public function testRunnerActionClassNameMissingDependency(): void

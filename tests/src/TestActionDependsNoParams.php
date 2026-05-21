@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Chevere\Tests\src;
 
 use Chevere\Action\Action;
-use stdClass;
 
 final class TestActionDependsNoParams extends Action
 {
     public function __construct(
-        private stdClass $dependency
+        private string $dependency
     ) {
     }
 
