@@ -6,6 +6,7 @@
     "type": "object",
     "required": [
         "violations",
+        "stages",
         "mermaid"
     ],
     "additionalProperties": false,
@@ -34,6 +35,16 @@
                         "$ref": "#/$defs/ViolationGeneral"
                     }
                 ]
+            }
+        },
+        "stages": {
+            "type": "array",
+            "description": "Execution stages for the workflow graph, where each item groups jobs that can run asynchronously in the same stage",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "mermaid": {

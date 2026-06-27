@@ -30,7 +30,8 @@ final class WorkflowProviderLintTest extends TestCase
 
     public function testLint(): void
     {
-        $lint = json_decode(TestWorkflowProviderLintMode::workflow()->lint(), true);
+        $json = TestWorkflowProviderLintMode::workflow()->lint();
+        $lint = json_decode($json, true);
         $this->assertSame(
             [
                 [
@@ -69,6 +70,19 @@ final class WorkflowProviderLintTest extends TestCase
                 ],
             ],
             $lint['violations']
+        );
+        $this->assertSame(
+            [
+                ['z'],
+                ['a'],
+                ['j00'],
+                ['j0'],
+                ['ja'],
+                ['not_found'],
+                ['j1'],
+                ['j2'],
+            ],
+            $lint['stages']
         );
         $this->assertSame(
             <<<MERMAID

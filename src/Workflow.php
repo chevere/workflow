@@ -95,6 +95,7 @@ final class Workflow implements WorkflowInterface
         return json_encode(
             [
                 'violations' => $this->violations->toArray(),
+                'stages' => $this->jobs->graph()->toArray(),
                 'mermaid' => $this->mermaid,
                 'variables' => $variables,
             ],
