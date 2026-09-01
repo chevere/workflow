@@ -363,7 +363,8 @@ final class Jobs implements JobsInterface
                             (string) message(
                                 '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
                                 parameter: $argument,
-                                type: $stored->type()->typeHinting(),
+                                type: $stored->type()
+                                    ->typeHinting(),
                                 expected: '`' . implode('`, `', $errors) . '`',
                                 subject: $subject,
                                 key: $identifier
@@ -384,7 +385,8 @@ final class Jobs implements JobsInterface
                             (string) message(
                                 '%subject% from **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
                                 parameter: $argument,
-                                type: $stored->type()->primitive(),
+                                type: $stored->type()
+                                    ->primitive(),
                                 expected: '`' . implode('`, `', $errors) . '`',
                                 subject: $subject,
                                 key: $identifier
@@ -403,8 +405,10 @@ final class Jobs implements JobsInterface
                     (string) message(
                         '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects `%expected%`',
                         parameter: $argument,
-                        type: $stored->type()->primitive(),
-                        expected: $parameter->type()->primitive(),
+                        type: $stored->type()
+                            ->primitive(),
+                        expected: $parameter->type()
+                            ->primitive(),
                         subject: $subject,
                         key: $identifier
                     )
@@ -437,7 +441,8 @@ final class Jobs implements JobsInterface
         }
 
         try {
-            $return = $this->map->get($runIf->job())->return();
+            $return = $this->map->get($runIf->job())
+                ->return();
             if ($runIf->key() !== null) {
                 if (! $return instanceof ParametersAccessInterface) {
                     throw new OutOfBoundsException(
@@ -449,7 +454,8 @@ final class Jobs implements JobsInterface
                         )
                     );
                 }
-                $return = $return->parameters()->get($runIf->key());
+                $return = $return->parameters()
+                    ->get($runIf->key());
             }
         } catch (Throwable $e) {
             if (! $this->config->isLint) {
@@ -472,7 +478,8 @@ final class Jobs implements JobsInterface
         $message = (string) message(
             'Response **%response%** must be of type `bool|int`, type `%type%` provided',
             response: strval($runIf),
-            type: $return->type()->primitive()
+            type: $return->type()
+                ->primitive()
         );
         if (! $this->config->isLint) {
             throw new TypeError($message);
@@ -499,7 +506,8 @@ final class Jobs implements JobsInterface
                 $message = (string) message(
                     'Variable **%variable%** (previously inferred as `%type%`) is not of type `bool|int` at Job **%job%**',
                     variable: $runIf->__toString(),
-                    type: $parameter->type()->primitive(),
+                    type: $parameter->type()
+                        ->primitive(),
                     job: $name,
                 );
                 if (! $this->config->isLint) {

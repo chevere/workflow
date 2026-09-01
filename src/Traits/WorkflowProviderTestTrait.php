@@ -45,7 +45,9 @@ trait WorkflowProviderTestTrait
         }
         $this->assertSame(
             $expected,
-            $workflow->jobs()->graph()->toArray(),
+            $workflow->jobs()
+                ->graph()
+                ->toArray(),
             'Workflow graph does not match expected structure'
         );
     }

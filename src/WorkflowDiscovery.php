@@ -48,13 +48,15 @@ final class WorkflowDiscovery implements WorkflowDiscoveryInterface
     {
         $directory = static::getDirectory($dir);
         filePhpReturnForPath(
-            $directory->path()->getChild(static::PROVIDERS_FILENAME)
+            $directory->path()
+                ->getChild(static::PROVIDERS_FILENAME)
         )
             ->put(
                 new StorableVariable($this->providers)
             );
         filePhpReturnForPath(
-            $directory->path()->getChild(static::DEPENDENCIES_FILENAME)
+            $directory->path()
+                ->getChild(static::DEPENDENCIES_FILENAME)
         )
             ->put(
                 new StorableVariable($this->dependencies)
@@ -66,7 +68,8 @@ final class WorkflowDiscovery implements WorkflowDiscoveryInterface
         $directory = static::getDirectory($dir);
         /** @var array<class-string<WorkflowProviderInterface>> $providers */
         $providers = Discover::in($directory->path()->__toString())
-            ->classes()->implementing(WorkflowProviderInterface::class)
+            ->classes()
+            ->implementing(WorkflowProviderInterface::class)
             ->get();
         sort($providers);
         $dependencies = [];
@@ -87,11 +90,13 @@ final class WorkflowDiscovery implements WorkflowDiscoveryInterface
         $directory = static::getDirectory($dir);
         /** @var array<class-string<WorkflowProviderInterface>> $providers */
         $providers = filePhpReturnForPath(
-            $directory->path()->getChild(static::PROVIDERS_FILENAME)
+            $directory->path()
+                ->getChild(static::PROVIDERS_FILENAME)
         )->get();
         /** @var array<class-string> $dependencies */
         $dependencies = filePhpReturnForPath(
-            $directory->path()->getChild(static::DEPENDENCIES_FILENAME)
+            $directory->path()
+                ->getChild(static::DEPENDENCIES_FILENAME)
         )->get();
 
         return new self($providers, $dependencies);

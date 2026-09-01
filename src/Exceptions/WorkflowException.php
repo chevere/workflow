@@ -53,8 +53,10 @@ abstract class WorkflowException extends Exception
         $this->name = $name;
         $this->job = $job;
         $this->throwable = $throwable;
-        $this->file = $job->caller()->file();
-        $this->line = $job->caller()->line();
+        $this->file = $job->caller()
+            ->file();
+        $this->line = $job->caller()
+            ->line();
     }
 
     /**

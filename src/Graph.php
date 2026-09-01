@@ -44,7 +44,8 @@ final class Graph implements GraphInterface
         string $name,
         JobInterface $job,
     ): GraphInterface {
-        $deps = $job->dependencies()->withPush(...$job->after()->toArray());
+        $deps = $job->dependencies()
+            ->withPush(...$job->after()->toArray());
         $transitive = $this->computeTransitiveClosure($deps);
         $this->assertNotSelfDependency($name, $transitive);
         $new = clone $this;
@@ -92,7 +93,8 @@ final class Graph implements GraphInterface
 
     public function hasDependencies(string $job, string ...$dependencies): bool
     {
-        return $this->get($job)->contains(...$dependencies);
+        return $this->get($job)
+            ->contains(...$dependencies);
     }
 
     public function toArray(): array

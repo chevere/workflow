@@ -121,7 +121,8 @@ final class Job implements JobInterface
             $reflectionAction = new ReflectionAction($action, isFailFast: ! $this->config->isLint);
             $this->parameters = $reflectionAction->parameters();
             $this->return = $reflectionAction->return();
-            $violations = $reflectionAction->violations()->toArray();
+            $violations = $reflectionAction->violations()
+                ->toArray();
             if ($violations) {
                 $this->violations = $this->violations->withPush(...$violations);
             }
@@ -318,7 +319,8 @@ final class Job implements JobInterface
     private function assertArgumentsCount(array $arguments): void
     {
         $countProvided = count($arguments);
-        $requiredKeys = $this->parameters->requiredKeys()->toArray();
+        $requiredKeys = $this->parameters->requiredKeys()
+            ->toArray();
         $isPositional = array_is_list($arguments);
         if ($isPositional) {
             $countRequired = count($requiredKeys);
@@ -399,7 +401,9 @@ final class Job implements JobInterface
 
     private function formatAsVariable(string $name): string
     {
-        return $this->parameters->get($name)->type()->typeHinting() . " \${$name}";
+        return $this->parameters->get($name)
+            ->type()
+            ->typeHinting() . " \${$name}";
     }
 
     private function assertParameter(string $name, ParameterInterface $parameter, mixed $value): void

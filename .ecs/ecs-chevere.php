@@ -54,70 +54,91 @@ use Symplify\CodingStandard\Fixer\Commenting\ParamReturnAndVarTagMalformsFixer;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 use Symplify\EasyCodingStandard\ValueObject\Set\SetList;
 
-return static function (ECSConfig $ecsConfig): void {
-    $ecsConfig->parallel();
-    $headerFile = __DIR__ . '/.header';
-    $ecsConfig->sets([SetList::PSR_12, SetList::COMMON]);
-    if (file_exists($headerFile)) {
-        $ecsConfig->ruleWithConfiguration(HeaderCommentFixer::class, [
+$ecsConfigBuilder = ECSConfig::configure()
+    ->withParallel()
+    ->withSets([SetList::PSR_12, SetList::COMMON])
+    ->withRules([
+        TypesSpacesFixer::class,
+        NoUselessReturnFixer::class,
+        LinebreakAfterOpeningTagFixer::class,
+        StandardizeNotEqualsFixer::class,
+        NoSpaceAroundDoubleColonFixer::class,
+        CleanNamespaceFixer::class,
+        ListSyntaxFixer::class,
+        SingleSpaceAroundConstructFixer::class,
+        LambdaNotUsedImportFixer::class,
+        NoAlternativeSyntaxFixer::class,
+        NoUnsetCastFixer::class,
+        NoShortBoolCastFixer::class,
+        NativeFunctionTypeDeclarationCasingFixer::class,
+        NativeFunctionCasingFixer::class,
+        MagicMethodCasingFixer::class,
+        MagicConstantCasingFixer::class,
+        LowercaseStaticReferenceFixer::class,
+        IntegerLiteralCaseFixer::class,
+        NormalizeIndexBraceFixer::class,
+        NoMultilineWhitespaceAroundDoubleArrowFixer::class,
+        BlankLineBeforeStatementFixer::class,
+        CombineConsecutiveUnsetsFixer::class,
+        CompactNullableTypehintFixer::class,
+        DeclareStrictTypesFixer::class,
+        IncludeFixer::class,
+        MultilineWhitespaceBeforeSemicolonsFixer::class,
+        NoAliasFunctionsFixer::class,
+        NoAliasLanguageConstructCallFixer::class,
+        NoEmptyStatementFixer::class,
+        NoMixedEchoPrintFixer::class,
+        ObjectOperatorWithoutWhitespaceFixer::class,
+        ParamReturnAndVarTagMalformsFixer::class,
+        ReturnAssignmentFixer::class,
+        SingleQuoteFixer::class,
+    ])
+    ->withConfiguredRule(
+        SingleLineCommentStyleFixer::class,
+        [
+            'comment_types' => ['hash'],
+        ]
+    )
+    ->withConfiguredRule(
+        OrderedImportsFixer::class,
+        [
+            'imports_order' => ['class', 'function', 'const'],
+        ]
+    )
+    ->withConfiguredRule(
+        ArraySyntaxFixer::class,
+        [
+            'syntax' => 'short',
+        ]
+    )
+    ->withConfiguredRule(
+        NoExtraBlankLinesFixer::class,
+        [
+            'tokens' => [
+                'curly_brace_block',
+                'extra',
+                'parenthesis_brace_block',
+                'square_brace_block',
+                'throw',
+                'use',
+            ],
+        ]
+    )
+    ->withSkip(
+        [
+            dirname(__DIR__) . '/vendor',
+            SingleImportPerStatementFixer::class => null,
+        ]
+    );
+$headerFile = __DIR__ . '/.header';
+if (file_exists($headerFile)) {
+    $ecsConfigBuilder = $ecsConfigBuilder->withConfiguredRule(
+        HeaderCommentFixer::class,
+        [
             'header' => file_get_contents($headerFile),
             'location' => 'after_open',
-        ]);
-    }
-    $ecsConfig->rule(TypesSpacesFixer::class);
-    $ecsConfig->rule(NoUselessReturnFixer::class);
-    $ecsConfig->rule(LinebreakAfterOpeningTagFixer::class);
-    $ecsConfig->rule(StandardizeNotEqualsFixer::class);
-    $ecsConfig->rule(NoSpaceAroundDoubleColonFixer::class);
-    $ecsConfig->rule(CleanNamespaceFixer::class);
-    $ecsConfig->rule(ListSyntaxFixer::class);
-    $ecsConfig->rule(SingleSpaceAroundConstructFixer::class);
-    $ecsConfig->rule(LambdaNotUsedImportFixer::class);
-    $ecsConfig->rule(NoAlternativeSyntaxFixer::class);
-    $ecsConfig->rule(NoUnsetCastFixer::class);
-    $ecsConfig->rule(NoShortBoolCastFixer::class);
-    $ecsConfig->rule(NativeFunctionTypeDeclarationCasingFixer::class);
-    $ecsConfig->rule(NativeFunctionCasingFixer::class);
-    $ecsConfig->rule(MagicMethodCasingFixer::class);
-    $ecsConfig->rule(MagicConstantCasingFixer::class);
-    $ecsConfig->rule(LowercaseStaticReferenceFixer::class);
-    $ecsConfig->rule(IntegerLiteralCaseFixer::class);
-    $ecsConfig->rule(NormalizeIndexBraceFixer::class);
-    $ecsConfig->rule(NoMultilineWhitespaceAroundDoubleArrowFixer::class);
-    $ecsConfig->rule(BlankLineBeforeStatementFixer::class);
-    $ecsConfig->rule(CombineConsecutiveUnsetsFixer::class);
-    $ecsConfig->rule(CompactNullableTypehintFixer::class);
-    $ecsConfig->rule(DeclareStrictTypesFixer::class);
-    $ecsConfig->rule(IncludeFixer::class);
-    $ecsConfig->rule(MultilineWhitespaceBeforeSemicolonsFixer::class);
-    $ecsConfig->rule(NoAliasFunctionsFixer::class);
-    $ecsConfig->rule(NoAliasLanguageConstructCallFixer::class);
-    $ecsConfig->rule(NoEmptyStatementFixer::class);
-    $ecsConfig->rule(NoMixedEchoPrintFixer::class);
-    $ecsConfig->rule(ObjectOperatorWithoutWhitespaceFixer::class);
-    $ecsConfig->rule(ParamReturnAndVarTagMalformsFixer::class);
-    $ecsConfig->rule(ReturnAssignmentFixer::class);
-    $ecsConfig->ruleWithConfiguration(SingleLineCommentStyleFixer::class, [
-        'comment_types' => ['hash'],
-    ]);
-    $ecsConfig->rule(SingleQuoteFixer::class);
-    $ecsConfig->ruleWithConfiguration(OrderedImportsFixer::class, [
-        'imports_order' => ['class', 'function', 'const'],
-    ]);
-    $ecsConfig->ruleWithConfiguration(ArraySyntaxFixer::class, [
-        'syntax' => 'short',
-    ]);
-    $ecsConfig->ruleWithConfiguration(NoExtraBlankLinesFixer::class, [
-        'tokens' => [
-            'curly_brace_block',
-            'extra',
-            'parenthesis_brace_block',
-            'square_brace_block',
-            'throw',
-            'use',
-        ],
-    ]);
-    $ecsConfig->skip([
-        SingleImportPerStatementFixer::class => null,
-    ]);
-};
+        ]
+    );
+}
+
+return $ecsConfigBuilder;

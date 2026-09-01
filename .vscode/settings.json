@@ -3,7 +3,7 @@
         {
             "match": "\\.php$",
             "runIn": "backend",
-            "command": "cd ${workspaceFolder} && vendor/bin/ecs --config='.ecs/ecs.php' check ${file} --fix",
+            "command": "cd ${workspaceFolder} && vendor/bin/ecs --config='.ecs/ecs.php' ${file} --fix",
             "workingDirectoryAsCWD": true,
             "runningStatusMessage": "ECS ${fileBasename}",
             "finishStatusMessage": "${fileBasename} OK"

@@ -92,7 +92,8 @@ function variable(string $name): VariableInterface
 function runnerForJob(RunnerInterface $runner, string $job): RunnerInterface
 {
     try {
-        $runner->run()->response($job);
+        $runner->run()
+            ->response($job);
 
         return $runner;
     } catch (Throwable) {
@@ -113,7 +114,8 @@ function run(
     $run = new Run($workflow, $container, ...$variable);
     $runner = new Runner($run);
 
-    return $runner->withRun()->run();
+    return $runner->withRun()
+        ->run();
 }
 // @codeCoverageIgnoreEnd
 

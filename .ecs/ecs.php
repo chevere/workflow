@@ -11,11 +11,4 @@
 
 declare(strict_types=1);
 
-use Symplify\EasyCodingStandard\Config\ECSConfig;
-
-return static function (ECSConfig $ecsConfig): void {
-    $ecsConfig->import(__DIR__ . '/ecs-chevere.php');
-    $ecsConfig->skip([
-        __DIR__ . '/vendor/*',
-    ]);
-};
+return require __DIR__ . '/ecs-chevere.php';

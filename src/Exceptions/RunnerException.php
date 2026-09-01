@@ -32,7 +32,8 @@ final class RunnerException extends WorkflowException
         int $attempt,
     ) {
         $this->attempt = $attempt;
-        $this->maxAttempts = $job->retryPolicy()->maxAttempts();
+        $this->maxAttempts = $job->retryPolicy()
+            ->maxAttempts();
         parent::__construct(
             name: $name,
             job: $job,

@@ -51,7 +51,8 @@ final class Mermaid implements MermaidInterface
         foreach ($workflow->jobs()->graph()->toArray() as $jobNames) {
             foreach ($jobNames as $name) {
                 try {
-                    $self->currentJob = $workflow->jobs()->get($name);
+                    $self->currentJob = $workflow->jobs()
+                        ->get($name);
                 } catch (Throwable $e) {
                     if (! $self->config->isLint) {
                         throw $e;
@@ -77,7 +78,8 @@ final class Mermaid implements MermaidInterface
     private function addLinks(string $name): void
     {
         /** @var VectorInterface<string> $deps */
-        $deps = $this->currentJob->dependencies()->withPush(...$this->currentJob->after()->toArray());
+        $deps = $this->currentJob->dependencies()
+            ->withPush(...$this->currentJob->after()->toArray());
         foreach ($deps as $dependency) {
             $relationParts = [];
             foreach ($this->currentJob->arguments() as $k => $v) {

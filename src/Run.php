@@ -66,7 +66,9 @@ final class Run implements RunInterface
             $this->container = $this->container
                 ->withAutoInject($this->workflow()->dependencies());
         }
-        $this->workflow()->dependencies()->assert($this->container);
+        $this->workflow()
+            ->dependencies()
+            ->assert($this->container);
     }
 
     public function toArray(): array
@@ -109,7 +111,10 @@ final class Run implements RunInterface
     {
         $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
         $new = clone $this;
-        $new->workflow->jobs()->get($job)->return()->__invoke($response);
+        $new->workflow->jobs()
+            ->get($job)
+            ->return()
+            ->__invoke($response);
         $new->map = $new->map->withPut($job, $response);
 
         return $new;
@@ -119,7 +124,8 @@ final class Run implements RunInterface
     {
         $new = clone $this;
         foreach ($job as $item) {
-            $new->workflow->jobs()->get($item);
+            $new->workflow->jobs()
+                ->get($item);
             $new->assertNoSkipOverflow($item, message('Job %job% already skipped'));
             $new->skip = $new->skip->withPush($item);
         }

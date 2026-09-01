@@ -45,8 +45,10 @@ final class Runner implements RunnerInterface
     public function withRun(): RunnerInterface
     {
         $new = clone $this;
-        $jobs = $new->run->workflow()->jobs();
-        $graph = $jobs->graph()->toArray();
+        $jobs = $new->run->workflow()
+            ->jobs();
+        $graph = $jobs->graph()
+            ->toArray();
         foreach ($graph as $node) {
             if (count($node) === 1) {
                 $runner = runnerForJob($new, strval($node[0])); // int job name
@@ -68,10 +70,14 @@ final class Runner implements RunnerInterface
     public function withRunJob(string $name): RunnerInterface
     {
         $new = clone $this;
-        $job = $new->run()->workflow()->jobs()->get($name);
+        $job = $new->run()
+            ->workflow()
+            ->jobs()
+            ->get($name);
         foreach ($job->dependencies() as $dependency) {
             try {
-                $new->run()->response($dependency);
+                $new->run()
+                    ->response($dependency);
             } catch (OutOfBoundsException) {
                 $new->addJobSkip($name);
 
@@ -96,19 +102,24 @@ final class Runner implements RunnerInterface
         $action = $job->action();
         if (is_string($action)) {
             if ($this->run->container()->has($action)) {
-                $action = $this->run->container()->get($action);
+                $action = $this->run->container()
+                    ->get($action);
             } else {
-                $dependencies = $this->run->workflow()->dependencies()->extract(
-                    $action,
-                    $this->run->container()
-                );
+                $dependencies = $this->run->workflow()
+                    ->dependencies()
+                    ->extract(
+                        $action,
+                        $this->run->container()
+                    );
                 $action = new $action(...$dependencies);
             }
         }
         if ($action instanceof ActionInterface) {
             $action->assert();
         }
-        $arguments = $job->parameters()->__invoke(...$arguments)->toArray();
+        $arguments = $job->parameters()
+            ->__invoke(...$arguments)
+            ->toArray();
         $retryPolicy = $job->retryPolicy();
         $maxAttempts = $retryPolicy->maxAttempts();
         $delay = $retryPolicy->delay();
@@ -163,14 +174,18 @@ final class Runner implements RunnerInterface
     private function getRunIfCondition(
         ResponseReferenceInterface|VariableInterface|callable|bool|int|float|string|null $runIf
     ): bool {
-        /** @var boolean */
+        /** @var bool */
         return match (true) {
             is_scalar($runIf) => (bool) $runIf,
             $runIf === null => false,
-            $runIf instanceof VariableInterface => $this->run->arguments()->required($runIf->__toString())->bool(),
+            $runIf instanceof VariableInterface => $this->run->arguments()
+                ->required($runIf->__toString())
+                ->bool(),
             $runIf instanceof ResponseReferenceInterface => $runIf->key() !== null
-                ? $this->run->response($runIf->job())->array()[$runIf->key()]
-                : $this->run->response($runIf->job())->bool(),
+                ? $this->run->response($runIf->job())
+                    ->array()[$runIf->key()]
+                : $this->run->response($runIf->job())
+                    ->bool(),
             default => (bool) call_user_func($runIf, $this->run())
         };
     }
@@ -199,9 +214,13 @@ final class Runner implements RunnerInterface
             /** @var ResponseReferenceInterface $value */
             if ($value->key() !== null) {
                 $response = $this->run->response($value->job());
-                $referenceReturn = $this->run->workflow()->jobs()->get($value->job())->return();
+                $referenceReturn = $this->run->workflow()
+                    ->jobs()
+                    ->get($value->job())
+                    ->return();
                 $arguments[$name] = $referenceReturn instanceof ObjectParameterInterface
-                    ? $response->object()->{$value->key()}
+                    ? $response->object()
+                        ->{$value->key()}
                     : $response->array()[$value->key()];
 
                 continue;

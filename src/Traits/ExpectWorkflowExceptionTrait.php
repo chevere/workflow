@@ -26,8 +26,6 @@ trait ExpectWorkflowExceptionTrait
     abstract public static function assertSame(mixed $expected, mixed $actual, string $message = ''): void;
 
     /**
-     * Expect a WorkflowException.
-     *
      * @param Closure $closure The logic to test.
      * @param string $job The expected job that will throw exception.
      * @param string $instance The expected job exception instance.
