@@ -1,19 +1,26 @@
 name: SonarQube Cloud Scan
-on: [push]
+on:
+  push:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
 jobs:
   sonarcloud:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       matrix:
         os: [ubuntu-24.04]
-        php: ["8.5"]
+        php: ["8.6"]
     env:
       tools: composer
       ini-values: default_charset='UTF-8'
     name: PHP ${{ matrix.php }} test on ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -31,7 +38,7 @@ jobs:
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -46,8 +53,7 @@ jobs:
         run: |
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' clover.xml
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' junit.xml
+      - name: SonarQube cloud auth
+        uses: SonarSource/sonarqube-auth-action@v1
       - name: SonarQube cloud scan
         uses: SonarSource/sonarqube-scan-action@v8
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
