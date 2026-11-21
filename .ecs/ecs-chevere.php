@@ -40,6 +40,7 @@ use PhpCsFixer\Fixer\Operator\NoSpaceAroundDoubleColonFixer;
 use PhpCsFixer\Fixer\Operator\ObjectOperatorWithoutWhitespaceFixer;
 use PhpCsFixer\Fixer\Operator\StandardizeNotEqualsFixer;
 use PhpCsFixer\Fixer\PhpTag\LinebreakAfterOpeningTagFixer;
+use PhpCsFixer\Fixer\Phpdoc\GeneralPhpdocAnnotationRemoveFixer;
 use PhpCsFixer\Fixer\ReturnNotation\NoUselessReturnFixer;
 use PhpCsFixer\Fixer\ReturnNotation\ReturnAssignmentFixer;
 use PhpCsFixer\Fixer\Semicolon\MultilineWhitespaceBeforeSemicolonsFixer;
@@ -50,7 +51,6 @@ use PhpCsFixer\Fixer\Whitespace\BlankLineBeforeStatementFixer;
 use PhpCsFixer\Fixer\Whitespace\CompactNullableTypehintFixer;
 use PhpCsFixer\Fixer\Whitespace\NoExtraBlankLinesFixer;
 use PhpCsFixer\Fixer\Whitespace\TypesSpacesFixer;
-use Symplify\CodingStandard\Fixer\Commenting\ParamReturnAndVarTagMalformsFixer;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 use Symplify\EasyCodingStandard\ValueObject\Set\SetList;
 
@@ -89,7 +89,6 @@ $ecsConfigBuilder = ECSConfig::configure()
         NoEmptyStatementFixer::class,
         NoMixedEchoPrintFixer::class,
         ObjectOperatorWithoutWhitespaceFixer::class,
-        ParamReturnAndVarTagMalformsFixer::class,
         ReturnAssignmentFixer::class,
         SingleQuoteFixer::class,
     ])
@@ -128,6 +127,9 @@ $ecsConfigBuilder = ECSConfig::configure()
         [
             dirname(__DIR__) . '/vendor',
             SingleImportPerStatementFixer::class => null,
+            GeneralPhpdocAnnotationRemoveFixer::class => [
+                dirname(__DIR__) . '/src/Stream.php',
+            ],
         ]
     );
 $headerFile = __DIR__ . '/.header';

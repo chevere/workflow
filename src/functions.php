@@ -68,7 +68,6 @@ function async(ActionInterface|string|callable $_, mixed ...$argument): JobInter
 /**
  * Creates a reference to the response for the given job and key (if any).
  *
- * @param string $job Job
  * @param ?string $key Job response key (optional)
  */
 function response(string $job, ?string $key = null): ResponseReferenceInterface
