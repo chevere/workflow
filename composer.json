@@ -14,21 +14,21 @@
     "require": {
         "php": "^8.1",
         "amphp/amp": "^3.1",
-        "chevere/action": "^3.0.2",
-        "chevere/caller": "^1.0.0",
-        "chevere/container": "^1.0.5",
-        "chevere/data-structure": "^1.1.0",
-        "chevere/filesystem": "^2.0",
-        "chevere/parameter": "^2.0.5",
-        "chevere/regex": "^1.0.2",
+        "chevere/action": "^3.1.0",
+        "chevere/caller": "^1.0.1",
+        "chevere/container": "^1.0.6",
+        "chevere/data-structure": "^1.1.3",
+        "chevere/filesystem": "^2.0.1",
+        "chevere/parameter": "^2.0.9",
+        "chevere/regex": "^1.0.3",
         "spatie/php-structure-discoverer": "^2.3.2||^2.4"
     },
     "require-dev": {
         "chevere/var-dump": "^2.0",
         "opis/json-schema": "^2.6",
-        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10.5",
-        "symplify/easy-coding-standard": "^13.0"
+        "symplify/easy-coding-standard": "^13.2"
     },
     "autoload": {
         "files": [
@@ -59,31 +59,37 @@
             "Composer\\Config::disableProcessTimeout",
             "infection -j10"
         ],
-        "infection-filter": "sh -c 'sh -c \"composer infection -- --filter=$0 --test-framework-options=--filter=$0\"' $1",
-        "phpstan": "vendor/bin/phpstan analyze src/ --memory-limit 512M --level 9",
+        "infection-filter": "sh -c 'sh -c \"composer infection -- --filter=$0 --test-framework-options=--filter=$1\"' $1 $2",
+        "phpstan": "vendor/bin/phpstan analyze ./src --memory-limit 512M --level 9",
         "test": [
             "Composer\\Config::disableProcessTimeout",
-            "vendor/bin/phpunit -c phpunit.xml"
+            "vendor/bin/phpunit -c phpunit.xml --no-coverage"
         ],
         "test-coverage": [
             "Composer\\Config::disableProcessTimeout",
-            "vendor/bin/phpunit -c phpunit-coverage.xml"
+            "vendor/bin/phpunit -c phpunit.xml"
         ],
-        "cs-update": "mkdir -p .ecs && cd .ecs && curl -O https://raw.githubusercontent.com/chevere/code-style/main/.ecs/ecs-chevere.php",
-        "cs-fix": "vendor/bin/ecs --config='.ecs/ecs.php' src --fix",
-        "open-coverage": "open build/logs/html/index.html",
-        "open-infection": "open build/logs/html/infection.html"
+        "coverage:open": "open build/logs/html/index.html",
+        "infection:open": "open build/logs/html/infection.html",
+        "cs:fix": "vendor/bin/ecs --config='.ecs/ecs.php' src --fix",
+        "cs:update": "mkdir -p .ecs && cd .ecs && curl -O https://raw.githubusercontent.com/chevere/code-style/main/.ecs/ecs-chevere.php",
+        "ci:update": "cd .github/workflows && curl -O https://raw.githubusercontent.com/chevere/package-template/main/.github/workflows/test.yml -O https://raw.githubusercontent.com/chevere/package-template/main/.github/workflows/sonarqube.yml",
+        "infection:dist:update": "curl -O https://raw.githubusercontent.com/chevere/package-template/main/infection.json.dist",
+        "package-template:update": "composer cs:update && composer ci:update && composer infection:dist:update"
     },
     "scripts-descriptions": {
         "all": "Runs all checks",
         "infection": "Runs infection",
-        "infection-filter": "Runs infection (filtered)",
+        "infection-filter": "Runs infection filtered (args infection-filter phpunit-filter)",
         "phpstan": "Runs phpstan",
         "test": "Run test suite",
         "test-coverage": "Run test suite (coverage)",
-        "cs-update": "Update Chevere code style definition",
-        "cs-fix": "Update Chevere code style definition",
-        "open-coverage": "Open code coverage report",
-        "open-infection": "Open infection report"
+        "coverage:open": "Open code coverage report",
+        "infection:open": "Open infection report",
+        "cs:fix": "Update Chevere code style definition",
+        "cs:update": "Update Chevere code style definition",
+        "ci:update": "Update CI workflow files",
+        "infection:dist:update": "Update infection dist file",
+        "package-template:update": "Update template files"
     }
 }
