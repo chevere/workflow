@@ -30,7 +30,6 @@ use Chevere\Workflow\Interfaces\WorkflowInterface;
 use LogicException;
 use OutOfBoundsException;
 use Throwable;
-use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
 
 final class Workflow implements WorkflowInterface
@@ -71,7 +70,7 @@ final class Workflow implements WorkflowInterface
         );
         if (count($this->violations) > 0 && ! $this->config->isLint) {
             throw new LogicException(
-                (string) message('Workflow has violations')
+                sprintf('Workflow has violations')
             );
         }
         if ($this->config->isLint) {

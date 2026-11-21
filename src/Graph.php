@@ -20,8 +20,6 @@ use Chevere\DataStructure\Vector;
 use Chevere\Workflow\Interfaces\GraphInterface;
 use Chevere\Workflow\Interfaces\JobInterface;
 use InvalidArgumentException;
-use function Chevere\Message\message;
-
 final class Graph implements GraphInterface
 {
     /**
@@ -186,9 +184,9 @@ final class Graph implements GraphInterface
         }
 
         throw new InvalidArgumentException(
-            (string) message(
-                'Cannot declare job **%job%** as a self-dependency',
-                job: $job
+            sprintf(
+                'Cannot declare job **%s** as a self-dependency',
+                $job
             )
         );
     }

@@ -18,7 +18,6 @@ use Chevere\DataStructure\Interfaces\VectorInterface;
 use Chevere\DataStructure\Map;
 use Chevere\DataStructure\Traits\MapTrait;
 use Chevere\DataStructure\Vector;
-use Chevere\Message\Interfaces\MessageInterface;
 use Chevere\Parameter\Arguments;
 use Chevere\Parameter\Interfaces\ArgumentsInterface;
 use Chevere\Parameter\Interfaces\TypedInterface;
@@ -26,7 +25,6 @@ use Chevere\Workflow\Interfaces\RunInterface;
 use Chevere\Workflow\Interfaces\WorkflowInterface;
 use OverflowException;
 use Psr\Container\ContainerInterface;
-use function Chevere\Message\message;
 use function Chevere\Parameter\typed;
 
 final class Run implements RunInterface
@@ -109,7 +107,7 @@ final class Run implements RunInterface
 
     public function withResponse(string $job, mixed $response): RunInterface
     {
-        $this->assertNoSkipOverflow($job, message('Job %job% is skipped'));
+        $this->assertNoSkipOverflow($job, 'Job %s is skipped');
         $new = clone $this;
         $new->workflow->jobs()
             ->get($job)
@@ -126,7 +124,7 @@ final class Run implements RunInterface
         foreach ($job as $item) {
             $new->workflow->jobs()
                 ->get($item);
-            $new->assertNoSkipOverflow($item, message('Job %job% already skipped'));
+            $new->assertNoSkipOverflow($item, 'Job %s already skipped');
             $new->skip = $new->skip->withPush($item);
         }
 
@@ -146,13 +144,11 @@ final class Run implements RunInterface
         return $this->response($job);
     }
 
-    private function assertNoSkipOverflow(string $job, MessageInterface $message): void
+    private function assertNoSkipOverflow(string $job, string $message): void
     {
         if ($this->skip->contains($job)) {
             throw new OverflowException(
-                strtr($message->__toString(), [
-                    '%job%' => $job,
-                ])
+                sprintf($message, $job)
             );
         }
     }

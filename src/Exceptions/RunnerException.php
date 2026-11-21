@@ -44,9 +44,9 @@ final class RunnerException extends WorkflowException
     protected function template(): string
     {
         if ($this->maxAttempts > 1) {
-            return '[%name%]: [' . $this->attempt . '/' . $this->maxAttempts . '] %message%';
+            return '[%s]: [' . $this->attempt . '/' . $this->maxAttempts . '] %s';
         }
 
-        return '[%name%]: %message%';
+        return '[%s]: %s';
     }
 }

@@ -38,7 +38,6 @@ use ReflectionException;
 use ReflectionProperty;
 use Throwable;
 use TypeError;
-use function Chevere\Message\message;
 use function Chevere\Parameter\bool;
 use function Chevere\Parameter\reflectionToParameter;
 
@@ -130,9 +129,9 @@ final class Jobs implements JobsInterface
     {
         if ($this->map->has($name)) {
             throw new OverflowException(
-                (string) message(
-                    'Job name `%name%` has been already added.',
-                    name: $name
+                sprintf(
+                    'Job name `%s` has been already added.',
+                    $name
                 )
             );
         }
@@ -286,21 +285,20 @@ final class Jobs implements JobsInterface
                             $reflection = (new ReflectionClass($className))->getProperty($value->key());
                         } catch (ReflectionException) {
                             throw new LogicException(
-                                (string) message(
-                                    "Invalid response reference **%response%** as job **%job%** doesn't define such property",
-                                    job: $value->job(),
-                                    response: strval($value),
-                                    interface: ParametersAccessInterface::class
+                                sprintf(
+                                    "Invalid response reference **%s** as job **%s** doesn't define such property",
+                                    strval($value),
+                                    $value->job()
                                 )
                             );
                         }
                         if (! $reflection->isPublic()) {
                             throw new LogicException(
-                                (string) message(
-                                    'Response **%response%** job `%job%` property `%property%` is not public',
-                                    response: strval($value),
-                                    job: $value->job(),
-                                    property: $value->key()
+                                sprintf(
+                                    'Response **%s** job `%s` property `%s` is not public',
+                                    strval($value),
+                                    $value->job(),
+                                    $value->key()
                                 )
                             );
                         }
@@ -311,21 +309,20 @@ final class Jobs implements JobsInterface
                     }
                     if (! $found) {
                         throw new LogicException(
-                            (string) message(
-                                "Invalid response reference **%response%** as job **%job%** doesn't define such response key",
-                                job: $value->job(),
-                                response: strval($value),
-                                interface: ParametersAccessInterface::class
+                            sprintf(
+                                "Invalid response reference **%s** as job **%s** doesn't define such response key",
+                                strval($value),
+                                $value->job()
                             )
                         );
                     }
                 }
             } catch (OutOfBoundsException) {
                 throw new OutOfBoundsException(
-                    (string) message(
-                        '%subject% **%key%** not found',
-                        subject: $subject,
-                        key: $identifier
+                    sprintf(
+                        '%s **%s** not found',
+                        $subject,
+                        $identifier
                     )
                 );
             }
@@ -360,14 +357,14 @@ final class Jobs implements JobsInterface
                     }
                     if (! $found) {
                         throw new TypeError(
-                            (string) message(
-                                '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
-                                parameter: $argument,
-                                type: $stored->type()
+                            sprintf(
+                                '%s **%s** is of type `%s`, parameter **%s** expects one of: %s',
+                                $subject,
+                                $identifier,
+                                $stored->type()
                                     ->typeHinting(),
-                                expected: '`' . implode('`, `', $errors) . '`',
-                                subject: $subject,
-                                key: $identifier
+                                $argument,
+                                '`' . implode('`, `', $errors) . '`'
                             )
                         );
                     }
@@ -382,14 +379,14 @@ final class Jobs implements JobsInterface
                     }
                     if (count($errors) === $count) {
                         throw new TypeError(
-                            (string) message(
-                                '%subject% from **%key%** is of type `%type%`, parameter **%parameter%** expects one of: %expected%',
-                                parameter: $argument,
-                                type: $stored->type()
+                            sprintf(
+                                '%s from **%s** is of type `%s`, parameter **%s** expects one of: %s',
+                                $subject,
+                                $identifier,
+                                $stored->type()
                                     ->primitive(),
-                                expected: '`' . implode('`, `', $errors) . '`',
-                                subject: $subject,
-                                key: $identifier
+                                $argument,
+                                '`' . implode('`, `', $errors) . '`'
                             )
                         );
                     }
@@ -402,15 +399,15 @@ final class Jobs implements JobsInterface
             }
             if ($stored::class !== $parameter::class) {
                 throw new TypeError(
-                    (string) message(
-                        '%subject% **%key%** is of type `%type%`, parameter **%parameter%** expects `%expected%`',
-                        parameter: $argument,
-                        type: $stored->type()
+                    sprintf(
+                        '%s **%s** is of type `%s`, parameter **%s** expects `%s`',
+                        $subject,
+                        $identifier,
+                        $stored->type()
                             ->primitive(),
-                        expected: $parameter->type()
-                            ->primitive(),
-                        subject: $subject,
-                        key: $identifier
+                        $argument,
+                        $parameter->type()
+                            ->primitive()
                     )
                 );
             }
@@ -419,12 +416,12 @@ final class Jobs implements JobsInterface
                 $parameter->assertCompatible($stored);
             } catch (InvalidArgumentException $e) {
                 throw new InvalidArgumentException(
-                    (string) message(
-                        '%subject% **%key%** conflict at parameter **%parameter%**: %message%',
-                        subject: $subject,
-                        key: $identifier,
-                        parameter: $argument,
-                        message: $e->getMessage()
+                    sprintf(
+                        '%s **%s** conflict at parameter **%s**: %s',
+                        $subject,
+                        $identifier,
+                        $argument,
+                        $e->getMessage()
                     )
                 );
             }
@@ -446,11 +443,11 @@ final class Jobs implements JobsInterface
             if ($runIf->key() !== null) {
                 if (! $return instanceof ParametersAccessInterface) {
                     throw new OutOfBoundsException(
-                        (string) message(
-                            'Response **%response%** job `%job%` doesn\'t bind to `%parameter%` parameter',
-                            response: strval($runIf),
-                            job: $runIf->job(),
-                            parameter: $runIf->key()
+                        sprintf(
+                            'Response **%s** job `%s` doesn\'t bind to `%s` parameter',
+                            strval($runIf),
+                            $runIf->job(),
+                            $runIf->key()
                         )
                     );
                 }
@@ -475,10 +472,10 @@ final class Jobs implements JobsInterface
         if (in_array($return->type()->primitive(), ['bool', 'int'], true)) {
             return;
         }
-        $message = (string) message(
-            'Response **%response%** must be of type `bool|int`, type `%type%` provided',
-            response: strval($runIf),
-            type: $return->type()
+        $message = sprintf(
+            'Response **%s** must be of type `bool|int`, type `%s` provided',
+            strval($runIf),
+            $return->type()
                 ->primitive()
         );
         if (! $this->config->isLint) {
@@ -503,12 +500,12 @@ final class Jobs implements JobsInterface
             /** @var ParameterInterface $parameter */
             $parameter = $this->variables->get($runIf->__toString());
             if (! in_array($parameter->type()->primitive(), ['bool', 'int'], true)) {
-                $message = (string) message(
-                    'Variable **%variable%** (previously inferred as `%type%`) is not of type `bool|int` at Job **%job%**',
-                    variable: $runIf->__toString(),
-                    type: $parameter->type()
+                $message = sprintf(
+                    'Variable **%s** (previously inferred as `%s`) is not of type `bool|int` at Job **%s**',
+                    $runIf->__toString(),
+                    $parameter->type()
                         ->primitive(),
-                    job: $name,
+                    $name
                 );
                 if (! $this->config->isLint) {
                     throw new TypeError($message);
@@ -536,10 +533,10 @@ final class Jobs implements JobsInterface
         $dependencies = $this->jobDependencies->toArray();
         if (! $this->jobs->contains(...$dependencies)) {
             $missing = array_diff($dependencies, $this->jobs->toArray());
-            $message = (string) message(
-                'Job **%job%** has undeclared dependencies: `%dependencies%`',
-                job: $job,
-                dependencies: implode(', ', $missing),
+            $message = sprintf(
+                'Job **%s** has undeclared dependencies: `%s`',
+                $job,
+                implode(', ', $missing),
             );
             if (! $this->config->isLint) {
                 throw new OutOfBoundsException($message);

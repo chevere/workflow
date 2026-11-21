@@ -31,7 +31,6 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionObject;
 use Throwable;
-use function Chevere\Message\message;
 use function Chevere\Parameter\assertNamedArgument;
 use function Chevere\Parameter\mixed;
 use function Chevere\Parameter\reflectionToParameters;
@@ -232,9 +231,9 @@ final class Job implements JobInterface
             };
             if ($known->contains($item)) {
                 throw new OverflowException(
-                    (string) message(
-                        'Condition `%condition%` is already defined',
-                        condition: $item
+                    sprintf(
+                        'Condition `%s` is already defined',
+                        $item
                     )
                 );
             }
@@ -301,11 +300,7 @@ final class Job implements JobInterface
                 $this->violations = $this->violations->withPush(
                     [
                         'parameter' => $name,
-                        'message' => str_replace(
-                            "Argument [{$name}]: ",
-                            '',
-                            $e->getMessage(),
-                        ),
+                        'message' => $e->getMessage(),
                     ]
                 );
             }
@@ -356,11 +351,11 @@ final class Job implements JobInterface
             }
 
             throw new ArgumentCountError(
-                (string) message(
-                    'Missing argument(s) [`%arguments%`] for %action% in %fileLine%',
-                    arguments: implode(', ', $missing),
-                    action: $class,
-                    fileLine: $this->caller->__toString()
+                sprintf(
+                    'Missing argument(s) [`%s`] for %s in %s',
+                    implode(', ', $missing),
+                    $class,
+                    $this->caller->__toString()
                 )
             );
         }
@@ -379,21 +374,21 @@ final class Job implements JobInterface
                 $parameters = $parameters === '' ? '' : "[{$parameters}]";
 
                 throw new ArgumentCountError(
-                    (string) message(
-                        '`%symbol%` requires %countRequired% argument(s)%parameters%',
-                        symbol: $this->_::class . '::__invoke',
-                        countRequired: strval(count($requiredKeys)),
-                        parameters: $parameters === '' ? '' : " `{$parameters}`"
+                    sprintf(
+                        '`%s` requires %s argument(s)%s',
+                        $this->_::class . '::__invoke',
+                        strval(count($requiredKeys)),
+                        $parameters === '' ? '' : " `{$parameters}`"
                     )
                 );
             }
         } elseif ($countProvided > count($this->parameters)) {
             throw new ArgumentCountError(
-                (string) message(
-                    '`%symbol%` requires %countRequired% argument(s), but %countProvided% provided',
-                    symbol: $this->_::class . '::__invoke',
-                    countRequired: strval(count($this->parameters)),
-                    countProvided: strval($countProvided)
+                sprintf(
+                    '`%s` requires %s argument(s), but %s provided',
+                    $this->_::class . '::__invoke',
+                    strval(count($this->parameters)),
+                    strval($countProvided)
                 )
             );
         }
@@ -453,9 +448,9 @@ final class Job implements JobInterface
         $uniques = array_unique($dependencies);
         if ($uniques !== $dependencies) {
             throw new OverflowException(
-                (string) message(
-                    'Job dependencies must be unique (repeated **%dependencies%**)',
-                    dependencies: implode(', ', array_diff_assoc($dependencies, $uniques))
+                sprintf(
+                    'Job dependencies must be unique (repeated **%s**)',
+                    implode(', ', array_diff_assoc($dependencies, $uniques))
                 )
             );
         }
@@ -465,4 +460,17 @@ final class Job implements JobInterface
             }
         }
     }
+
+    // private function getErrorMessage(string $context, Throwable $e): void
+    // {
+    //     $context = "http.{$context}";
+    //     $lines = preg_split('/\R/', $e->getMessage()) ?: [];
+    //     foreach ($lines as $line) {
+    //         if (preg_match('/^\[(?<pointer>[^\]]+)\]:\s*(?<detail>.+)$/s', $line, $m)) {
+    //             $this->addError($m['pointer'], $m['detail'], context: $context);
+    //         } else {
+    //             $this->addError($context, $line);
+    //         }
+    //     }
+    // }
 }

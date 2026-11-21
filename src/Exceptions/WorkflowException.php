@@ -16,8 +16,6 @@ namespace Chevere\Workflow\Exceptions;
 use Chevere\Workflow\Interfaces\JobInterface;
 use Exception;
 use Throwable;
-use function Chevere\Message\message;
-
 /**
  * Exception thrown by a Workflow participant.
  */
@@ -43,11 +41,10 @@ abstract class WorkflowException extends Exception
         JobInterface $job,
         Throwable $throwable,
     ) {
-        $message = (string) message(
+        $message = sprintf(
             $this->template(),
-            name: $name,
-            message: $throwable->getMessage(),
-            caller: $job->caller()
+            $name,
+            $throwable->getMessage()
         );
         parent::__construct(message: $message, previous: $throwable);
         $this->name = $name;
@@ -64,6 +61,6 @@ abstract class WorkflowException extends Exception
      */
     protected function template(): string
     {
-        return '[%name%]: %message%';
+        return '[%s]: %s';
     }
 }
