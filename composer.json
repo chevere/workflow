@@ -19,7 +19,7 @@
         "chevere/container": "^1.0.6",
         "chevere/data-structure": "^1.1.3",
         "chevere/filesystem": "^2.0.1",
-        "chevere/parameter": "^2.0.9",
+        "chevere/parameter": "^2.0.10",
         "chevere/regex": "^1.0.3",
         "spatie/php-structure-discoverer": "^2.3.2||^2.4"
     },

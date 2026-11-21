@@ -629,7 +629,7 @@ final class RunnerTest extends TestCase
         $this->expectException(ContainerException::class);
         $this->expectExceptionMessage(
             <<<PLAIN
-            [nestedDependency]: Failed to resolve dependencies for `Chevere\Tests\src\TestActionDependsNoParams`: Missing required argument(s): `dependency`
+            [nestedDependency]: Failed to resolve dependencies for `Chevere\Tests\src\TestActionDependsNoParams`: [/dependency]: Missing required argument
             PLAIN
         );
         run($workflow);
